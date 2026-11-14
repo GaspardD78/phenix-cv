@@ -1,0 +1,45 @@
+import { CVTemplate } from '../types/template';
+import { PALETTES_NEUTRAL, PALETTES_SOBER } from '../theme/tokens';
+
+export const minimalist: CVTemplate = {
+  id: 'minimalist',
+  name: 'Minimaliste',
+  description: 'Design ultra-sobre, typographie légère, espaces généreux.',
+  category: 'ats',
+  recommendedFor: ['international', 'design', 'startup'],
+  supportsPhoto: false,
+  palettes: [...PALETTES_NEUTRAL, PALETTES_SOBER[0]],
+  defaultDensity: 'comfortable',
+  headerVariants: ['clean'],
+  docx: {
+    pageSize: 'A4',
+    margins: { top: 1200, right: 1440, bottom: 1200, left: 1440 },
+    fonts: {
+      heading: 'Helvetica',
+      body: 'Helvetica',
+    },
+    headingSize: 22,
+    bodySize: 20,
+    lineSpacing: 300,
+    sectionSpacing: 240,
+    useColumns: false,
+    useTables: false,
+  },
+  preview: {
+    containerClass: 'max-w-[210mm] mx-auto bg-white shadow-lg px-14 py-14 text-gray-800',
+    headingClass: 'text-[11px] font-bold uppercase tracking-[0.32em] text-gray-500 mb-4 mt-10',
+    entryClass: 'mb-4',
+    titleClass: 'font-semibold text-gray-900 text-[13px]',
+    subtitleClass: 'text-gray-500 text-[12.5px] font-normal',
+    dateClass: 'text-gray-500 text-[11px] tabular-nums tracking-wide mb-1',
+    descriptionClass: 'text-gray-600 text-[11.5px] whitespace-pre-line leading-[1.7]',
+    skillsContainerClass: 'list-none pl-0',
+    skillClass: 'text-[11.5px] text-gray-600',
+    skillBadgeContainerClass: 'flex flex-wrap gap-x-2 gap-y-1 mt-1',
+    skillBadgeClass: 'inline-block text-[11px] text-gray-600 after:content-["·"] after:ml-2 last:after:content-[""]',
+    nameClass: 'text-[28px] font-light uppercase tracking-[0.18em] text-gray-900 mb-1.5',
+    headerTitleClass: 'text-[14px] font-normal text-gray-500 tracking-wider uppercase',
+    contactClass: 'text-[11px] text-gray-500 tracking-wide',
+    summaryClass: 'text-[12px] text-gray-600 leading-[1.7]',
+  },
+};

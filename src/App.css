@@ -1,0 +1,400 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+/* ── Phénix CV Design System — Dark Premium ──────────────────────────────── */
+
+/* Fonts */
+:root {
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body:    'DM Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* Indigo / Slate palette (default) */
+  --pc-bg:            #09090e;
+  --pc-surface:       #111116;
+  --pc-card:          #18181f;
+  --pc-border:        #25252f;
+  --pc-border-active: #3d3d52;
+  --pc-hover:         rgba(255,255,255,.04);
+  --pc-accent:        #6366f1;
+  --pc-accent-hover:  #818cf8;
+  --pc-accent-subtle: rgba(99,102,241,.12);
+  --pc-text:          #ededf0;
+  --pc-muted:         #71717a;
+  --pc-radius:        10px;
+}
+
+/* ── Utilities — Mobile & Hover Optimization ──────────────────────────────── */
+
+/* Remplacer les inline onMouseEnter JS par cette classe pour éviter le sticky hover Android */
+.pc-hoverable {
+  transition: all 0.12s ease-in-out;
+}
+
+@media (hover: hover) {
+  .pc-hoverable:hover {
+    background-color: var(--pc-hover) !important;
+  }
+}
+
+/* Version spécifique pour les cartes Kanban (avec shadow/translate) */
+.pc-kanban-card-hover {
+  transition: all 0.13s ease-out;
+}
+
+@media (hover: hover) {
+  .pc-kanban-card-hover:hover {
+    background-color: var(--pc-card) !important;
+    border-color: var(--pc-border-active) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  }
+}
+
+.pc-hoverable-card {
+  transition: all 0.15s ease;
+}
+
+@media (hover: hover) {
+  .pc-hoverable-card:hover {
+    border-color: var(--pc-accent) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  }
+}
+
+@media (hover: none) {
+  .pc-hoverable-card:active {
+    background-color: var(--pc-accent-subtle) !important;
+    border-color: var(--pc-accent) !important;
+  }
+}
+
+.pc-hoverable-border {
+  transition: border-color 0.12s ease;
+}
+
+@media (hover: hover) {
+  .pc-hoverable-border:hover {
+    border-color: var(--pc-border-active) !important;
+  }
+}
+
+.pc-hoverable-danger {
+  transition: background 0.12s ease;
+}
+
+@media (hover: hover) {
+  .pc-hoverable-danger:hover {
+    background-color: rgba(248, 113, 113, 0.1) !important;
+  }
+}
+
+/* Neutralisation globale des classes hover: de Tailwind sur mobile */
+@media (hover: none) {
+  [class*="hover:"]:hover {
+    background-color: transparent !important;
+    color: inherit !important;
+    border-color: inherit !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
+
+/* ── Tailwind theme mapping ─────────────────────────────────────────────────── */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+}
+
+/* ── Base dark theme (always dark) ─────────────────────────────────────────── */
+:root {
+  --radius: 0.625rem;
+  --background: var(--pc-bg);
+  --foreground: var(--pc-text);
+  --card: var(--pc-card);
+  --card-foreground: var(--pc-text);
+  --popover: var(--pc-surface);
+  --popover-foreground: var(--pc-text);
+  --primary: var(--pc-accent);
+  --primary-foreground: #fff;
+  --secondary: var(--pc-surface);
+  --secondary-foreground: var(--pc-text);
+  --muted: var(--pc-surface);
+  --muted-foreground: var(--pc-muted);
+  --accent: var(--pc-accent);
+  --accent-foreground: #fff;
+  --destructive: #f87171;
+  --border: var(--pc-border);
+  --input: var(--pc-card);
+  --ring: var(--pc-accent);
+  --sidebar: var(--pc-surface);
+  --sidebar-foreground: var(--pc-text);
+  --sidebar-primary: var(--pc-accent);
+  --sidebar-primary-foreground: #fff;
+  --sidebar-accent: var(--pc-accent-subtle);
+  --sidebar-accent-foreground: var(--pc-accent);
+  --sidebar-border: var(--pc-border);
+  --sidebar-ring: var(--pc-accent);
+}
+
+/* .dark mirrors :root since we're always dark */
+.dark {
+  --background: var(--pc-bg);
+  --foreground: var(--pc-text);
+  --card: var(--pc-card);
+  --card-foreground: var(--pc-text);
+  --popover: var(--pc-surface);
+  --popover-foreground: var(--pc-text);
+  --primary: var(--pc-accent);
+  --primary-foreground: #fff;
+  --secondary: var(--pc-surface);
+  --secondary-foreground: var(--pc-text);
+  --muted: var(--pc-surface);
+  --muted-foreground: var(--pc-muted);
+  --accent: var(--pc-accent);
+  --accent-foreground: #fff;
+  --destructive: #f87171;
+  --border: var(--pc-border);
+  --input: var(--pc-card);
+  --ring: var(--pc-accent);
+  --sidebar: var(--pc-surface);
+  --sidebar-foreground: var(--pc-text);
+  --sidebar-primary: var(--pc-accent);
+  --sidebar-primary-foreground: #fff;
+  --sidebar-accent: var(--pc-accent-subtle);
+  --sidebar-accent-foreground: var(--pc-accent);
+  --sidebar-border: var(--pc-border);
+}
+
+/* ── Global base ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--pc-bg);
+  color: var(--pc-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Custom scrollbars ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--pc-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--pc-border-active); }
+
+/* ── Android / notch safe-area ─────────────────────────────────────────────── */
+.mobile-header {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.mobile-main-content {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 3rem);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4rem);
+}
+.mobile-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Expose bottom-nav height as a custom property for FAB offset */
+:root {
+  --bottom-nav-height: 0px; /* overridden below when mobile nav is visible */
+}
+@media (max-width: 639px) {
+  :root {
+    --bottom-nav-height: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ── Print ──────────────────────────────────────────────────────────────────── */
+@page { size: A4; margin: 0; }
+
+@media print {
+  body * { visibility: hidden; }
+  #printable-cv, #printable-cv * { visibility: visible; }
+  #printable-cv {
+    position: fixed;
+    top: 0; left: 0;
+    width: 210mm !important;
+    max-width: none !important;
+    height: auto;
+    zoom: var(--pdf-zoom, 1);
+    transform-origin: top left;
+  }
+  body {
+    background-color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  #printable-cv a[href] { text-decoration: underline; }
+}
+
+/* ── RF Design utility classes ──────────────────────────────────────────────── */
+.pc-bg      { background: var(--pc-bg); }
+.pc-surface { background: var(--pc-surface); }
+.pc-card    { background: var(--pc-card); }
+.pc-text    { color: var(--pc-text); }
+.pc-muted   { color: var(--pc-muted); }
+.pc-accent  { color: var(--pc-accent); }
+.pc-border  { border-color: var(--pc-border); }
+
+.pc-card-box {
+  background: var(--pc-card);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+}
+
+.pc-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: background 0.12s ease;
+  border: none;
+  background: var(--pc-accent);
+  color: #fff;
+}
+@media (hover: hover) {
+  .pc-btn-primary:hover  { background: var(--pc-accent-hover); }
+}
+.pc-btn-primary:active { 
+  background: var(--pc-accent-hover); 
+  opacity: 0.85; 
+  transform: scale(0.98);
+}
+
+.pc-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  background: transparent;
+  color: var(--pc-text);
+  border: 1px solid var(--pc-border);
+}
+@media (hover: hover) {
+  .pc-btn-secondary:hover {
+    background: var(--pc-hover);
+    border-color: var(--pc-border-active);
+  }
+}
+.pc-btn-secondary:active {
+  background: var(--pc-hover);
+  border-color: var(--pc-border-active);
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+/* Kanban drawer slide-in */
+@keyframes drawerIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Modal pop-in */
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Navigation desktop — hover CSS natif (remplace JS onMouseEnter) ───────────── */
+.pc-nav-link {
+  text-decoration: none;
+  display: block;
+  border-radius: 8px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+@media (hover: hover) {
+  .pc-nav-link:hover .pc-nav-btn:not([data-active='true']) {
+    background: var(--pc-hover) !important;
+    color: var(--pc-text) !important;
+  }
+}
+.pc-nav-link:active .pc-nav-btn {
+  opacity: 0.75;
+}
+
+/* — Bottom-nav mobile — feedback tactile ────────────────────────────────── */
+.mobile-bottom-nav a:active,
+.mobile-bottom-nav button:active {
+  opacity: 0.6;
+  transform: scale(0.94);
+}
+
+/* ── Kanban drag handle ─────────────────────────────────────────────────────── */
+/* Desktop : visible au hover de la carte */
+.kanban-drag-handle {
+  opacity: 0;
+}
+@media (hover: hover) {
+  /* Uniquement sur les appareils avec pointeur précis (souris) */
+  *:hover > .kanban-drag-handle,
+  *:hover > div > .kanban-drag-handle {
+    opacity: 1;
+  }
+}
+/* Mobile / tactile : toujours visible */
+@media (hover: none) {
+  .kanban-drag-handle {
+    opacity: 0.5;
+    background: var(--pc-card);
+  }
+}
+
+/* ── touch-action global pour @dnd-kit ────────────────────────────────────── */
+/* Évite que le scroll vertical interfère avec le drag horizontal sur Android */
+[data-dnd-kit-dragging] {
+  touch-action: none;
+}

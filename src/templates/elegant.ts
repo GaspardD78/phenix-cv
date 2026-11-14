@@ -1,0 +1,45 @@
+import { CVTemplate } from '../types/template';
+import { PALETTES_SOBER, PALETTES_VIBRANT } from '../theme/tokens';
+
+export const elegant: CVTemplate = {
+  id: 'elegant',
+  name: 'Élégant',
+  description: 'Serif racé, filet latéral raffiné et italiques soignés.',
+  category: 'executive',
+  recommendedFor: ['fr', 'senior', 'consulting'],
+  supportsPhoto: true,
+  palettes: [PALETTES_VIBRANT[3], PALETTES_SOBER[2], PALETTES_SOBER[0], PALETTES_SOBER[1]],
+  defaultDensity: 'normal',
+  headerVariants: ['accent-bar', 'clean', 'accent-light'],
+  docx: {
+    pageSize: 'A4',
+    margins: { top: 1200, right: 1200, bottom: 1200, left: 1200 },
+    fonts: {
+      heading: 'Georgia',
+      body: 'Calibri',
+    },
+    headingSize: 26,
+    bodySize: 22,
+    lineSpacing: 300,
+    sectionSpacing: 260,
+    useColumns: false,
+    useTables: false,
+  },
+  preview: {
+    containerClass: 'max-w-[210mm] mx-auto bg-white shadow-lg px-12 py-11 text-gray-900 border-l-[4px] border-indigo-700',
+    headingClass: 'text-[12px] font-semibold uppercase tracking-[0.28em] text-indigo-800 border-b border-indigo-200 pb-1.5 mb-3.5 mt-6 [font-family:Georgia,serif]',
+    entryClass: 'mb-5',
+    titleClass: 'font-semibold text-gray-900 text-[14px] [font-family:Georgia,serif]',
+    subtitleClass: 'text-indigo-700 text-[12.5px] font-normal italic',
+    dateClass: 'text-gray-600 text-[11.5px] tracking-wide tabular-nums mb-1',
+    descriptionClass: 'text-gray-700 text-[12px] whitespace-pre-line leading-relaxed',
+    skillsContainerClass: 'list-disc pl-5',
+    skillClass: 'text-[12px] text-gray-700',
+    skillBadgeContainerClass: 'flex flex-wrap gap-1.5 mt-1',
+    skillBadgeClass: 'inline-block px-2.5 py-0.5 text-[11px] font-medium bg-indigo-50 text-indigo-800 border border-indigo-200 rounded-sm',
+    nameClass: 'text-[32px] font-semibold tracking-wide text-gray-900 mb-1 [font-family:Georgia,serif]',
+    headerTitleClass: 'text-[17px] font-normal text-indigo-700 italic [font-family:Georgia,serif]',
+    contactClass: 'text-[12px] text-gray-600',
+    summaryClass: 'text-[12.5px] text-gray-700 leading-relaxed italic',
+  },
+};

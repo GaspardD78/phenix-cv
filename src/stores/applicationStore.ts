@@ -1,0 +1,208 @@
+import { create } from 'zustand';
+import { Application, ApplicationEvent, ApplicationAttachment } from '@/types/application';
+import { getDb } from '@/lib/db';
+import { keysToCamelCase, keysToSnakeCase } from '@/lib/mapping';
+import { filterAllowedColumns } from '@/lib/validation';
+
+interface ApplicationState {
+  applications: Application[];
+  events: ApplicationEvent[];
+  attachments: ApplicationAttachment[];
+  isLoading: boolean;
+  error: string | null;
+  reset: () => void;
+  fetchApplications: () => Promise<void>;
+  createApplication: (app: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateApplication: (id: string, updates: Partial<Application>) => Promise<void>;
+  deleteApplication: (id: string) => Promise<void>;
+  fetchEvents: (applicationId: string) => Promise<void>;
+  createEvent: (event: Omit<ApplicationEvent, 'id' | 'createdAt'>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
+  fetchAttachments: (applicationId: string) => Promise<void>;
+  addAttachment: (attachment: Omit<ApplicationAttachment, 'id' | 'createdAt'>) => Promise<void>;
+  deleteAttachment: (id: string) => Promise<void>;
+}
+
+export const useApplicationStore = create<ApplicationState>((set, get) => ({
+  applications: [],
+  events: [],
+  attachments: [],
+  isLoading: false,
+  error: null,
+  reset: () => set({ applications: [], events: [], attachments: [], isLoading: false, error: null }),
+
+  fetchApplications: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const db = await getDb();
+      // Scope by current user's profile
+      const { useSessionStore } = await import('@/stores/sessionStore');
+      const currentUserId = useSessionStore.getState().currentUserId;
+      let rawApps: Record<string, unknown>[];
+      if (currentUserId) {
+        rawApps = await db.select<Record<string, unknown>[]>('SELECT * FROM applications WHERE profile_id = ?1 ORDER BY updated_at DESC', [currentUserId]);
+      } else {
+        rawApps = await db.select<Record<string, unknown>[]>('SELECT * FROM applications ORDER BY updated_at DESC');
+      }
+      const applications = rawApps.map(app => keysToCamelCase<Application>(app));
+      set({ applications });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch applications' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  createApplication: async (app) => {
+    try {
+      const db = await getDb();
+      const snakeApp = filterAllowedColumns('applications', keysToSnakeCase<Record<string, unknown>>(app));
+      const keys = Object.keys(snakeApp);
+      const values = [...Object.values(snakeApp)];
+
+      const columns = keys.join(', ');
+      const placeholders = keys.map((_, i) => `?${i + 1}`).join(', ');
+
+      await db.execute(
+        `INSERT INTO applications (${columns}) VALUES (${placeholders})`,
+        values
+      );
+      await get().fetchApplications();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create application';
+      set({ error: message });
+      throw err;
+    }
+  },
+
+  updateApplication: async (id, updates) => {
+    try {
+      const db = await getDb();
+      const snakeUpdates = filterAllowedColumns('applications', keysToSnakeCase<Record<string, unknown>>(updates));
+      const keys = Object.keys(snakeUpdates);
+      const values = [...Object.values(snakeUpdates)];
+
+      if (keys.length > 0) {
+        const setString = keys.map((key, i) => `${key} = ?${i + 1}`).join(', ');
+        await db.execute(
+          `UPDATE applications SET ${setString}, updated_at = datetime('now') WHERE id = ?${keys.length + 1}`,
+          [...values, id]
+        );
+      }
+      await get().fetchApplications();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to update application';
+      set({ error: message });
+      throw err;
+    }
+  },
+
+  deleteApplication: async (id) => {
+    try {
+      const db = await getDb();
+      await db.execute('DELETE FROM applications WHERE id = ?1', [id]);
+      set(state => ({
+        applications: state.applications.filter(a => a.id !== id)
+      }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete application';
+      set({ error: message });
+      throw err;
+    }
+  },
+
+  fetchEvents: async (applicationId) => {
+    try {
+      const db = await getDb();
+      const rawEvents = await db.select<Record<string, unknown>[]>(
+        'SELECT * FROM application_events WHERE application_id = ?1 ORDER BY event_date DESC',
+        [applicationId]
+      );
+      const events = rawEvents.map(event => keysToCamelCase<ApplicationEvent>(event));
+      set({ events });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch events' });
+    }
+  },
+
+  createEvent: async (event) => {
+    try {
+      const db = await getDb();
+      const snakeEvent = filterAllowedColumns('application_events', keysToSnakeCase<Record<string, unknown>>(event));
+      const keys = Object.keys(snakeEvent);
+      const values = [...Object.values(snakeEvent)];
+
+      const columns = keys.join(', ');
+      const placeholders = keys.map((_, i) => `?${i + 1}`).join(', ');
+
+      await db.execute(
+        `INSERT INTO application_events (${columns}) VALUES (${placeholders})`,
+        values
+      );
+      await get().fetchEvents(event.applicationId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create event';
+      set({ error: message });
+      throw err;
+    }
+  },
+
+  deleteEvent: async (id) => {
+    try {
+      const db = await getDb();
+      const currentEvents = get().events;
+      const eventToDelete = currentEvents.find(e => e.id === id);
+
+      await db.execute('DELETE FROM application_events WHERE id = ?1', [id]);
+
+      if (eventToDelete) {
+        set(state => ({
+          events: state.events.filter(e => e.id !== id)
+        }));
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete event';
+      set({ error: message });
+      throw err;
+    }
+  },
+
+  // Attachment operations throw errors instead of setting global `error`,
+  // so the Kanban board is not replaced by an error screen.
+  fetchAttachments: async (applicationId) => {
+    const db = await getDb();
+    const raw = await db.select<Record<string, unknown>[]>(
+      'SELECT * FROM application_attachments WHERE application_id = ?1 ORDER BY created_at DESC',
+      [applicationId]
+    );
+    const attachments = raw.map(a => keysToCamelCase<ApplicationAttachment>(a));
+    set({ attachments });
+  },
+
+  addAttachment: async (attachment) => {
+    const db = await getDb();
+    const snakeAttachment = filterAllowedColumns(
+      'application_attachments',
+      keysToSnakeCase<Record<string, unknown>>(attachment)
+    );
+    const keys = Object.keys(snakeAttachment);
+    const values = [...Object.values(snakeAttachment)];
+
+    const columns = keys.join(', ');
+    const placeholders = keys.map((_, i) => `?${i + 1}`).join(', ');
+
+    await db.execute(
+      `INSERT INTO application_attachments (${columns}) VALUES (${placeholders})`,
+      values
+    );
+    await get().fetchAttachments(attachment.applicationId);
+  },
+
+  deleteAttachment: async (id) => {
+    const db = await getDb();
+    await db.execute('DELETE FROM application_attachments WHERE id = ?1', [id]);
+    set(state => ({
+      attachments: state.attachments.filter(a => a.id !== id)
+    }));
+  },
+}));

@@ -1,0 +1,45 @@
+import { CVTemplate } from '../types/template';
+import { PALETTES_SOBER } from '../theme/tokens';
+
+export const atsClassic: CVTemplate = {
+  id: 'ats-classic',
+  name: 'Classique',
+  description: 'Structure linéaire intemporelle, optimisée pour la lecture ATS.',
+  category: 'ats',
+  recommendedFor: ['corporate', 'fr', 'international'],
+  supportsPhoto: true,
+  palettes: PALETTES_SOBER,
+  defaultDensity: 'normal',
+  headerVariants: ['clean', 'accent-bar', 'accent-light'],
+  docx: {
+    pageSize: 'A4',
+    margins: { top: 1400, right: 1400, bottom: 1400, left: 1400 },
+    fonts: {
+      heading: 'Calibri',
+      body: 'Calibri',
+    },
+    headingSize: 26,
+    bodySize: 22,
+    lineSpacing: 288,
+    sectionSpacing: 220,
+    useColumns: false,
+    useTables: false,
+  },
+  preview: {
+    containerClass: 'max-w-[210mm] mx-auto bg-white shadow-lg px-12 py-10 text-gray-900',
+    headingClass: 'text-[13px] font-bold uppercase tracking-[0.14em] text-gray-900 border-b border-gray-800 pb-1.5 mb-3 mt-6',
+    entryClass: 'mb-4',
+    titleClass: 'font-bold text-gray-900 text-[13.5px]',
+    subtitleClass: 'text-gray-700 text-[12.5px]',
+    dateClass: 'text-gray-600 text-[11.5px] tabular-nums mb-1',
+    descriptionClass: 'text-gray-800 text-[12px] whitespace-pre-line leading-relaxed',
+    skillsContainerClass: 'list-disc pl-5 grid grid-cols-1 gap-y-0.5',
+    skillClass: 'text-[12px] text-gray-800',
+    skillBadgeContainerClass: 'flex flex-wrap gap-1.5 mt-1',
+    skillBadgeClass: 'inline-block px-2.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-800 border border-gray-300 rounded',
+    nameClass: 'text-[30px] font-bold uppercase tracking-[0.06em] text-gray-900 mb-0.5',
+    headerTitleClass: 'text-[16px] font-medium text-gray-700',
+    contactClass: 'text-[12px] text-gray-600',
+    summaryClass: 'text-[12px] text-gray-800 leading-relaxed',
+  },
+};
