@@ -1,4 +1,9 @@
-@import "tailwindcss";
+/* Sources Tailwind explicites : le CSS ne doit dépendre ni des tests, ni des sorties du banc golden
+   (sinon il varie d'un build à l'autre et l'empreinte du HTML d'export n'est plus stable). */
+@import "tailwindcss" source(none);
+@source "../index.html";
+@source "./";
+@source not "./**/*.test.{ts,tsx}";
 
 @plugin "tailwindcss-animate";
 

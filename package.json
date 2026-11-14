@@ -10,7 +10,8 @@
     "test": "bun test",
     "tauri": "tauri",
     "test:golden": "bun tests/golden/run.ts",
-    "test:golden:compare": "bun tests/golden/compare-pdf.ts"
+    "test:golden:compare": "bun tests/golden/compare-pdf.ts",
+    "test:golden:determinisme": "bun tests/golden/determinism.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
