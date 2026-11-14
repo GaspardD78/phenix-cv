@@ -1,0 +1,112 @@
+<div class="bg-white bg-white dark:bg-white dark:text-black max-w-[210mm] mx-auto print:m-0 print:max-w-none print:p-0 print:shadow-none print:w-full px-12 py-10 shadow-lg text-black text-gray-900" id="printable-cv" style="font-family: Calibri, Arial, sans-serif;">
+  <style>
+    "#printable-cv { font-variant-ligatures: none; }\n#printable-cv .cv-title-row { column-gap: 8px; }\n#printable-cv .cv-title-row > :first-child { flex: 1 1 0; min-width: 0; }\n#printable-cv .cv-title-row > .cv-date { flex: 0 0 auto; max-width: 45%; }\n#printable-cv .cv-title-row > :first-child::after { content: \" \"; white-space: pre; }\n#printable-cv h3 { letter-spacing: 0.06em; }\n@media print { #printable-cv { padding: 8px 10px !important; } }"
+  <div class="cv-header-block dark:text-black flex gap-6 items-center mb-4 text-black">
+    <div class="border-2 border-gray-200 flex-shrink-0 overflow-hidden rounded-full" style="width: 96px; height: 96px;">
+      <img alt="Photo de profil" class="h-full object-cover w-full" src="data:image/png;sha256=f61caf571cf64bd9;len=8762">
+    <div class="flex-1">
+      <h1 class="cv-name font-bold mb-0.5 text-[30px] text-gray-900 tracking-[0.06em] uppercase">
+        "Camille Martin"
+      <h2 class="cv-job-title font-medium text-[16px] text-gray-700">
+        "Assistante commerciale"
+      <div class="cv-contact-info mt-2 text-[12px] text-gray-600">
+        <div class="flex flex-wrap gap-x-4 gap-y-1 justify-center">
+          <a class="hover:underline inline-flex items-center whitespace-nowrap" href="mailto:camille.martin@example.com" rel="noopener noreferrer" target="_blank">
+            <svg class="mr-1 opacity-60" fill="currentColor" height="14" style="width: 14px; height: 14px; display: block; flex-shrink: 0;" viewBox="0 0 20 20" width="14" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.161V6a2 2 0 00-2-2H3z">
+              <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z">
+            "camille.martin@example.com"
+          <a class="hover:underline inline-flex items-center whitespace-nowrap" href="tel:0600000000" rel="noopener noreferrer" target="_blank">
+            <svg class="mr-1 opacity-60" fill="currentColor" height="14" style="width: 14px; height: 14px; display: block; flex-shrink: 0;" viewBox="0 0 20 20" width="14" xmlns="http://www.w3.org/2000/svg">
+              <path clip-rule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 012.43 8.326 13.019 13.019 0 012 5V3.5z" fill-rule="evenodd">
+            "06 00 00 00 00"
+          <span class="inline-flex items-center whitespace-nowrap">
+            <svg class="mr-1 opacity-60" fill="currentColor" height="14" style="width: 14px; height: 14px; display: block; flex-shrink: 0;" viewBox="0 0 20 20" width="14" xmlns="http://www.w3.org/2000/svg">
+              <path clip-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433a19.695 19.695 0 002.683-2.282c1.944-1.99 3.945-4.995 3.945-8.567a8 8 0 10-16 0c0 3.572 2.001 6.577 3.945 8.567a19.695 19.695 0 002.683 2.282 12.97 12.97 0 001.038.573l.018.008.006.003zM10 11.25a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5z" fill-rule="evenodd">
+            "Lyon"
+  <hr class="border-gray-300 border-t mb-4 print:border-gray-400">
+  <div class="mb-5">
+    <p class="cv-summary leading-relaxed text-[12px] text-gray-800">
+      "Assistante commerciale avec huit ans d'expérience en relation client et suivi des commandes. Organisée, à l'aise avec les logiciels de gestion, je cherche un poste où coordonner l'activité d'une équipe de vente."
+  <h3 class="border-b border-gray-800 font-bold mb-3 mt-6 pb-1.5 print:break-after-avoid text-[13px] text-gray-900 tracking-[0.14em] uppercase">
+    "Expérience professionnelle"
+  <div class="cv-entry mb-4 print:break-inside-avoid">
+    <div class="cv-title-row flex items-baseline justify-between mb-1">
+      <div>
+        <span class="cv-title font-bold text-[13.5px] text-gray-900">
+          "Assistante commerciale"
+        <span class="cv-subtitle text-[12.5px] text-gray-700">
+          " | Maison Lambert - Lyon"
+      <span class="cv-date mb-1 tabular-nums text-[11.5px] text-gray-600">
+        "mars 2021 - Présent"
+    <div class="cv-desc leading-relaxed text-[12px] text-gray-800 whitespace-pre-line">
+      <ul class="list-disc my-1 pl-5">
+        <li>
+          "Gérer les commandes de 40 clients avec les responsables de service"
+        <li>
+          "Rédiger les devis et les contrats"
+        <li>
+          "Suivre les dossiers clients dans un logiciel de gestion"
+  <div class="cv-entry mb-4 print:break-inside-avoid">
+    <div class="cv-title-row flex items-baseline justify-between mb-1">
+      <div>
+        <span class="cv-title font-bold text-[13.5px] text-gray-900">
+          "Assistante administrative"
+        <span class="cv-subtitle text-[12.5px] text-gray-700">
+          " | Atelier Dupré - Villeurbanne"
+      <span class="cv-date mb-1 tabular-nums text-[11.5px] text-gray-600">
+        "septembre 2018 - février 2021"
+    <div class="cv-desc leading-relaxed text-[12px] text-gray-800 whitespace-pre-line">
+      <ul class="list-disc my-1 pl-5">
+        <li>
+          "Assurer le suivi de la facturation et des relances"
+        <li>
+          "Accueillir les clients et les fournisseurs"
+  <div class="cv-entry mb-4 print:break-inside-avoid">
+    <div class="cv-title-row flex items-baseline justify-between mb-1">
+      <div>
+        <span class="cv-title font-bold text-[13.5px] text-gray-900">
+          "Hôtesse d'accueil"
+        <span class="cv-subtitle text-[12.5px] text-gray-700">
+          " | Groupe Horizon - Lyon"
+      <span class="cv-date mb-1 tabular-nums text-[11.5px] text-gray-600">
+        "septembre 2016 - août 2018"
+    <div class="cv-desc leading-relaxed text-[12px] text-gray-800 whitespace-pre-line">
+      <ul class="list-disc my-1 pl-5">
+        <li>
+          "Accueillir et orienter 80 visiteurs par jour"
+        <li>
+          "Organiser les plannings de réunion"
+  <h3 class="border-b border-gray-800 font-bold mb-3 mt-6 pb-1.5 print:break-after-avoid text-[13px] text-gray-900 tracking-[0.14em] uppercase">
+    "Formation"
+  <div class="cv-entry mb-4 print:break-inside-avoid">
+    <div class="cv-title-row flex items-baseline justify-between mb-1">
+      <div>
+        <span class="cv-title font-bold text-[13.5px] text-gray-900">
+          "BTS Support à l'action managériale"
+        <span class="cv-subtitle text-[12.5px] text-gray-700">
+          " | Lycée Exemple - Lyon"
+      <span class="cv-date mb-1 tabular-nums text-[11.5px] text-gray-600">
+        "2014 - 2016"
+  <h3 class="border-b border-gray-800 font-bold mb-3 mt-6 pb-1.5 print:break-after-avoid text-[13px] text-gray-900 tracking-[0.14em] uppercase">
+    "Compétences"
+  <div class="cv-entry mb-3 print:break-inside-avoid">
+    <div class="flex flex-wrap gap-1.5 mt-1">
+      <span class="bg-gray-100 border border-gray-300 cv-badge cv-badge-item font-medium inline-block px-2.5 py-0.5 rounded text-[11px] text-gray-800">
+        "Excel"
+      <span class="bg-gray-100 border border-gray-300 cv-badge cv-badge-item font-medium inline-block px-2.5 py-0.5 rounded text-[11px] text-gray-800">
+        "Salesforce"
+      <span class="bg-gray-100 border border-gray-300 cv-badge cv-badge-item font-medium inline-block px-2.5 py-0.5 rounded text-[11px] text-gray-800">
+        "Négociation"
+      <span class="bg-gray-100 border border-gray-300 cv-badge cv-badge-item font-medium inline-block px-2.5 py-0.5 rounded text-[11px] text-gray-800">
+        "Relation client"
+      <span class="bg-gray-100 border border-gray-300 cv-badge cv-badge-item font-medium inline-block px-2.5 py-0.5 rounded text-[11px] text-gray-800">
+        "Facturation"
+  <h3 class="border-b border-gray-800 font-bold mb-3 mt-6 pb-1.5 print:break-after-avoid text-[13px] text-gray-900 tracking-[0.14em] uppercase">
+    "Langues"
+  <div class="cv-entry mb-3 print:break-inside-avoid">
+    <div class="flex flex-wrap gap-1.5 mt-1">
+      <span class="bg-gray-100 border border-gray-300 cv-badge cv-badge-item font-medium inline-block px-2.5 py-0.5 rounded text-[11px] text-gray-800">
+        "Français - Langue maternelle"
+      <span class="bg-gray-100 border border-gray-300 cv-badge cv-badge-item font-medium inline-block px-2.5 py-0.5 rounded text-[11px] text-gray-800">
+        "Anglais - Courant - C1"

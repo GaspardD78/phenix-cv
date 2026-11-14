@@ -1,0 +1,107 @@
+{
+  "description": "CV d'une page : assistante commerciale, 3 expériences, formation, compétences, langues. Doit tenir sur une page A4 avec tous les templates.",
+  "profile": {
+    "firstName": "Camille",
+    "lastName": "Martin",
+    "email": "camille.martin@example.com",
+    "phone": "06 00 00 00 00",
+    "city": "Lyon",
+    "country": "France",
+    "title": "Assistante commerciale",
+    "photo": "photo-placeholder.png",
+    "summary": null
+  },
+  "cv": {
+    "name": "CV golden — une page",
+    "targetJob": "Assistante commerciale",
+    "customSummary": "Assistante commerciale avec huit ans d'expérience en relation client et suivi des commandes. Organisée, à l'aise avec les logiciels de gestion, je cherche un poste où coordonner l'activité d'une équipe de vente.",
+    "settings": {}
+  },
+  "sections": [
+    {
+      "name": "Expérience professionnelle",
+      "items": [
+        {
+          "entryType": "experience",
+          "title": "Assistante commerciale",
+          "subtitle": "Maison Lambert",
+          "location": "Lyon",
+          "startDate": "2021-03",
+          "isCurrent": true,
+          "description": "- Gérer les commandes de 40 clients avec les responsables de service\n- Rédiger les devis et les contrats\n- Suivre les dossiers clients dans un logiciel de gestion"
+        },
+        {
+          "entryType": "experience",
+          "title": "Assistante administrative",
+          "subtitle": "Atelier Dupré",
+          "location": "Villeurbanne",
+          "startDate": "2018-09",
+          "endDate": "2021-02",
+          "description": "- Assurer le suivi de la facturation et des relances\n- Accueillir les clients et les fournisseurs"
+        },
+        {
+          "entryType": "experience",
+          "title": "Hôtesse d'accueil",
+          "subtitle": "Groupe Horizon",
+          "location": "Lyon",
+          "startDate": "2016-09",
+          "endDate": "2018-08",
+          "description": "- Accueillir et orienter 80 visiteurs par jour\n- Organiser les plannings de réunion"
+        }
+      ]
+    },
+    {
+      "name": "Formation",
+      "items": [
+        {
+          "entryType": "education",
+          "title": "BTS Support à l'action managériale",
+          "subtitle": "Lycée Exemple",
+          "location": "Lyon",
+          "startDate": "2014",
+          "endDate": "2016"
+        }
+      ]
+    },
+    {
+      "name": "Compétences",
+      "items": [
+        {
+          "entryType": "skill",
+          "title": "Excel"
+        },
+        {
+          "entryType": "skill",
+          "title": "Salesforce"
+        },
+        {
+          "entryType": "skill",
+          "title": "Négociation"
+        },
+        {
+          "entryType": "skill",
+          "title": "Relation client"
+        },
+        {
+          "entryType": "skill",
+          "title": "Facturation"
+        }
+      ]
+    },
+    {
+      "name": "Langues",
+      "items": [
+        {
+          "entryType": "language",
+          "title": "Français",
+          "subtitle": "Langue maternelle"
+        },
+        {
+          "entryType": "language",
+          "title": "Anglais",
+          "subtitle": "Courant - C1"
+        }
+      ]
+    }
+  ]
+}

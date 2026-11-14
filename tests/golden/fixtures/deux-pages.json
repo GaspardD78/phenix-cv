@@ -1,0 +1,185 @@
+{
+  "description": "CV long : 6 expériences, 2 formations, certifications, projet, bénévolat, compétences, langues, centres d'intérêt. Dépasse une page avec la plupart des templates.",
+  "profile": {
+    "firstName": "Camille",
+    "lastName": "Martin",
+    "email": "camille.martin@example.com",
+    "phone": "06 00 00 00 00",
+    "city": "Lyon",
+    "country": "France",
+    "title": "Assistante commerciale",
+    "photo": "photo-placeholder.png",
+    "summary": null
+  },
+  "cv": {
+    "name": "CV golden — deux pages",
+    "targetJob": "Responsable administration des ventes",
+    "customSummary": "Assistante commerciale avec huit ans d'expérience en relation client et suivi des commandes. Organisée, à l'aise avec les logiciels de gestion, je cherche un poste où coordonner l'activité d'une équipe de vente.",
+    "settings": {}
+  },
+  "sections": [
+    {
+      "name": "Expérience professionnelle",
+      "items": [
+        {
+          "entryType": "experience",
+          "title": "Responsable administration des ventes",
+          "subtitle": "Maison Lambert",
+          "location": "Lyon",
+          "startDate": "2021-03",
+          "isCurrent": true,
+          "description": "- Suivre les commandes de bout en bout, de la saisie à la livraison\n- Relancer les clients en retard de paiement et réduire les impayés de 15 %\n- Préparer chaque mois le tableau de bord des ventes pour la direction\n- Former deux nouvelles collègues aux outils de gestion\n- Mettre en place une procédure de classement des contrats"
+        },
+        {
+          "entryType": "experience",
+          "title": "Assistante commerciale",
+          "subtitle": "Maison Lambert",
+          "location": "Lyon",
+          "startDate": "2018-09",
+          "endDate": "2021-02",
+          "description": "- Suivre les commandes de bout en bout, de la saisie à la livraison\n- Relancer les clients en retard de paiement et réduire les impayés de 15 %\n- Préparer chaque mois le tableau de bord des ventes pour la direction\n- Former deux nouvelles collègues aux outils de gestion"
+        },
+        {
+          "entryType": "experience",
+          "title": "Assistante administrative",
+          "subtitle": "Atelier Dupré",
+          "location": "Villeurbanne",
+          "startDate": "2016-09",
+          "endDate": "2018-08",
+          "description": "- Suivre les commandes de bout en bout, de la saisie à la livraison\n- Relancer les clients en retard de paiement et réduire les impayés de 15 %\n- Préparer chaque mois le tableau de bord des ventes pour la direction\n- Former deux nouvelles collègues aux outils de gestion"
+        },
+        {
+          "entryType": "experience",
+          "title": "Hôtesse d'accueil",
+          "subtitle": "Groupe Horizon",
+          "location": "Lyon",
+          "startDate": "2014-09",
+          "endDate": "2016-08",
+          "description": "- Suivre les commandes de bout en bout, de la saisie à la livraison\n- Relancer les clients en retard de paiement et réduire les impayés de 15 %\n- Préparer chaque mois le tableau de bord des ventes pour la direction"
+        },
+        {
+          "entryType": "experience",
+          "title": "Vendeuse",
+          "subtitle": "Boutique du Marché",
+          "location": "Lyon",
+          "startDate": "2012-09",
+          "endDate": "2014-08",
+          "description": "- Suivre les commandes de bout en bout, de la saisie à la livraison\n- Relancer les clients en retard de paiement et réduire les impayés de 15 %\n- Préparer chaque mois le tableau de bord des ventes pour la direction"
+        },
+        {
+          "entryType": "experience",
+          "title": "Employée polyvalente",
+          "subtitle": "Restaurant La Table",
+          "location": "Lyon",
+          "startDate": "2011-06",
+          "endDate": "2012-08",
+          "description": "- Suivre les commandes de bout en bout, de la saisie à la livraison\n- Relancer les clients en retard de paiement et réduire les impayés de 15 %"
+        }
+      ]
+    },
+    {
+      "name": "Formation",
+      "items": [
+        {
+          "entryType": "education",
+          "title": "BTS Support à l'action managériale",
+          "subtitle": "Lycée Exemple",
+          "location": "Lyon",
+          "startDate": "2014",
+          "endDate": "2016"
+        },
+        {
+          "entryType": "education",
+          "title": "Baccalauréat professionnel Gestion-administration",
+          "subtitle": "Lycée Exemple",
+          "location": "Lyon",
+          "startDate": "2011",
+          "endDate": "2014"
+        }
+      ]
+    },
+    {
+      "name": "Certifications",
+      "items": [
+        {
+          "entryType": "certification",
+          "title": "TOSA Excel - niveau avancé",
+          "subtitle": "Isograd",
+          "startDate": "2022"
+        },
+        {
+          "entryType": "certification",
+          "title": "Sauveteur secouriste du travail",
+          "subtitle": "INRS",
+          "startDate": "2020"
+        }
+      ]
+    },
+    {
+      "name": "Compétences",
+      "items": [
+        {
+          "entryType": "skill",
+          "title": "Excel"
+        },
+        {
+          "entryType": "skill",
+          "title": "Salesforce"
+        },
+        {
+          "entryType": "skill",
+          "title": "Négociation"
+        },
+        {
+          "entryType": "skill",
+          "title": "Relation client"
+        },
+        {
+          "entryType": "skill",
+          "title": "Facturation"
+        }
+      ]
+    },
+    {
+      "name": "Langues",
+      "items": [
+        {
+          "entryType": "language",
+          "title": "Français",
+          "subtitle": "Langue maternelle"
+        },
+        {
+          "entryType": "language",
+          "title": "Anglais",
+          "subtitle": "Courant - C1"
+        }
+      ]
+    },
+    {
+      "name": "Bénévolat",
+      "items": [
+        {
+          "entryType": "volunteer",
+          "title": "Bénévole",
+          "subtitle": "Association Entraide Lyon",
+          "startDate": "2019",
+          "endDate": "2023",
+          "description": "- Organiser la collecte de dons trois fois par an\n- Accueillir les familles et suivre les dossiers"
+        }
+      ]
+    },
+    {
+      "name": "Centres d'intérêt",
+      "items": [
+        {
+          "entryType": "interest",
+          "title": "Randonnée"
+        },
+        {
+          "entryType": "interest",
+          "title": "Photographie"
+        }
+      ]
+    }
+  ]
+}
