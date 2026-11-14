@@ -1,0 +1,34 @@
+[package]
+name = "phenix-cv"
+version = "0.1.0"
+description = "Phénix CV - Créez un CV clair et soigné, de votre profil jusqu'à l'export"
+license = "GPL-3.0-only"
+authors = ["Phénix CV"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "phenix_cv_lib"
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+tokio = { version = "1", features = ["rt-multi-thread"] }
+
+headless_chrome = "1.0.21"
+tempfile = "3.27.0"
+url = "2.5.8"

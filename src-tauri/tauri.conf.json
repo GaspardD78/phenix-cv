@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Phénix CV",
+  "version": "0.1.0",
+  "identifier": "fr.phenixcv.app",
+  "build": {
+    "beforeDevCommand": "bun run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "bun run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Phénix CV",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 900,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' tauri: http://tauri.localhost; connect-src 'self' tauri: http://tauri.localhost https://www.googleapis.com https://oauth2.googleapis.com; img-src 'self' tauri: asset: data: blob: https://*.googleusercontent.com; style-src 'self' 'unsafe-inline'; font-src 'self' tauri: asset: data:;"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis",
+      "msi"
+    ],
+    "shortDescription": "Créez un CV clair et soigné",
+    "longDescription": "Phénix CV vous guide pas à pas : votre profil, un CV propre, puis l'export en PDF ou en Word. Vos données restent sur votre ordinateur.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "license": "GPL-3.0-only"
+  }
+}

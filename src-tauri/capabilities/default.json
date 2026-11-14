@@ -1,0 +1,27 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window (desktop only)",
+  "platforms": [
+    "windows",
+    "linux",
+    "macOS"
+  ],
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "sql:default",
+    "fs:default",
+    "dialog:default",
+    "sql:allow-execute",
+    "sql:allow-load",
+    "sql:allow-select",
+    "fs:allow-write-file",
+    "fs:write-all",
+    "fs:allow-read-file",
+    "fs:read-all"
+  ]
+}
