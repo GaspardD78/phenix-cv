@@ -1,0 +1,259 @@
+import { describe, expect, test } from 'bun:test';
+import {
+  findDuplicateGroups,
+  buildGroupProposal,
+  canonicalPair,
+  dismissalPairKey,
+  pairsForGroupDismissal,
+  pairsForEntryRemoval,
+  pairScoreWithin,
+} from './duplicate-scan';
+import type { MasterEntry } from '@/types/profile';
+
+let idCounter = 0;
+function makeEntry(overrides: Partial<MasterEntry> = {}): MasterEntry {
+  idCounter++;
+  return {
+    id: `entry-${idCounter}`,
+    profileId: 'profile-1',
+    entryType: 'experience',
+    title: 'Responsable commercial',
+    subtitle: 'Cellenza',
+    location: 'Paris',
+    startDate: '2020-01',
+    endDate: '2022-06',
+    isCurrent: false,
+    description: '- Suivi commercial\n- Prospection clients',
+    metadata: {},
+    sortOrder: idCounter,
+    tags: [],
+    createdAt: `2024-01-${String(idCounter).padStart(2, '0')}`,
+    updatedAt: '2024-01-01',
+    ...overrides,
+  };
+}
+
+describe('findDuplicateGroups', () => {
+  test('pair of legacy duplicates (same company, overlapping dates, reworded title) → one group of 2', () => {
+    const a = makeEntry({ title: 'Responsable commercial' });
+    const b = makeEntry({ title: 'Responsable commercial', description: '- Pilotage marque employeur' });
+    const groups = findDuplicateGroups([a, b]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].entries.map(e => e.id).sort()).toEqual([a.id, b.id].sort());
+    expect(groups[0].pairs).toHaveLength(1);
+  });
+
+  test('experience duplicated three times lands in a single group of 3, not isolated pairs', () => {
+    const a = makeEntry();
+    const b = makeEntry({ title: 'TA Manager' });
+    const c = makeEntry({ subtitle: 'Cellenza Consulting', startDate: '2020-02' });
+    const groups = findDuplicateGroups([a, b, c]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].entries).toHaveLength(3);
+    // Complete match: all three pairwise edges hold the group together.
+    expect(groups[0].pairs).toHaveLength(3);
+  });
+
+  test('transitive grouping: A~B and B~C suffice even if A and C differ more', () => {
+    // A and C diverge on both company spelling and dates; B bridges them.
+    const a = makeEntry({ subtitle: 'Cellenza', startDate: '2020-01', endDate: '2021-06' });
+    const b = makeEntry({ subtitle: 'Cellenza Consulting', startDate: '2020-01', endDate: '2022-06' });
+    const c = makeEntry({ subtitle: 'Cellenza Consulting', startDate: '2022-01', endDate: '2022-06' });
+    const groups = findDuplicateGroups([a, b, c]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].entries).toHaveLength(3);
+  });
+
+  test('clean profile: distinct companies and periods → no groups at all', () => {
+    const a = makeEntry({ subtitle: 'Cellenza', startDate: '2020-01', endDate: '2022-06' });
+    const b = makeEntry({ subtitle: 'Datadog', title: 'SRE', startDate: '2015-01', endDate: '2017-06' });
+    const c = makeEntry({ subtitle: 'OVHcloud', title: 'Dev', startDate: '2010-01', endDate: '2012-06' });
+
+    expect(findDuplicateGroups([a, b, c])).toHaveLength(0);
+  });
+
+  test('two distinct positions at the same company with distant periods are not duplicates', () => {
+    const junior = makeEntry({ title: 'Développeur junior', startDate: '2012-01', endDate: '2014-06' });
+    const lead = makeEntry({ title: 'Lead développeur', startDate: '2019-01', endDate: '2022-06' });
+
+    expect(findDuplicateGroups([junior, lead])).toHaveLength(0);
+  });
+
+  test('entries are never compared across sections, even with identical titles', () => {
+    const skill = makeEntry({ entryType: 'skill', title: 'Gestion de projet', subtitle: null, startDate: null, endDate: null });
+    const interest = makeEntry({ entryType: 'interest', title: 'Gestion de projet', subtitle: null, startDate: null, endDate: null });
+
+    expect(findDuplicateGroups([skill, interest])).toHaveLength(0);
+  });
+
+  test('education duplicates: same school and degree grouped even without dates', () => {
+    const a = makeEntry({ entryType: 'education', title: 'Master Gestion', subtitle: 'Université Paris 1', startDate: null, endDate: null });
+    const b = makeEntry({ entryType: 'education', title: 'Master Gestion', subtitle: 'Université Paris 1', startDate: null, endDate: null });
+
+    const groups = findDuplicateGroups([a, b]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].entryType).toBe('education');
+  });
+
+  test('education at the same school with different degrees and distinct periods is not a duplicate', () => {
+    const licence = makeEntry({ entryType: 'education', title: 'Licence Économie', subtitle: 'Université Paris 1', startDate: '2008-09', endDate: '2011-06' });
+    const master = makeEntry({ entryType: 'education', title: 'Master Gestion', subtitle: 'Université Paris 1', startDate: '2012-09', endDate: '2014-06' });
+
+    expect(findDuplicateGroups([licence, master])).toHaveLength(0);
+  });
+
+  test('skill duplicates: near-identical titles grouped, distinct skills untouched', () => {
+    const a = makeEntry({ entryType: 'skill', title: 'JavaScript', subtitle: null, startDate: null, endDate: null });
+    const b = makeEntry({ entryType: 'skill', title: 'Javascript', subtitle: null, startDate: null, endDate: null });
+    const c = makeEntry({ entryType: 'skill', title: 'Rust', subtitle: null, startDate: null, endDate: null });
+
+    const groups = findDuplicateGroups([a, b, c]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].entryType).toBe('skill');
+    expect(groups[0].entries.map(e => e.id).sort()).toEqual([a.id, b.id].sort());
+  });
+
+  test('identical skill titles are a confident group; similar-but-different ones only ambiguous', () => {
+    const a = makeEntry({ entryType: 'skill', title: 'React', subtitle: null, startDate: null, endDate: null });
+    const b = makeEntry({ entryType: 'skill', title: 'React', subtitle: null, startDate: null, endDate: null });
+    const [confident] = findDuplicateGroups([a, b]);
+    expect(confident.classification).toBe('confident');
+
+    // 1 typo over 13 characters → similarity ≈ 0.92: admitted but flagged "à confirmer".
+    const c = makeEntry({ entryType: 'skill', title: 'Communication', subtitle: null, startDate: null, endDate: null });
+    const d = makeEntry({ entryType: 'skill', title: 'Comunication', subtitle: null, startDate: null, endDate: null });
+    const [ambiguous] = findDuplicateGroups([c, d]);
+    expect(ambiguous.classification).toBe('ambiguous');
+  });
+
+  test('certification duplicates: same title grouped even with differently spelled issuers', () => {
+    const a = makeEntry({ entryType: 'certification', title: 'AWS Solutions Architect Associate', subtitle: 'Amazon Web Services', startDate: null, endDate: null });
+    const b = makeEntry({ entryType: 'certification', title: 'AWS Solutions Architect Associate', subtitle: 'AWS', startDate: null, endDate: null });
+
+    expect(findDuplicateGroups([a, b])).toHaveLength(1);
+  });
+
+  test('a mixed profile yields one group per affected section', () => {
+    const exp1 = makeEntry();
+    const exp2 = makeEntry({ title: 'TA Manager' });
+    const skill1 = makeEntry({ entryType: 'skill', title: 'Prospection', subtitle: null, startDate: null, endDate: null });
+    const skill2 = makeEntry({ entryType: 'skill', title: 'Prospection', subtitle: null, startDate: null, endDate: null });
+    const lonelyEdu = makeEntry({ entryType: 'education', title: 'Master Gestion', subtitle: 'Université Paris 1' });
+
+    const groups = findDuplicateGroups([exp1, exp2, skill1, skill2, lonelyEdu]);
+    expect(groups).toHaveLength(2);
+    expect(groups.map(g => g.entryType).sort()).toEqual(['experience', 'skill']);
+  });
+
+  test('dismissed pair ("confirmed non-duplicate") never resurfaces on re-scan', () => {
+    const a = makeEntry();
+    const b = makeEntry({ title: 'TA Manager' });
+
+    expect(findDuplicateGroups([a, b])).toHaveLength(1);
+
+    const dismissed = new Set([dismissalPairKey(a.id, b.id)]);
+    expect(findDuplicateGroups([a, b], dismissed)).toHaveLength(0);
+    // Idempotent: re-running the scan gives the same empty result.
+    expect(findDuplicateGroups([a, b], dismissed)).toHaveLength(0);
+  });
+
+  test('removing a false positive from a group of 3 keeps the remaining pair on re-scan', () => {
+    const a = makeEntry();
+    const b = makeEntry({ title: 'TA Manager' });
+    const falsePositive = makeEntry({ title: 'Consultant commercial' });
+
+    const [group] = findDuplicateGroups([a, b, falsePositive]);
+    expect(group.entries).toHaveLength(3);
+
+    const removalPairs = pairsForEntryRemoval(falsePositive.id, [a.id, b.id]);
+    const dismissed = new Set(removalPairs.map(([x, y]) => dismissalPairKey(x, y)));
+    const rescanned = findDuplicateGroups([a, b, falsePositive], dismissed);
+
+    expect(rescanned).toHaveLength(1);
+    expect(rescanned[0].entries.map(e => e.id).sort()).toEqual([a.id, b.id].sort());
+  });
+
+  test('group members are sorted oldest first (the kept reference entry)', () => {
+    const older = makeEntry({ createdAt: '2023-05-01' });
+    const newer = makeEntry({ createdAt: '2024-06-01' });
+    const [group] = findDuplicateGroups([newer, older]);
+
+    expect(group.entries[0].id).toBe(older.id);
+  });
+
+  test('group id is stable regardless of entry order', () => {
+    const a = makeEntry();
+    const b = makeEntry();
+    const [g1] = findDuplicateGroups([a, b]);
+    const [g2] = findDuplicateGroups([b, a]);
+
+    expect(g1.id).toBe(g2.id);
+  });
+});
+
+describe('dismissal pair helpers', () => {
+  test('canonicalPair orders ids so (A,B) and (B,A) collapse to one row', () => {
+    expect(canonicalPair('z', 'a')).toEqual(['a', 'z']);
+    expect(dismissalPairKey('z', 'a')).toBe(dismissalPairKey('a', 'z'));
+  });
+
+  test('ignoring a group of 3 dismisses all 3 member pairs', () => {
+    const pairs = pairsForGroupDismissal(['c', 'a', 'b']);
+    expect(pairs).toHaveLength(3);
+    for (const [x, y] of pairs) expect(x < y).toBe(true);
+  });
+
+  test('removing one entry dismisses only its pairs with the remaining members', () => {
+    const pairs = pairsForEntryRemoval('x', ['a', 'z']);
+    expect(pairs).toEqual([['a', 'x'], ['x', 'z']]);
+  });
+});
+
+describe('buildGroupProposal', () => {
+  test('keeps structured facts from the oldest entry and folds all descriptions without duplicates', () => {
+    const primary = makeEntry({
+      createdAt: '2023-01-01',
+      startDate: '2020-01',
+      endDate: '2022-06',
+      description: '- Suivi commercial\n- Prospection clients',
+    });
+    const dupe1 = makeEntry({
+      createdAt: '2023-06-01',
+      title: 'TA Manager',
+      description: '- Suivi commercial\n- Pilotage marque employeur',
+    });
+    const dupe2 = makeEntry({
+      createdAt: '2024-01-01',
+      description: '- Prospection clients\n- Mise en place ATS',
+    });
+
+    const [group] = findDuplicateGroups([dupe2, primary, dupe1]);
+    const proposal = buildGroupProposal(group.entries);
+
+    expect(proposal.title).toBe(primary.title);
+    expect(proposal.startDate).toBe('2020-01');
+    const lines = (proposal.description ?? '').split('\n');
+    expect(lines).toContain('- Suivi commercial');
+    expect(lines).toContain('- Prospection clients');
+    expect(lines).toContain('- Pilotage marque employeur');
+    expect(lines).toContain('- Mise en place ATS');
+    // Duplicated bullets appear once.
+    expect(lines.filter(l => l === '- Suivi commercial')).toHaveLength(1);
+    expect(lines.filter(l => l === '- Prospection clients')).toHaveLength(1);
+  });
+});
+
+describe('pairScoreWithin', () => {
+  test('returns the pairwise score for the audit trail, or null for non-edges', () => {
+    const a = makeEntry();
+    const b = makeEntry({ title: 'TA Manager' });
+    const [group] = findDuplicateGroups([a, b]);
+
+    expect(pairScoreWithin(group, a.id, b.id)).not.toBeNull();
+    expect(pairScoreWithin(group, b.id, a.id)).not.toBeNull();
+    expect(pairScoreWithin(group, a.id, 'unknown-id')).toBeNull();
+  });
+});

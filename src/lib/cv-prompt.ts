@@ -1,0 +1,548 @@
+/**
+ * Prompt « CV ciblé » v2, assemblé à partir de blocs composables et testables.
+ *
+ * Le LLM est externe : l'app génère ce prompt, l'utilisateur le colle, puis
+ * recolle le JSON (`parseAiCvResponse` → `guardAiCv` → `applyAiCvToBlocks`).
+ * Chaque bloc est une fonction pure ; `buildCvPrompt` les assemble dans l'ordre
+ * qui donne la meilleure attention au modèle (données d'abord, règles et schéma
+ * en dernier).
+ *
+ * Deux jeux de règles distincts : `CV_WRITING_RULES` (rédaction du contenu) et
+ * `JSON_RULES` (forme de la sortie). Le `SYSTEM_RULES` générique des autres
+ * prompts (texte libre) n'est plus utilisé ici.
+ */
+import type { MasterEntry, Profile } from '@/types/profile';
+import { DEFAULT_TARGET_PAGES, experienceYears } from './cv-experience';
+import { displayTitle } from './entry-display';
+import { parseHeaderExtras } from './header-extras';
+import {
+  DEFAULT_BULLET_FOCUS, DEFAULT_VERB_TENSE, buildFocusRules, bulletShape, cvBoldRule, numbersRule, schemaDescriptionExample,
+  schemaWarningsHint, summaryProofs, summarySeniorRule, tenseRule, warningsRule, type BulletFocus, type VerbTense,
+} from './cv-focus-rules';
+import { applyWording, type Wording } from './cv-wording';
+import { atsLevelFor, defaultFocusFor, resolveTarget, titleRuleFor, wordingModeFor, type ResolvedTarget } from './cv-targets';
+import { atsRule, buildTargetBlock, cibleAnalysisLine, cibleAxesToAsk, cibleSchemaField, targetTitleRule, type CibleAxis } from './cv-target-prompt';
+import { bulletItems, isSkillCategory } from './skill-lines';
+import { buildAngle, buildAngleChoice } from './cv-angle-prompt';
+import type { AngleSpec } from './cv-angles';
+
+/** Nombre de puces d'un CV d'une page (base du budget de volume du prompt et du garde-fou). */
+export const BULLETS_PER_PAGE = 18;
+/** Limites imposées quand la cible est 1 page (prompt et garde-fou partagent ces valeurs). */
+export const ONE_PAGE_LIMITS = {
+  /** Accroche : 3 lignes, soit environ 330 caractères. */
+  summaryLines: 3,
+  summaryChars: 330,
+  /** Expériences des `recentYears` dernières années ou couvrant un indispensable. */
+  recentBullets: 3,
+  recentYears: 5,
+  /** Expériences terminées depuis `recentYears` à `midYears` ans. */
+  midBullets: 2,
+  midYears: 10,
+  /** Plus anciennes : une ligne (titre, employeur, dates), aucune description. */
+  olderBullets: 0,
+  /** Catégories de compétences visibles (entrées \`skill\` à puces, lib/skill-lines.ts). */
+  minSkillCategories: 3,
+  maxSkillCategories: 5,
+  /** Éléments de compétences visibles au total : puces des catégories + compétences isolées. */
+  minSkillItems: 12,
+  maxSkillItems: 15,
+  maxEducation: 2,
+  maxCertifications: 3,
+} as const;
+
+/** Longueur maximale d'une puce, en caractères. */
+export const MAX_BULLET_CHARS = 120;
+/** Nombre maximal de puces par expérience. */
+export const MAX_BULLETS_PER_EXPERIENCE = 5;
+
+/** Libellés français standard des sections (identifiants de `sectionOrder` / `sectionLabels`). */
+export const STANDARD_SECTION_LABELS = [
+  'Expériences Professionnelles', 'Formations', 'Compétences', 'Certifications', 'Langues', 'Projets',
+  "Centres d'intérêt", 'Bénévolat',
+] as const;
+
+export interface CvPromptOptions {
+  /** Pages cibles (réglage « Pages cibles ») ; défaut : 1, quelle que soit l'ancienneté. */
+  pageBudget?: number;
+  /** Date de référence du calcul d'expérience (tests déterministes) ; défaut : maintenant. */
+  now?: Date;
+  /** Règles personnelles du candidat (réglage par profil) ; bloc omis si vide. */
+  personalRules?: string;
+  /** Angle imposé (bibliothèque ou proposition retenue). Prime sur `angleChoices`. */
+  angle?: AngleSpec;
+  /** Bibliothèque d'angles : le LLM choisit et l'indique dans analyse.angle. */
+  angleChoices?: AngleSpec[];
+  /** Orientation des puces (réglage du CV > du profil) ; défaut : « missions et périmètre ». */
+  bulletFocus?: BulletFocus;
+  /** Forme du premier mot des puces (réglage du profil) ; défaut : infinitif. */
+  verbTense?: VerbTense;
+  /** Langue du CV (`cv.settings.cvLanguage`) : le bloc d'orientation est rédigé en anglais pour `en`. */
+  cvLanguage?: string;
+  /** Ciblage résolu (type de structure, intention, premier lecteur) ; défaut : tout en auto. */
+  target?: ResolvedTarget;
+  /** Axes proposés par l'IA dans analyse.cible ; défaut : ceux encore par défaut (`[]` : aucune demande). */
+  cibleAxes?: readonly CibleAxis[];
+}
+
+export interface CvPromptInput {
+  profile: Profile;
+  entries: MasterEntry[];
+  jobOfferText: string;
+  targetCompany?: string;
+  extraContext?: string;
+  clarify?: boolean;
+  options?: CvPromptOptions;
+}
+
+/** Ciblage résolu du prompt (tout en auto : aucune fiche, annonce). */
+function targetOf(input: CvPromptInput): ResolvedTarget {
+  return input.options?.target ?? resolveTarget(undefined);
+}
+
+/** « annonce » ou « cible » : sans texte d'annonce, le prompt parle de cible partout. */
+export function wordingOf(input: CvPromptInput): Wording {
+  return wordingModeFor(targetOf(input), input.jobOfferText);
+}
+
+/** Temps des verbes effectif : réglage fourni, sinon infinitif. */
+function tenseOf(input: CvPromptInput): VerbTense {
+  return input.options?.verbTense ?? DEFAULT_VERB_TENSE;
+}
+
+/** Orientation effective : réglage fourni, sinon défaut de la cible, sinon « missions ». */
+function focusOf(input: CvPromptInput): BulletFocus {
+  return input.options?.bulletFocus ?? defaultFocusFor(targetOf(input)) ?? DEFAULT_BULLET_FOCUS;
+}
+
+/**
+ * Protocole de clarification (optionnel) : le LLM peut poser quelques questions à
+ * fort impact AVANT de produire le JSON, sans transformer le flux en interview.
+ */
+export const CLARIFY_PROTOCOL = `## Avant de générer - affinage par questions (léger)
+Si, ET SEULEMENT SI, une information à fort impact manque pour bien cibler le CV, pose d'abord des questions courtes puis ARRÊTE-TOI et attends mes réponses. Sinon, produis directement le JSON sans rien demander.
+- Maximum **3 questions**, une ligne chacune, numérotées, avec une **réponse par défaut entre crochets** que je peux valider d'un mot.
+- Zéro question triviale ou cosmétique. Priorise : poste réellement visé, arbitrage entre expériences concurrentes, éléments à mettre en avant ou masquer, séniorité/ton attendus.
+- Si je réponds, ou si j'écris « génère » / « ok », produis IMMÉDIATEMENT le JSON final (et UNIQUEMENT le JSON).`;
+
+/** Règles de rédaction du contenu (la forme de la sortie est dans `JSON_RULES`). */
+export function buildWritingRules(focus: BulletFocus = DEFAULT_BULLET_FOCUS, tense: VerbTense = DEFAULT_VERB_TENSE): string {
+  return `### Style et rédaction
+- ${bulletShape(focus, tense)} ${tenseRule(tense)} Pas de pronoms (« j'ai », « nous », « I », « we »).
+- Interdits : tâches génériques (« responsable de », « en charge de », « responsible for »), superlatifs (« expert reconnu », « excellent »), jargon creux, adjectifs d'auto-promotion (« passionné », « dynamique », « motivé »), « en effet », « dans le cadre de », « il convient de », « force est de constater », tiret cadratin « — » (utilise « - » ou une virgule).
+${cvBoldRule(focus)}
+- Homogénéité : même casse pour tous les intitulés, même ponctuation de fin de puce (aucun point final), pas de datesOverride sauf nécessité (le format des dates est géré par l'application).
+- Typographie. Français : espace insécable avant « : ; ? ! », guillemets « ». Anglais : virgule d'Oxford systématique, mois abrégés au format « Mon YYYY » si tu dois écrire une date.`;
+}
+
+/** Règles de rédaction de l'orientation `resultats` avec le temps « passe-present » (texte historique). */
+export const CV_WRITING_RULES = buildWritingRules('resultats', 'passe-present');
+
+/** Intitulé du bloc des règles personnelles (placé avant `CV_WRITING_RULES`). */
+export const PERSONAL_RULES_HEADING = "Règles personnelles du candidat : priorité absolue, elles priment sur l'annonce";
+
+/** Clé du réglage « Règles personnelles » d'un profil (table `settings`, clé/valeur globale). */
+export function personalRulesKey(profileId: string): string {
+  return `cv_personal_rules:${profileId}`;
+}
+
+/**
+ * Modèle vide proposé dans les Paramètres (aucune donnée : le candidat le remplit).
+ * Les critères de recherche servent aussi aux alertes \`analyse.alertes_cap\`.
+ */
+export const PERSONAL_RULES_TEMPLATE = `Faits à respecter
+1. (ce qui ne doit jamais être affirmé, chiffres exacts à reprendre tels quels)
+
+Style
+(longueur des phrases, mots à éviter, usage du gras)
+
+Critères de recherche
+(télétravail, temps de trajet, rémunération minimale, langues exigées, horaires)`;
+
+/**
+ * Bloc des règles personnelles, saisies par le candidat (faits à respecter,
+ * style, critères de recherche). Chaîne vide quand le texte est vide : le bloc
+ * est alors omis du prompt.
+ */
+export function buildPersonalRules(text?: string | null, mode?: Wording): string {
+  const trimmed = text?.trim();
+  return trimmed ? `### ${applyWording(PERSONAL_RULES_HEADING, mode)}\n${trimmed}` : '';
+}
+
+/** Règles de forme de la sortie JSON. */
+export const JSON_RULES = `### Forme de la réponse
+- Réponds UNIQUEMENT avec l'objet JSON du schéma : pas de texte avant ou après, pas de markdown, pas de bloc de code.
+- JSON strict : guillemets doubles, aucune virgule finale, aucun commentaire. Les sauts de ligne d'une description s'écrivent \\n.
+- Respecte l'ordre des clés du schéma : "analyse" d'abord, puis le reste. Omets un champ optionnel plutôt que de mettre null, "" ou [].
+- Recopie les IDs EXACTEMENT comme dans le profil maître. N'invente aucun ID.`;
+
+// ── Blocs de données ─────────────────────────────────────────────────────────
+
+const q = (value: string | null | undefined): string => `"${(value ?? '').replace(/"/g, "'")}"`;
+/** Titre propre (sans l'employeur en double, lib/entry-display.ts) ; l'ID reste la clé. */
+const t = (e: MasterEntry): string => q(displayTitle(e.title, e.subtitle));
+
+function describeDates(e: MasterEntry): string {
+  if (!e.startDate && !e.endDate && !e.isCurrent) return 'Non précisée';
+  return `${e.startDate || '?'} - ${e.isCurrent ? 'Présent' : e.endDate || '?'}`;
+}
+
+/** Description sur plusieurs lignes, une puce source par ligne (la structure source est conservée). */
+function describeBody(e: MasterEntry, label = 'Description'): string {
+  const text = (e.description ?? '').trim();
+  if (!text) return `\n  ${label} : (aucune)`;
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean).map(l => `    ${l}`);
+  return `\n  ${label} :\n${lines.join('\n')}`;
+}
+
+function section(entries: MasterEntry[], type: MasterEntry['entryType'], format: (e: MasterEntry) => string, empty: string): string {
+  const lines = entries.filter(e => e.entryType === type).map(format);
+  return lines.length > 0 ? lines.join('\n') : empty;
+}
+
+export function buildRole(mode?: Wording): string {
+  return applyWording(`# Rôle
+Tu es un recruteur senior, tous secteurs et tous métiers confondus, et expert ATS. Tu optimises un CV pour UNE annonce, sans jamais rien inventer.`, mode);
+}
+
+export function buildObjective(mode?: Wording): string {
+  return applyWording(`## Objectif
+Produire UN objet JSON (schéma en fin de prompt) qui sélectionne, ordonne et reformule les éléments du profil maître pour cette annonce. Tu ne crées aucune donnée : tu choisis, tu ordonnes, tu reformules. Les écarts entre le profil et l'annonce sont signalés, jamais comblés.`, mode);
+}
+
+export function buildContext(input: CvPromptInput): string {
+  const { entries, jobOfferText, targetCompany, options } = input;
+  const withOffer = wordingOf(input) === 'annonce';
+  const years = experienceYears(entries, options?.now);
+  const pages = options?.pageBudget ?? DEFAULT_TARGET_PAGES;
+  const lines = [
+    '## Contexte',
+    targetCompany ? `Entreprise cible : ${targetCompany}` : '',
+    `Pages cibles : ${pages}`,
+    `Durée d'expérience professionnelle calculée depuis les dates du profil : ${years === 0 ? "moins d'un an" : `${years} an${years > 1 ? 's' : ''}`} (valeur à utiliser dans l'accroche, sans l'arrondir à la hausse)`,
+    withOffer ? `Annonce :\n<<<\n${jobOfferText.trim()}\n>>>` : '',
+  ];
+  return lines.filter(Boolean).join('\n');
+}
+
+export interface MasterProfileOptions {
+  /** Affiche les tags d'angle (`angle:<slug>`, `hide:<slug>`) de chaque entrée (prompt d'angles). */
+  angleTags?: boolean;
+}
+
+export function buildMasterProfile(entries: MasterEntry[], profile?: Profile, opts: MasterProfileOptions = {}): string {
+  const tg = (e: MasterEntry): string => {
+    if (!opts.angleTags) return '';
+    const tags = (Array.isArray(e.tags) ? e.tags : []).filter(t => /^(angle|hide):/.test(t));
+    return tags.length > 0 ? ` | Tags: ${tags.join(', ')}` : '';
+  };
+  const experiences = section(entries, 'experience',
+    e => `- ID: ${q(e.id)} | Titre: ${t(e)} | Entreprise: ${q(e.subtitle)} | Dates: ${q(describeDates(e))}${tg(e)}${describeBody(e)}`, '(aucune)');
+  // Catégorie (compétence à puces) : le LLM voit ses éléments ; compétence isolée : son titre.
+  const skills = section(entries, 'skill', e => (isSkillCategory(e)
+    ? `- ID: ${q(e.id)} | Catégorie: ${q(e.title)} | Éléments: ${bulletItems(e.description).join(' ; ')}${tg(e)}`
+    : `- ID: ${q(e.id)} | Titre: ${q(e.title)}${tg(e)}`), '(aucune)');
+  const education = section(entries, 'education',
+    e => `- ID: ${q(e.id)} | Diplôme: ${t(e)} | École: ${q(e.subtitle)} | Dates: ${q(describeDates(e))}${tg(e)}`, '(aucune)');
+  const certifications = section(entries, 'certification',
+    e => `- ID: ${q(e.id)} | Titre: ${q(e.title)} | Émetteur: ${q(e.subtitle)}${tg(e)}`, '(aucune)');
+  const languages = section(entries, 'language',
+    e => `- ID: ${q(e.id)} | Langue: ${q(e.title)} | Niveau: ${q(e.subtitle || '(non renseigné)')}${tg(e)}`, '(aucune)');
+  const projects = section(entries, 'project',
+    e => `- ID: ${q(e.id)} | Titre: ${t(e)}${tg(e)}${describeBody(e, 'Détail')}`, '(aucun)');
+  const interests = section(entries, 'interest', e => `- ID: ${q(e.id)} | Titre: ${q(e.title)}${tg(e)}`, '(aucun)');
+  const volunteer = section(entries, 'volunteer',
+    e => `- ID: ${q(e.id)} | Titre: ${t(e)} | Organisation: ${q(e.subtitle)}${tg(e)}`, '(aucun)');
+
+  return `## Profil maître (données sources)
+${buildTrajectory(profile)}### Expériences
+${experiences}
+
+### Compétences
+${skills}
+
+### Formations
+${education}
+
+### Certifications
+${certifications}
+
+### Langues
+${languages}
+
+### Projets
+${projects}
+
+### Centres d'intérêt
+${interests}
+
+### Bénévolat
+${volunteer}`;
+}
+
+/**
+ * Trajectoire du profil (titre et résumé choisis par le candidat) : source du
+ * ton de l'accroche. Vide quand le profil n'a ni titre ni résumé.
+ */
+function buildTrajectory(profile?: Profile): string {
+  const lines = [
+    profile?.title ? `- Titre du profil : ${profile.title}` : '',
+    profile?.summary ? `- Résumé du profil : ${profile.summary.replace(/\n/g, ' ')}` : '',
+  ].filter(Boolean);
+  return lines.length > 0 ? `### Trajectoire du profil (source du ton de l'accroche)\n${lines.join('\n')}\n\n` : '';
+}
+
+/** Permis et mentions d'en-tête du profil (source du champ `header`) ; vide si le profil n'en a pas. */
+export function buildHeaderMentions(profile?: Profile): string {
+  const extras = parseHeaderExtras(profile?.headerExtras);
+  const license = profile?.drivingLicense?.trim();
+  if (!license && extras.length === 0) return '';
+  const lines = [
+    license ? `- Permis : ${license}` : '',
+    ...extras.map(e => `- Mention : ${e}`),
+  ].filter(Boolean);
+  return `### Mentions d'en-tête du profil (affichées après la ville)\n${lines.join('\n')}\nChamp "header" : choisis celles qui servent la cible (le permis si le poste implique des déplacements). Recopie chaque mention à l'identique ; une mention absente de cette liste est ignorée. N'en invente jamais.`;
+}
+
+export function buildExtraContext(extraContext?: string): string {
+  const trimmed = extraContext?.trim();
+  return `## Contexte additionnel (source UNIQUE des entrées suggérées)
+${trimmed || '(aucun - donc "suggestedEntries" DOIT être un tableau vide)'}`;
+}
+
+/**
+ * Étape d'analyse. `alertesCap` : demande aussi les critères de recherche du
+ * candidat (règles personnelles) contredits par l'annonce.
+ */
+export function buildAnalysisStep(opts: { alertesCap?: boolean; mode?: Wording; cibleAxes?: readonly CibleAxis[] } = {}): string {
+  return applyWording(`## Étape 0 - Analyse (remplis "analyse" EN PREMIER dans le JSON)
+- langue_annonce : code ISO 639-1 de la langue de l'annonce (fr, en, de...).
+- indispensables : 5 à 8 exigences, formulation EXACTE de l'annonce (mots-clés tels qu'écrits).
+- importants : 3 à 5 exigences secondaires.
+- correspondances : pour chaque indispensable, l'ID de l'entrée du profil qui l'étaye, ou null s'il n'y en a pas.
+- ecarts : les indispensables sans preuve dans le profil. À signaler, JAMAIS à combler : ne les reformule pas pour qu'ils paraissent couverts.
+${opts.alertesCap ? "- alertes_cap : les critères de recherche des règles personnelles que l'annonce contredit (télétravail, trajet, rémunération, langues, horaires…), une phrase chacun ; omis s'il n'y en a pas. Ils ne changent pas le CV.\n" : ''}${cibleAnalysisLine(opts.cibleAxes ?? [], opts.mode) ? `${cibleAnalysisLine(opts.cibleAxes ?? [], opts.mode)}\n` : ''}Appuie ensuite toutes tes décisions (sélection, ordre, accroche) sur cette analyse.`, opts.mode);
+}
+
+/** Règles de contenu imposées pour une cible d'une page (remplacent PUCES, VOLUME et COMPÉTENCES). */
+export function buildOnePageRules(): string {
+  const L = ONE_PAGE_LIMITS;
+  return `- UNE PAGE (contrainte stricte, prioritaire sur toute autre consigne de volume) :
+  - RÉSUMÉ : ${L.summaryLines} lignes maximum (environ ${L.summaryChars} caractères).
+  - EXPÉRIENCES des ${L.recentYears} dernières années ou couvrant un indispensable de l'annonce : ${L.recentBullets} puces maximum chacune. Expériences terminées depuis ${L.recentYears} à ${L.midYears} ans : ${L.midBullets} puces maximum. Plus anciennes : 1 ligne (titre, employeur, dates : omets "description"). Une expérience sans lien avec l'annonce : \`visible: false\`.
+  - COMPÉTENCES : ${L.minSkillCategories} à ${L.maxSkillCategories} catégories visibles et ${L.minSkillItems} à ${L.maxSkillItems} éléments au total (compte les éléments, pas les entrées : une compétence isolée compte pour 1), les plus pertinents d'abord (entryOrder), les autres \`visible: false\`.
+  - FORMATIONS et CERTIFICATIONS : uniquement les plus récentes ou les plus pertinentes, une ligne chacune (aucune description). Les autres \`visible: false\`.
+  - CENTRES D'INTÉRÊT et BÉNÉVOLAT : \`visible: false\`, sauf s'ils servent directement l'annonce.
+  - Si le tout dépasse encore 1 page, masque d'abord ce qui est le moins lié à l'annonce.`;
+}
+
+/**
+ * Règle TITRE. Le titre du profil est un positionnement choisi par le candidat :
+ * autorisé tel quel, ou suivi d'un mot-clé de l'annonce. Les intitulés des
+ * expériences ne changent jamais. Sans titre de profil : règle historique.
+ */
+export function buildTitleRule(
+  profile?: Pick<Profile, 'title'> | null,
+  angle?: Pick<AngleSpec, 'titleRule'>,
+  target?: ResolvedTarget,
+): string {
+  const own = profile?.title?.trim();
+  const sheet = target?.sheet ?? null;
+  const rule = target ? titleRuleFor(target) : 'profile+keyword';
+  // Titre libre, choisi manuellement pour ce CV : prioritaire sur l'angle et sur la fiche.
+  if (target?.titleRule === 'free') {
+    const free = targetTitleRule('free', own, sheet?.vocabulaire.equivalences ?? []);
+    if (free) return free;
+  }
+  // La cible précise le titre : l'équivalence (traduction contrôlée) l'emporte sur la règle d'un angle.
+  if (own && (sheet || target?.titleRule) && (rule === 'equivalence' || (!angle && rule !== 'profile+keyword'))) {
+    const text = targetTitleRule(rule, own, sheet?.vocabulaire.equivalences ?? []);
+    if (text) return text;
+  }
+  if (own && angle?.titleRule === 'profile') {
+    return `- TITRE ("title") : « ${own} » tel quel (positionnement choisi par le candidat, règle de l'angle). Aucun autre intitulé. Ne modifie jamais l'intitulé d'une expérience pour coller à l'annonce.`;
+  }
+  if (own) {
+    return `- TITRE ("title") : « ${own} » tel quel (positionnement choisi par le candidat), ou « ${own} - {mot-clé de l'annonce} ». Aucun autre intitulé. Ne modifie jamais l'intitulé d'une expérience pour coller à l'annonce.`;
+  }
+  return `- TITRE ("title") : l'intitulé de l'annonce seulement s'il est cohérent avec les postes réellement tenus ; sinon « {intitulé réellement tenu} - {mot-clé de l'annonce} ». Jamais un poste que le profil n'a pas occupé.`;
+}
+
+export function buildRules(input: CvPromptInput): string {
+  const pages = input.options?.pageBudget ?? DEFAULT_TARGET_PAGES;
+  const onePage = pages === 1;
+  const labels = STANDARD_SECTION_LABELS.map(l => `"${l}"`).join(', ');
+  const focus = focusOf(input);
+  const target = targetOf(input);
+  const mode = wordingOf(input);
+  const tense = tenseOf(input);
+  const focusBlock = buildFocusRules(focus, { onePage, language: input.options?.cvLanguage, mode, tense });
+  const head = `## Règles
+### Langue
+- TOUT le contenu produit (title, summary, descriptions, overrides, sectionLabels) est rédigé dans la langue de l'annonce (analyse.langue_annonce).
+- Traduis « Présent » (sans datesOverride : l'application s'en charge) et les niveaux de langue (« Courant » devient « Fluent » en anglais). Ne traduis pas les noms propres, employeurs, intitulés de diplômes, certifications, technologies. Un intitulé de poste peut être traduit fidèlement (titleOverride).
+- Si l'annonce n'est pas en français, renseigne "sectionLabels" : clés = libellés standard (${labels}), valeurs = libellés dans la langue de l'annonce.
+
+### Structure
+- Ne supprime, ne renomme et ne fusionne aucune section. La section « Compétences » garde son libellé (sectionLabels sert uniquement à la traduire). Une section sans entrée visible est masquée automatiquement.
+- Liste dans "entries" TOUTES les entrées du profil maître, avec \`visible: true\` si utile pour l'annonce, \`visible: false\` sinon. Une entrée absente de "entries" reste affichée telle quelle.
+- Langues : garde visibles uniquement les langues utiles, c'est-à-dire exigées par l'annonce ou, à défaut, les langues autres que celle du CV dont un niveau est renseigné. La langue de l'annonce passe en premier. Ne relève jamais un niveau (pas de « C1 » si la source dit « Courant »).
+
+### Contenu
+${buildTitleRule(input.profile, input.options?.angle, target)}
+- ACCROCHE ("summary", ${onePage ? `${ONE_PAGE_LIMITS.summaryLines} lignes maximum` : '2 à 3 phrases'}) : intitulé + nombre d'années d'expérience (valeur calculée ci-dessus) + domaine ; ${summaryProofs(focus)} ; 3 à 4 mots-clés exacts de l'annonce. ${summarySeniorRule(focus)} Ne répète pas le titre du CV en début d'accroche.
+- PUCES (champ "description" : une puce par ligne, préfixée par « - », séparées par \\n) : ${onePage ? '' : `${MAX_BULLETS_PER_EXPERIENCE - 2} à ${MAX_BULLETS_PER_EXPERIENCE} puces pour une expérience récente ou pertinente, 2 à 3 pour une plus ancienne, `}${MAX_BULLET_CHARS} caractères maximum par puce, la plus pertinente en premier. ${numbersRule(focus)}${onePage ? ' Les nombres de puces sont fixés par la règle UNE PAGE ci-dessous.' : ''}
+${atsRule(atsLevelFor(target))}
+${onePage ? buildOnePageRules() : `- VOLUME : ${pages} pages maximum, soit environ ${pages * BULLETS_PER_PAGE} puces au total. Priorité aux 5 dernières années et aux expériences qui couvrent un indispensable ; masque ou raccourcis le reste.
+- COMPÉTENCES : masque les non pertinentes, ordonne par pertinence. Utilise "skillGroups" seulement s'il y a au moins 8 compétences visibles : 2 à 4 groupes, au moins 2 compétences par groupe, libellés dans la langue de l'annonce, chaque compétence visible dans un seul groupe. Sinon omets "skillGroups".`}
+- CATÉGORIES DE COMPÉTENCES (entrées listées avec « Catégorie » et « Éléments ») : la catégorie garde son titre. Tu peux réduire et réordonner ses éléments dans "description" (une puce « - » par élément, le plus pertinent d'abord), en recopiant uniquement des éléments existants de la source, mot pour mot. Aucun ajout, aucune reformulation. "skillGroups" ne concerne que les compétences isolées (listées avec « Titre »), jamais une catégorie.
+- LIGNES DE COMPÉTENCES (optionnel, "cvSkillLines") : pour un CV généraliste, tu peux proposer 3 à 8 lignes reformulées propres à ce CV (ex. « Suivi de la relation client et traitement des commandes »), jamais ajoutées au profil. Chaque ligne cite dans "sources" au moins un ID d'entrée existante (expérience ou compétence) qui l'étaye ; elle ne contient aucun outil, technologie ou chiffre absent de ces sources. Une ligne sans source valide est retirée. Avec au moins 3 lignes valides, les catégories de compétences du profil ne restent visibles que si tu les listes dans "entries" avec \`visible: true\` ; en dessous, elles sont conservées.
+- FUSION D'EXPÉRIENCES (optionnel, "mergedEntries") : pour un CV synthétique, regroupe plusieurs postes anciens du même type en une seule ligne (ex. « Assistante commerciale · Employeur A, Employeur B · 2011 - 2015 »). Chaque groupe : "ids" (au moins 2 IDs d'entrées existantes, un ID dans un seul groupe), "titleOverride", "subtitleOverride" (optionnel : sans lui, les employeurs distincts sont joints par « , »), "description" (optionnel, puces). Ne fournis jamais de dates : elles sont calculées (début le plus ancien, fin la plus récente ou « Présent »), et un "datesOverride" sur ces entrées est ignoré. La description ne reprend que des faits et chiffres présents dans les entrées fusionnées. "entryOrder" peut citer n'importe quel ID du groupe.
+- ORDRE : le plus pertinent d'abord, entre les sections ("sectionOrder", avec les libellés standard ci-dessus) et à l'intérieur de chaque section ("entryOrder").
+- SURCHARGES D'AFFICHAGE (optionnelles) : "titleOverride" (libellé principal), "subtitleOverride" (libellé secondaire : entreprise, école, niveau de langue traduit, émetteur). Uniquement si l'annonce justifie un affichage différent de la source ; elles ne modifient jamais le profil.
+
+${focusBlock ? `${focusBlock}\n\n` : ''}### Anti-invention (règle absolue)
+- Aucun chiffre, pourcentage, outil, certification, employeur, diplôme, date ou niveau absent des données fournies (profil maître et contexte additionnel). Une compétence de l'annonce absente du profil n'est ni ajoutée ni suggérée : elle va dans analyse.ecarts.
+${warningsRule(focus)}
+- "suggestedEntries" ne peut contenir QUE des éléments directement et explicitement étayés par le contexte additionnel, absents du profil maître, jamais déduits de l'annonce. Contexte additionnel vide ou sans élément pertinent : "suggestedEntries": [].`;
+  return `${applyWording(head, mode)}\n\n${[buildPersonalRules(input.options?.personalRules, mode), buildWritingRules(focus, tense)].filter(Boolean).join('\n\n')}`;
+}
+
+export function buildClarify(clarify: boolean | undefined): string {
+  return clarify ? CLARIFY_PROTOCOL : '';
+}
+
+export interface OutputSchemaOptions {
+  /** Ajoute analyse.angle (choix de l'angle laissé à l'IA). */
+  angleChoice?: boolean;
+  /** Ajoute analyse.alertes_cap (règles personnelles renseignées). */
+  alertesCap?: boolean;
+  /** Ajoute le champ `header` (le profil a un permis ou des mentions d'en-tête). */
+  header?: boolean;
+  /** Orientation des puces (exemple de description et consigne `warnings`). */
+  bulletFocus?: BulletFocus;
+  /** « annonce » ou « cible » (dictionnaire central). */
+  mode?: Wording;
+  /** Forme du premier mot des puces (exemple de description du schéma). */
+  verbTense?: VerbTense;
+  /** Axes du ciblage que l'IA doit proposer dans analyse.cible. */
+  cibleAxes?: readonly CibleAxis[];
+}
+
+export function buildOutputSchema(opts: OutputSchemaOptions = {}): string {
+  const alertesField = opts.alertesCap
+    ? ',\n    "alertes_cap": ["(optionnel) critère de recherche contredit par l\'annonce"]'
+    : '';
+  const angleField = opts.angleChoice
+    ? ',\n    "angle": { "slug": "(slug de l\'angle choisi dans la bibliothèque)", "raison": "(une phrase, liée à des indispensables)" }'
+    : '';
+  const focus = opts.bulletFocus ?? DEFAULT_BULLET_FOCUS;
+  const headerField = opts.header
+    ? '\n  "header": { "showDrivingLicense": true, "extras": ["(optionnel) mention d\'en-tête du profil à afficher, recopiée à l\'identique"] },'
+    : '';
+  return applyWording(`## Format de sortie OBLIGATOIRE
+${JSON_RULES}
+
+Schéma (les valeurs entre parenthèses décrivent le contenu attendu ; les champs marqués "optionnel" s'omettent s'ils ne servent pas) :
+
+{
+  "schemaVersion": 2,
+  "analyse": {
+    "langue_annonce": "(code ISO : fr, en...)",
+    "indispensables": ["(exigence, formulation exacte de l'annonce)"],
+    "importants": ["(exigence secondaire)"],
+    "correspondances": [{ "exigence": "(un indispensable)", "entryId": "(ID de l'entrée qui l'étaye, ou null)" }],
+    "ecarts": ["(indispensable sans preuve dans le profil)"]${alertesField}${angleField}${cibleSchemaField(opts.cibleAxes ?? [], opts.mode)}
+  },
+  "title": "(intitulé réel, avec le mot-clé de l'annonce si cohérent)",
+  "summary": "(accroche de 2 à 3 phrases)",
+  "entries": [
+    {
+      "id": "[ID EXACT DE L'ENTRÉE]",
+      "visible": true,
+      "description": "${schemaDescriptionExample(focus, opts.verbTense ?? DEFAULT_VERB_TENSE)}",
+      "titleOverride": "(optionnel) libellé principal à afficher",
+      "subtitleOverride": "(optionnel) libellé secondaire : entreprise, école, niveau de langue traduit, émetteur",
+      "datesOverride": "(optionnel, à éviter) période à afficher telle quelle"
+    }
+  ],
+  "entryOrder": ["(optionnel) id de l'entrée la plus pertinente", "id suivante"],
+  "sectionOrder": ["(optionnel) Compétences", "Expériences Professionnelles"],
+  "sectionLabels": { "(optionnel) Compétences": "(libellé dans la langue de l'annonce)" },
+  "skillGroups": [{ "category": "(optionnel) libellé de catégorie", "entryIds": ["id_skill_1", "id_skill_2"] }],
+  "mergedEntries": [{ "ids": ["id_poste_1", "id_poste_2"], "titleOverride": "(optionnel) intitulé commun", "subtitleOverride": "(optionnel) employeurs", "description": "(optionnel) - puce issue des entrées fusionnées" }],
+  "cvSkillLines": [{ "text": "(optionnel) ligne de compétences reformulée", "sources": ["id_entree_1", "id_entree_2"] }],${headerField}
+  "suggestedEntries": [
+    {
+      "entryType": "experience|education|skill|certification|language|project|interest|volunteer",
+      "title": "(intitulé issu du contexte additionnel)",
+      "subtitle": "(optionnel) entreprise / école",
+      "startDate": "YYYY-MM (optionnel)",
+      "endDate": "YYYY-MM (optionnel)",
+      "isCurrent": false,
+      "description": "- point clé issu du contexte",
+      "reason": "(optionnel) pourquoi c'est pertinent pour l'annonce"
+    }
+  ],
+  "warnings": ["${schemaWarningsHint(focus)}"]
+}`, opts.mode);
+}
+
+const hasHeaderMentions = (profile?: Profile): boolean =>
+  Boolean(profile?.drivingLicense?.trim()) || parseHeaderExtras(profile?.headerExtras).length > 0;
+
+const hasPersonalRules = (input: CvPromptInput): boolean => Boolean(input.options?.personalRules?.trim());
+
+/** Bloc d'angle : imposé, à choisir dans la bibliothèque, ou rien. */
+export function buildAngleBlock(input: CvPromptInput): string {
+  const { angle, angleChoices } = input.options ?? {};
+  const mode = wordingOf(input);
+  if (angle) return applyWording(buildAngle(angle, input.entries, input.profile), mode);
+  if (angleChoices && angleChoices.length > 0) return applyWording(buildAngleChoice(angleChoices, input.entries, input.profile), mode);
+  return '';
+}
+
+/** Assemble le prompt « CV ciblé » v2. */
+export function buildCvPrompt(input: CvPromptInput): string {
+  const target = targetOf(input);
+  const mode = wordingOf(input);
+  return [
+    buildRole(mode),
+    buildObjective(mode),
+    buildContext(input),
+    buildMasterProfile(input.entries, input.profile),
+    buildHeaderMentions(input.profile),
+    buildExtraContext(input.extraContext),
+    buildTargetBlock(target, { mode }),
+    buildAnalysisStep({ alertesCap: hasPersonalRules(input), mode, cibleAxes: input.options?.cibleAxes ?? cibleAxesToAsk(target) }),
+    buildAngleBlock(input),
+    buildRules(input),
+    buildClarify(input.clarify),
+    buildOutputSchema({
+      angleChoice: !input.options?.angle && (input.options?.angleChoices?.length ?? 0) > 0,
+      alertesCap: hasPersonalRules(input),
+      header: hasHeaderMentions(input.profile),
+      bulletFocus: focusOf(input),
+      verbTense: tenseOf(input),
+      mode,
+      cibleAxes: input.options?.cibleAxes ?? cibleAxesToAsk(target),
+    }),
+  ].filter(Boolean).join('\n\n');
+}
+
+/**
+ * Point d'entrée historique (signature conservée pour `CvGeneratorDrawer` et
+ * `AIPromptPanel`). Le 1er argument (profil) fournit désormais le titre et le
+ * résumé actuels comme source.
+ */
+export function generateFullCVMatchPrompt(
+  profile: Profile,
+  entries: MasterEntry[],
+  jobOfferText: string,
+  targetCompany?: string,
+  extraContext?: string,
+  clarify = false,
+  options?: CvPromptOptions,
+): string {
+  return buildCvPrompt({ profile, entries, jobOfferText, targetCompany, extraContext, clarify, options });
+}

@@ -1,0 +1,77 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`buildAngle snapshot 1`] = `
+"## Angle imposé : Assistante commerciale
+Cet angle choisit et ordonne le contenu ; il n'ajoute aucun fait. Il prime sur les règles générales de sélection et d'ordre, pas sur l'anti-invention.
+- TITRE : « Assistante commerciale » tel quel. Aucun autre intitulé.
+- ACCROCHE, gabarit à créneaux : « {intitulé} depuis {année}, {outils de détection}, {preuve chiffrée} ». Remplis chaque créneau avec un fait de la source (profil maître, trajectoire du profil). Un créneau sans fait correspondant est omis, jamais inventé.
+- EN TÊTE (\`visible: true\`, en premier dans "entryOrder", dans cet ordre) :
+  - ID: "x1" | Titre: "Assistante commerciale"
+  - ID: "k1" | Titre: "Outils de vente"
+- MASQUÉES PAR DÉFAUT (\`visible: false\`). Exception : une entrée qui étaye un indispensable reste visible, et tu la cites alors dans analyse.correspondances.
+  - ID: "x2" | Titre: "Technicien support"
+  - ID: "x3" | Titre: "Animateur"
+  - ID: "i1" | Titre: "Astronomie"
+- CATÉGORIES DE COMPÉTENCES, dans cet ordre : Outils de vente, Langages. Les autres catégories viennent après ou sont masquées selon le budget.
+- VOCABULAIRE : Vocabulaire de la détection. Aucun sigle non défini.
+- ANCIENNES EXPÉRIENCES : terminées depuis plus de 5 ans et sans lien avec un indispensable : une ligne (titre, employeur, dates), sans description."
+`;
+
+exports[`buildAngleChoice liste les angles de la bibliothèque et demande analyse.angle 1`] = `
+"## Angle à choisir dans ma bibliothèque
+Choisis l'angle le plus adapté à l'annonce (d'après analyse.indispensables), indique-le dans analyse.angle ({ "slug", "raison" en une phrase liée aux indispensables}), puis applique-le : titre, accroche, entrées en tête (\`visible: true\`, en premier dans "entryOrder"), entrées masquées par défaut (\`visible: false\` sauf si elles étayent un indispensable cité dans analyse.correspondances), ordre des catégories, vocabulaire, anciennes expériences. Un angle choisit et ordonne, il n'ajoute aucun fait.
+
+### Angle "expertise" : Assistante commerciale
+- Titre : « Assistante commerciale » tel quel. Aucun autre intitulé.
+- Accroche (gabarit à créneaux) : « {intitulé} depuis {année}, {outils de détection}, {preuve chiffrée} »
+- En tête : "x1", "k1"
+- Masquées par défaut : "x2", "x3", "i1"
+- Catégories de compétences : Outils de vente, Langages
+- Vocabulaire : Vocabulaire de la détection. Aucun sigle non défini.
+- Anciennes expériences : terminées depuis plus de 5 ans et sans lien avec un indispensable : une ligne (titre, employeur, dates), sans description.
+
+### Angle "expertise" : Mon expertise
+- Titre : « Assistante commerciale » tel quel. Aucun autre intitulé.
+- Accroche (gabarit à créneaux) : « {intitulé} depuis {année}, {domaine d'expertise}, {périmètre habituel}, {ce qui vous distingue} »
+- En tête : "x1", "k1"
+- Masquées par défaut : "x2", "x3", "i1"
+- Catégories de compétences : (ordre libre)
+- Vocabulaire : Vocabulaire précis du métier. Mettre en tête les expériences les plus proches du poste visé.
+- Anciennes expériences : terminées depuis plus de 5 ans et sans lien avec un indispensable : une ligne (titre, employeur, dates), sans description.
+
+### Angle "polyvalence" : Ma polyvalence
+- Titre : « Assistante commerciale » tel quel. Aucun autre intitulé.
+- Accroche (gabarit à créneaux) : « {intitulé} depuis {année}, {missions variées}, {capacité à s'adapter}, {périmètre} »
+- En tête : (aucune)
+- Masquées par défaut : (aucune)
+- Catégories de compétences : (ordre libre)
+- Vocabulaire : Vocabulaire simple et transversal. Montrer la variété des missions plutôt que la spécialisation.
+- Anciennes expériences : suivre les paliers de puces de la règle UNE PAGE (ou de VOLUME).
+
+### Angle "reconversion" : Ma reconversion
+- Titre : « Assistante commerciale » tel quel. Aucun autre intitulé.
+- Accroche (gabarit à créneaux) : « {intitulé visé}, {compétences transférables}, {formation ou projet de reconversion}, {motivation} »
+- En tête : (aucune)
+- Masquées par défaut : (aucune)
+- Catégories de compétences : (ordre libre)
+- Vocabulaire : Mettre en avant les compétences transférables et la formation récente. Ne pas présenter les anciens métiers comme un parcours dans le nouveau domaine.
+- Anciennes expériences : suivre les paliers de puces de la règle UNE PAGE (ou de VOLUME).
+
+### Angle "management" : Mes responsabilités d'encadrement
+- Titre : « Assistante commerciale » tel quel. Aucun autre intitulé.
+- Accroche (gabarit à créneaux) : « {intitulé} depuis {année}, {taille et nature de l'équipe encadrée}, {périmètre de responsabilité}, {méthode de management} »
+- En tête : (aucune)
+- Masquées par défaut : (aucune)
+- Catégories de compétences : (ordre libre)
+- Vocabulaire : Vocabulaire du pilotage d'équipe : encadrer, animer, organiser, suivre. Ne jamais inventer une taille d'équipe.
+- Anciennes expériences : terminées depuis plus de 5 ans et sans lien avec un indispensable : une ligne (titre, employeur, dates), sans description.
+
+### Angle "debutant" : Mon début de carrière
+- Titre : « Assistante commerciale » tel quel. Aucun autre intitulé.
+- Accroche (gabarit à créneaux) : « {intitulé visé}, {formation}, {stages et premières expériences}, {qualités démontrées} »
+- En tête : (aucune)
+- Masquées par défaut : (aucune)
+- Catégories de compétences : (ordre libre)
+- Vocabulaire : Mettre en avant la formation, les stages, les projets et les premières expériences.
+- Anciennes expériences : suivre les paliers de puces de la règle UNE PAGE (ou de VOLUME)."
+`;
