@@ -1,0 +1,21 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+
+# Données et exports personnels
+*.pdf
+*.docx
+*.cvmaker
+.portable
+
+# Clés de signature
+*.keystore
+key.properties
+tests/golden/.out/
