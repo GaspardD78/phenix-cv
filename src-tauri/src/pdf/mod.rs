@@ -125,14 +125,15 @@ async fn attempt(app: &AppHandle, method: Method, html: &str) -> Result<Vec<u8>,
 
 /// Exécute l'échelle de repli ; chaque échec est consigné et on passe au suivant.
 pub async fn run(app: &AppHandle, html: &str, requested_text: &str) -> Outcome {
-    let requested = std::env::var(METHOD_ENV)
+    // La variable d'environnement l'emporte sur le réglage : le journal indique la méthode réellement demandée.
+    let effective = std::env::var(METHOD_ENV)
         .ok()
         .filter(|v| !v.trim().is_empty())
-        .map(|v| parse_requested(&v))
-        .unwrap_or_else(|| parse_requested(requested_text));
+        .unwrap_or_else(|| requested_text.to_string());
+    let requested = parse_requested(&effective);
     let mut log = ExportLog {
         at_unix: now_unix(),
-        requested: requested_text.to_string(),
+        requested: effective,
         attempts: vec![],
         final_method: None,
         bytes: 0,
