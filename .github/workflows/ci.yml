@@ -1,0 +1,52 @@
+name: CI
+
+# Valide le code et le build Windows. Aucune publication de Release.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Installer les dépendances
+        run: bun install --frozen-lockfile
+
+      - name: Typage strict
+        run: bunx tsc --noEmit
+
+      - name: Tests
+        run: bun test
+
+      - name: Lint Rust
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
+
+      - name: Build de l'application Windows (sans publication)
+        run: bun run tauri build
+
+      # Installateur de test, téléchargeable depuis l'onglet « Actions » (aucune Release publiée).
+      - name: Conserver l'installateur (3 jours)
+        uses: actions/upload-artifact@v4
+        with:
+          name: phenix-cv-windows-installateur
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+          if-no-files-found: error
+          retention-days: 3
