@@ -37,8 +37,41 @@ jobs:
       - name: Lint Rust
         run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 
+      - name: Tests Rust
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
       - name: Build de l'application Windows (sans publication)
         run: bun run tauri build
+
+      # Auto-test de l'export PDF avec l'application construite (fenêtre WebView2 réelle, Edge, Chrome).
+      - name: Installer pypdf
+        run: python -m pip install pypdf
+
+      - name: Export PDF — WebView2 (voie principale)
+        shell: pwsh
+        run: ./scripts/selftest-pdf.ps1 -Method webview2
+
+      - name: Export PDF — mode automatique (doit utiliser WebView2)
+        shell: pwsh
+        run: ./scripts/selftest-pdf.ps1 -Method auto -Expected webview2
+
+      - name: Export PDF — repli Edge
+        shell: pwsh
+        run: ./scripts/selftest-pdf.ps1 -Method edge
+
+      - name: Export PDF — repli Chrome
+        continue-on-error: true
+        shell: pwsh
+        run: ./scripts/selftest-pdf.ps1 -Method chrome
+
+      - name: Conserver les PDF d'essai (3 jours)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phenix-cv-pdf-essais
+          path: selftest-out/
+          if-no-files-found: warn
+          retention-days: 3
 
       # Installateur de test, téléchargeable depuis l'onglet « Actions » (aucune Release publiée).
       - name: Conserver l'installateur (3 jours)

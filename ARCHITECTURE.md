@@ -3,7 +3,7 @@
 ## Vue d'ensemble
 
 - **Frontend** : React 19, Vite, Tailwind 4, Zustand. Routes : `/` (accueil), `/profile`, `/cv`, `/cv/:id`, `/tracker`, `/import`, `/settings`, `/aide`, `/print` (rendu d'impression).
-- **Backend Tauri** (`src-tauri/src/lib.rs`) : `get_db_uri` (base locale, mode portable si un fichier `.portable` est à côté de l'exécutable), `generate_pdf` (rendu PDF vectoriel), `start_oauth_server` (retour OAuth local pour Google Drive).
+- **Backend Tauri** (`src-tauri/src/lib.rs`) : `get_db_uri` (base locale, mode portable si un fichier `.portable` est à côté de l'exécutable), `generate_pdf` (export PDF vectoriel, voir ci-dessous), `start_oauth_server` (retour OAuth local pour Google Drive).
 - **Base** : SQLite, un schéma initial (`001_init.sql`). Réglages par profil dans la table `settings` (clés `nom:{profileId}`, voir `src/lib/profile-settings.ts`).
 
 ## Données
@@ -28,3 +28,9 @@
 ## Synchronisation Drive
 
 `lib/gdrive.ts` (OAuth PKCE) et `lib/gdrive-config.ts` : les identifiants viennent du build (`.env`) ou d'une saisie dans les options avancées ; sans identifiants, la synchronisation est désactivée.
+
+## Export PDF
+
+`src-tauri/src/pdf/` : échelle de repli **WebView2 (`ICoreWebView2_7::PrintToPdf`, fenêtre cachée) → Edge → Chrome** ; l'impression système est le dernier recours, côté interface. Chaque étape a un délai maximal de 20 s, la fenêtre cachée est toujours détruite, et la dernière tentative est journalisée (`pdf-export-last.json`, dossier de données). La méthode se règle dans Paramètres > Options avancées, ou avec la variable `PHENIXCV_PDF_METHOD` (`auto`, `webview2`, `edge`, `chrome`). L'interface d'impression WebView2 est détectée à l'exécution (`cast`), jamais par numéro de version.
+
+Auto-test (CI) : avec `PHENIXCV_SELFTEST_HTML` et `PHENIXCV_SELFTEST_PDF`, l'application génère le PDF puis quitte (code 0 ou 1) ; `scripts/selftest-pdf.ps1` et `scripts/check-pdf.py` vérifient une page A4, le texte et les polices embarquées.

@@ -4,13 +4,14 @@ import { writeFile } from '@tauri-apps/plugin-fs';
 import { toast } from 'sonner';
 import { isTauri } from './platform';
 import { measurePrintOverflow, overflowStatus, type PrintOverflow } from './print-overflow';
+import { PDF_METHOD_SETTING_KEY, fallsBackToSystemPrint, parsePdfMethod, type PdfExportMethod } from './pdf-export-method';
 
 /**
  * Exporte le CV en PDF.
  *
  * | Plateforme | Stratégie |
  * |---|---|
- * | Desktop Tauri | `generate_pdf` Rust via Headless Chrome (vectoriel) |
+ * | Desktop Tauri | `generate_pdf` (Rust) : WebView2 → Edge → Chrome (vectoriel), puis impression système |
  * | Navigateur web | `window.print()` système |
  */
 
@@ -156,6 +157,8 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
     }
   }
 
+  const method = options.method ?? (await readConfiguredMethod());
+
   try {
     const filePath = await save({
       defaultPath: 'cv_export.pdf',
@@ -164,15 +167,46 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
 
     if (!filePath) return false;
 
-    const pdfBytes = await invoke<number[]>('generate_pdf', { html: htmlContent });
-    const pdfData = new Uint8Array(pdfBytes);
-    await writeFile(filePath, pdfData);
+    // Impression système demandée explicitement : aucun export direct.
+    if (method === 'system') {
+      await logSystemPrint('méthode imposée dans les options avancées');
+      return exportPdfWebFallback();
+    }
 
+    const result = await invoke<{ bytes: number[]; method: string }>('generate_pdf', { html: htmlContent, method });
+    await writeFile(filePath, new Uint8Array(result.bytes));
     return true;
   } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
     console.error("Erreur lors de l'export PDF vectoriel natif:", error);
-    toast.error("L'export natif a échoué. Basculement sur l'impression système…");
-    return exportPdfWebFallback();
+    if (fallsBackToSystemPrint(method)) {
+      toast.error("L'export PDF direct n'a pas fonctionné.", {
+        description: "Nous passons par l'impression de Windows : choisissez « Enregistrer au format PDF ».",
+      });
+      await logSystemPrint(detail);
+      return exportPdfWebFallback();
+    }
+    // Méthode imposée : l'échec est montré tel quel pour pouvoir tester chaque échelon.
+    toast.error(`L'export PDF a échoué avec la méthode choisie (${method}).`, { description: detail, duration: 10000 });
+    return false;
+  }
+}
+
+async function readConfiguredMethod(): Promise<PdfExportMethod> {
+  try {
+    const { getSetting } = await import('./db');
+    return parsePdfMethod(await getSetting(PDF_METHOD_SETTING_KEY));
+  } catch {
+    return 'auto';
+  }
+}
+
+/** Ajoute l'impression système au journal du dernier export (sans jamais faire échouer l'export). */
+async function logSystemPrint(reason: string): Promise<void> {
+  try {
+    await invoke('log_pdf_system_print', { reason });
+  } catch {
+    /* journal facultatif */
   }
 }
 
@@ -186,11 +220,13 @@ export interface ExportPdfOptions {
    * vérification n'est faite.
    */
   confirmOverflow?: (overflow: PrintOverflow) => Promise<boolean>;
+  /** Méthode imposée ; sinon le réglage « Options avancées » (automatique par défaut). */
+  method?: PdfExportMethod;
 }
 
 /**
  * Exporte le CV en PDF.
- * - Desktop Tauri   → Headless Chrome (vectoriel)
+ * - Desktop Tauri   → WebView2, Edge, Chrome (vectoriel), puis impression système
  * - Navigateur web  → window.print()
  */
 export async function exportNativePdf(sourceElementId = 'printable-cv', options: ExportPdfOptions = {}): Promise<boolean> {

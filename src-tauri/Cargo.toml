@@ -27,8 +27,14 @@ base64 = "0.22"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
-tokio = { version = "1", features = ["rt-multi-thread"] }
+tokio = { version = "1", features = ["rt-multi-thread", "time", "sync"] }
 
 headless_chrome = "1.0.21"
 tempfile = "3.27.0"
 url = "2.5.8"
+
+[target.'cfg(windows)'.dependencies]
+# Même version que celle utilisée par wry/tauri (voir Cargo.lock) : interface COM ICoreWebView2_7::PrintToPdf.
+webview2-com = "0.38"
+windows = { version = "0.61", features = ["Win32_Foundation"] }
+winreg = "0.55"

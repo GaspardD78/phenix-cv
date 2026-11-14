@@ -19,3 +19,4 @@ Thumbs.db
 *.keystore
 key.properties
 tests/golden/.out/
+selftest-out/

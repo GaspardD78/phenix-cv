@@ -3,6 +3,7 @@ import { Download, Upload, AlertCircle, CheckCircle2, Loader2, Sparkles, Sun, Mo
 import { MODULES, ModuleId, BackupData, exportBackup, pickAndParseBackup } from '@/lib/backup';
 import { ImportConflictModal } from './ImportConflictModal';
 import { GoogleDriveSync } from './GoogleDriveSync';
+import { AdvancedOptions } from './AdvancedOptions';
 import { CvAnglesSettings } from './CvAnglesSettings';
 import { TargetSheetsSettings } from './TargetSheetsSettings';
 import { BulletFocusSelect } from '@/components/cv-builder/BulletFocusSelect';
@@ -426,6 +427,8 @@ export function SettingsPage() {
           </button>
         </div>
       </section>
+
+      <AdvancedOptions />
 
       {/* ── À propos ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mt-6 mb-12">
