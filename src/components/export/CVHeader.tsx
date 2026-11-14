@@ -31,13 +31,6 @@ function LinkedInIcon() {
     </svg>
   );
 }
-function GitHubIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="14" height="14" className="mr-1 opacity-60" style={{ width: '14px', height: '14px', display: 'block', flexShrink: 0 }}>
-      <path fillRule="evenodd" d="M10 1.5a8.5 8.5 0 00-2.688 16.568c.425.078.58-.184.58-.41 0-.201-.007-.735-.011-1.442-2.364.514-2.863-1.14-2.863-1.14-.387-.982-.944-1.243-.944-1.243-.771-.527.058-.516.058-.516.853.06 1.302.876 1.302.876.758 1.298 1.988.923 2.473.706.077-.549.297-.923.54-1.135-1.887-.215-3.873-.944-3.873-4.202 0-.928.332-1.687.876-2.281-.088-.214-.38-1.079.083-2.248 0 0 .714-.229 2.339.871A8.159 8.159 0 0110 4.999c.723.004 1.45.098 2.128.286 1.624-1.1 2.337-.871 2.337-.871.464 1.17.172 2.034.084 2.248.546.594.875 1.353.875 2.281 0 3.266-1.989 3.984-3.882 4.195.305.263.578.783.578 1.578 0 1.139-.01 2.057-.01 2.337 0 .228.153.493.585.41A8.502 8.502 0 0010 1.5z" clipRule="evenodd" />
-    </svg>
-  );
-}
 function GlobeIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="14" height="14" className="mr-1 opacity-60" style={{ width: '14px', height: '14px', display: 'block', flexShrink: 0 }}>
@@ -67,8 +60,6 @@ function shortenUrl(url: string): string {
     let clean = url.replace(/^https?:\/\//, '').replace(/^www\./, '');
     const linkedinMatch = clean.match(/linkedin\.com\/(in\/[^/?\s]+)/);
     if (linkedinMatch) return linkedinMatch[1];
-    const githubMatch = clean.match(/github\.com\/([^/?\s]+)/);
-    if (githubMatch) return githubMatch[1];
     clean = clean.replace(/\/$/, '');
     return clean;
   } catch {
@@ -98,8 +89,7 @@ export function buildContactItems(profile: Profile): ContactItem[] {
   if (profile.drivingLicense?.trim()) items.push({ icon: <CarIcon />, text: profile.drivingLicense.trim() });
   for (const extra of profile.headerExtras ?? []) items.push({ icon: <DotIcon />, text: extra });
   if (profile.linkedinUrl) items.push({ icon: <LinkedInIcon />, text: shortenUrl(profile.linkedinUrl), href: ensureHref(profile.linkedinUrl) });
-  if (profile.githubUrl) items.push({ icon: <GitHubIcon />, text: shortenUrl(profile.githubUrl), href: ensureHref(profile.githubUrl) });
-  if (profile.portfolioUrl) items.push({ icon: <GlobeIcon />, text: shortenUrl(profile.portfolioUrl), href: ensureHref(profile.portfolioUrl) });
+  if (profile.otherUrl) items.push({ icon: <GlobeIcon />, text: shortenUrl(profile.otherUrl), href: ensureHref(profile.otherUrl) });
   return items;
 }
 

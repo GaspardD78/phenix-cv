@@ -22,8 +22,6 @@ function shortenUrl(url: string): string {
     const clean = url.replace(/^https?:\/\//, '').replace(/^www\./, '');
     const linkedinMatch = clean.match(/linkedin\.com\/(in\/[^/?\s]+)/);
     if (linkedinMatch) return linkedinMatch[1];
-    const githubMatch = clean.match(/github\.com\/([^/?\s]+)/);
-    if (githubMatch) return `github/${githubMatch[1]}`;
     return clean.replace(/\/$/, '');
   } catch {
     return url;
@@ -69,7 +67,6 @@ const CONTACT_ICONS: Record<string, string> = {
   phone: '\u260E',      // ☎
   city: '\u25CB',        // ○
   linkedin: '\u25A0',   // ■ (small square for LinkedIn)
-  github: '\u25C6',     // ◆
   portfolio: '\u25CE',  // ◎
   license: '\u25C8',    // ◈
   extra: '\u2022',      // •
@@ -260,8 +257,7 @@ export async function generateDocxBlob(
   if (profile.drivingLicense?.trim()) contactItems.push({ icon: CONTACT_ICONS.license, text: profile.drivingLicense.trim() });
   for (const extra of profile.headerExtras ?? []) contactItems.push({ icon: CONTACT_ICONS.extra, text: extra });
   if (profile.linkedinUrl)  contactItems.push({ icon: CONTACT_ICONS.linkedin,  text: shortenUrl(profile.linkedinUrl), href: ensureHref(profile.linkedinUrl) });
-  if (profile.githubUrl)    contactItems.push({ icon: CONTACT_ICONS.github,    text: shortenUrl(profile.githubUrl),   href: ensureHref(profile.githubUrl) });
-  if (profile.portfolioUrl) contactItems.push({ icon: CONTACT_ICONS.portfolio, text: shortenUrl(profile.portfolioUrl), href: ensureHref(profile.portfolioUrl) });
+  if (profile.otherUrl) contactItems.push({ icon: CONTACT_ICONS.portfolio, text: shortenUrl(profile.otherUrl), href: ensureHref(profile.otherUrl) });
 
   /** Build a contact paragraph with Unicode icons (inline hyperlinks separated by " | "). */
   const makeContactParagraph = (textColor: string, alignment: typeof AlignmentType[keyof typeof AlignmentType] = AlignmentType.CENTER): Paragraph => {

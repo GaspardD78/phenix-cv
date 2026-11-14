@@ -19,8 +19,7 @@ export function buildImportPrompt(rawText: string): string {
     "postalCode": "string ou null",
     "country": "string ou null",
     "linkedinUrl": "string ou null",
-    "githubUrl": "string ou null",
-    "portfolioUrl": "string ou null",
+    "otherUrl": "string ou null",
     "title": "titre professionnel / accroche ou null",
     "summary": "résumé/accroche complète ou null"
   },

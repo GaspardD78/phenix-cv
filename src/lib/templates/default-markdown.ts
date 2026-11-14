@@ -10,7 +10,7 @@ import { MARKDOWN_BULLET_EXAMPLE } from '../cv-focus-rules';
 export const DEFAULT_MARKDOWN_TEMPLATE = `# [Votre Prénom Nom]
 
 [votre.email@exemple.com] · [06 00 00 00 00] · [Ville, Pays]
-[linkedin.com/in/votreprofil] · [github.com/votrehandle]
+[linkedin.com/in/votreprofil] · [votre-site.fr]
 
 ---
 

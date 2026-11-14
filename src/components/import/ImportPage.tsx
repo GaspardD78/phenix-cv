@@ -387,8 +387,7 @@ const PROFILE_FIELD_LABELS: Record<string, string> = {
   postalCode: 'Code postal',
   country: 'Pays',
   linkedinUrl: 'LinkedIn URL',
-  githubUrl: 'GitHub URL',
-  portfolioUrl: 'Portfolio URL',
+  otherUrl: 'Autre lien (site web, portfolio…)',
   title: 'Titre professionnel',
   summary: 'Résumé / Accroche',
 };
@@ -410,8 +409,7 @@ function buildProfileDiffs(existing: Profile | null, imported: Partial<Record<st
       key === 'firstName' ? 'firstName'
       : key === 'lastName' ? 'lastName'
       : key === 'linkedinUrl' ? 'linkedinUrl'
-      : key === 'githubUrl' ? 'githubUrl'
-      : key === 'portfolioUrl' ? 'portfolioUrl'
+      : key === 'otherUrl' ? 'otherUrl'
       : key === 'postalCode' ? 'postalCode'
       : key
     ] ?? null : null;

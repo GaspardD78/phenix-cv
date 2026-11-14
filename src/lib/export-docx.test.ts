@@ -10,7 +10,7 @@ const TS = '2026-01-01T00:00:00.000Z';
 
 const profile: Profile = {
   id: 'p', firstName: 'Léo', lastName: 'Martin', email: 'leo.martin@example.com', phone: null, address: null,
-  city: null, postalCode: null, country: 'France', linkedinUrl: null, githubUrl: null, portfolioUrl: null,
+  city: null, postalCode: null, country: 'France', linkedinUrl: null, otherUrl: null,
   photoPath: null, title: null, summary: null, createdAt: TS, updatedAt: TS,
 };
 

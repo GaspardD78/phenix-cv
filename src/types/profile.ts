@@ -19,8 +19,7 @@ export interface Profile {
   postalCode: string | null;
   country: string;
   linkedinUrl: string | null;
-  githubUrl: string | null;
-  portfolioUrl: string | null;
+  otherUrl: string | null;
   photoPath: string | null;
   title: string | null;
   summary: string | null;

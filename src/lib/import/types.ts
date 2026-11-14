@@ -14,8 +14,7 @@ export interface ImportProfileData {
   postalCode?: string;
   country?: string;
   linkedinUrl?: string;
-  githubUrl?: string;
-  portfolioUrl?: string;
+  otherUrl?: string;
   title?: string;
   summary?: string;
 }

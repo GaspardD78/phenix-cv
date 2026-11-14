@@ -12,7 +12,7 @@ export const GENERALIST_NOW = new Date(Date.UTC(2026, 5, 15));
 
 export const GENERALIST_PROFILE: Profile = {
   id: 'p-gen', firstName: 'Camille', lastName: 'Exemple', email: 'camille.exemple@example.com', phone: null,
-  address: null, city: 'Lyon', postalCode: null, country: 'France', linkedinUrl: null, githubUrl: null, portfolioUrl: null,
+  address: null, city: 'Lyon', postalCode: null, country: 'France', linkedinUrl: null, otherUrl: null,
   photoPath: null, title: 'Assistante commerciale', summary: 'Assistante commerciale polyvalente.',
   drivingLicense: 'Permis B', headerExtras: [], createdAt: '', updatedAt: '',
 };

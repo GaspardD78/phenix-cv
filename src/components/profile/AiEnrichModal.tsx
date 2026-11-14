@@ -22,8 +22,7 @@ const PROFILE_FIELD_LABELS: Record<string, string> = {
   postalCode: 'Code postal',
   country: 'Pays',
   linkedinUrl: 'LinkedIn URL',
-  githubUrl: 'GitHub URL',
-  portfolioUrl: 'Portfolio URL',
+  otherUrl: 'Autre lien (site web, portfolio…)',
   title: 'Titre professionnel',
   summary: 'Résumé / Accroche',
 };

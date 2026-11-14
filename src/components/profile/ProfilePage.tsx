@@ -403,10 +403,9 @@ export function ProfilePage() {
                   <div><label style={labelStyle}>Pays</label><PcInput name="country" defaultValue={profile?.country || 'France'} /></div>
                   <div><label style={labelStyle}>Titre professionnel</label><PcInput name="title" defaultValue={profile?.title || ''} /></div>
                   <div><label style={labelStyle}>LinkedIn URL</label><PcInput name="linkedinUrl" type="url" defaultValue={profile?.linkedinUrl || ''} /></div>
-                  <div><label style={labelStyle}>GitHub URL</label><PcInput name="githubUrl" type="url" defaultValue={profile?.githubUrl || ''} /></div>
                   <div><label style={labelStyle}>Permis de conduire</label><PcInput name="drivingLicense" defaultValue={profile?.drivingLicense || ''} placeholder="Ex : Permis B" /></div>
                   <div style={{ gridColumn: 'span 2' }}><label style={labelStyle}>Mentions d'en-tête</label><HeaderExtrasEditor name="headerExtras" initial={profile?.headerExtras} /></div>
-                  <div style={{ gridColumn: 'span 2' }}><label style={labelStyle}>Portfolio URL</label><PcInput name="portfolioUrl" type="url" defaultValue={profile?.portfolioUrl || ''} /></div>
+                  <div style={{ gridColumn: 'span 2' }}><label style={labelStyle}>Autre lien (site web, portfolio…)</label><PcInput name="otherUrl" type="url" defaultValue={profile?.otherUrl || ''} /></div>
                   <div style={{ gridColumn: 'span 2' }}><label style={labelStyle}>Résumé</label><PcTextarea name="summary" rows={3} defaultValue={profile?.summary || ''} /></div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={labelStyle}>Photo de profil</label>
@@ -454,8 +453,7 @@ export function ProfilePage() {
                     { label: 'Ville', value: profile?.city },
                     { label: 'Pays', value: profile?.country },
                     { label: 'LinkedIn', value: profile?.linkedinUrl },
-                    { label: 'GitHub', value: profile?.githubUrl },
-                    { label: 'Portfolio', value: profile?.portfolioUrl },
+                    { label: 'Autre lien', value: profile?.otherUrl },
                     { label: 'Permis', value: profile?.drivingLicense },
                     { label: "Mentions d'en-tête", value: parseHeaderExtras(profile?.headerExtras).join(' · ') },
                   ].map(f => (

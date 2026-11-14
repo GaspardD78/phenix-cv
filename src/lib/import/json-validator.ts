@@ -53,7 +53,7 @@ function validateProfile(raw: unknown): ImportProfileData {
 
   const stringFields: (keyof ImportProfileData)[] = [
     'firstName', 'lastName', 'email', 'phone', 'address', 'city',
-    'postalCode', 'country', 'linkedinUrl', 'githubUrl', 'portfolioUrl',
+    'postalCode', 'country', 'linkedinUrl', 'otherUrl',
     'title', 'summary',
   ];
 

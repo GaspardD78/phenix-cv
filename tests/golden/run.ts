@@ -261,7 +261,7 @@ function checkAtsText(data: ReturnType<typeof loadFixture>['data'], template: st
   };
   const headings = data.blocks.filter((b) => b.blockType === 'section_header' && b.sectionName).map((b) => b.sectionName as string);
   const p = data.profile;
-  const hasContact = [p.email, p.phone, p.city, p.linkedinUrl, p.githubUrl, p.portfolioUrl].some(Boolean);
+  const hasContact = [p.email, p.phone, p.city, p.linkedinUrl, p.otherUrl].some(Boolean);
   if (template.startsWith('sidebar-') && hasContact) headings.push('Contact');
   for (const h of headings) {
     if (!readable(h) && !below(h)) problems.push(`titre de section illisible pour un ATS (pdfjs-dist) : « ${h} »`);

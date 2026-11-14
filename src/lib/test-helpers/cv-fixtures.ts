@@ -6,8 +6,8 @@ import type { CvBlockPort } from '../apply-ai-cv';
 
 export const TEST_PROFILE: Profile = {
   id: 'p1', firstName: 'Camille', lastName: 'Durand', email: 'camille@example.com', phone: null,
-  address: null, city: 'Lyon', postalCode: null, country: 'France', linkedinUrl: null, githubUrl: null,
-  portfolioUrl: null, photoPath: null, title: 'Assistante commerciale', summary: 'Assistante commerciale confirmée.',
+  address: null, city: 'Lyon', postalCode: null, country: 'France', linkedinUrl: null,
+  otherUrl: null, photoPath: null, title: 'Assistante commerciale', summary: 'Assistante commerciale confirmée.',
   createdAt: '', updatedAt: '',
 };
 
