@@ -44,6 +44,26 @@ const BASE_FIXTURES = ['une-page', 'deux-pages', 'titres-longs', 'minimal'];
 const DERIVED_FIXTURES: string[] = [];
 /** Variante fuseau négatif : un template par famille de layout (toutes les dates passent par CVEntryBlock). */
 const TZ_TEMPLATES = ['ats-classic', 'sidebar-modern'];
+/**
+ * Polices du PDF : toutes doivent être embarquées (sinon le rendu dépendrait des polices du PC qui ouvre le
+ * fichier). Utilise `pdffonts` (poppler) ; sans lui, le contrôle est ignoré avec un avertissement.
+ */
+let pdffontsWarned = false;
+function pdfFontIssues(pdfPath: string): string[] {
+  let out: string;
+  try {
+    const r = Bun.spawnSync(['pdffonts', pdfPath]);
+    if (r.exitCode !== 0) throw new Error('pdffonts');
+    out = r.stdout.toString();
+  } catch {
+    if (!pdffontsWarned) { pdffontsWarned = true; console.warn('pdffonts introuvable : contrôle des polices embarquées ignoré.'); }
+    return [];
+  }
+  const rows = out.split('\n').slice(2).filter((l) => l.trim());
+  if (rows.length === 0) return ['PDF sans aucune police embarquée'];
+  return rows.filter((l) => !/\s+yes\s+(yes|no)\s+(yes|no)\s+\d+\s+\d+\s*$/.test(l)).map((l) => `police non embarquée : ${l.trim().split(/\s+/)[0]}`);
+}
+
 interface GoldenCase { id: string; suite: string; fixture: string; template: string; timezoneId: string; fit?: boolean }
 
 /** Suite fit : ajustement à une page appliqué avant l'export (src/lib/fit-to-page.tsx). */
@@ -340,6 +360,7 @@ async function main() {
       writeFileSync(join(outDir, 'rules.txt'), fp.rules.map((id) => `${id}\t${fp.ruleText.get(id)}`).join('\n') + '\n');
       writeFileSync(join(outDir, 'overflow.json'), JSON.stringify(overflow, null, 2));
       writeFileSync(join(outDir, 'actual.pdf'), pdf);
+      const fontIssues = pdfFontIssues(join(outDir, 'actual.pdf'));
       const { pages, text, firstPage } = await extractPdfText(pdf);
       texts.set(c.id, text);
       writeFileSync(join(outDir, 'text.txt'), text);
@@ -449,6 +470,7 @@ async function main() {
         result.htmlInfo = cmp.info;
       }
 
+      if (fontIssues.length) { result.ok = false; result.problems.push(...fontIssues); }
       results.push(result);
       const ov = overflow.overflows
         ? `dépasse de ${overflow.overflowMm} mm, ${overflow.hiddenLines} ligne(s) coupée(s)`

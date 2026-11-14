@@ -114,7 +114,6 @@
 5810e68e194d	@layer base	::-webkit-datetime-edit-day-field { padding-block-start: 0px; padding-block-end: 0px; }
 598a7b7e0664	@layer utilities	.bg-orange-100 { background-color: var(--color-orange-100); }
 59d5ecec1029	(racine)	@property --tw-ordinal { syntax: "*"; inherits: false; }
-59f2fd77916e	(racine)	:root { --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif; --pc-text: #ededf0; }
 5b461d2cfc7c	@layer utilities	.bg-gray-100 { background-color: var(--color-gray-100); }
 5be1057d6fb5	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-red-900: oklch(39.6% .141 25.723); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-800: oklch(27.8% .033 256.848); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-normal: 400; --font-weight-bold: 700; --tracking-wide: .025em; --default-font-family: var(--font-sans); }
 5c0139bd0759	(racine)	#printable-cv .cv-sidebar a { color: inherit; text-decoration-line: none; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; }
@@ -186,6 +185,7 @@
 8d777ab16ec9	@layer utilities	.after\:w-10::after { content: var(--tw-content); width: calc(var(--spacing) * 10); }
 8dbca982735d	(racine)	@property --tw-inset-shadow { syntax: "*"; inherits: false; initial-value: 0 0 #0000; }
 8dc90567b382	@layer utilities	.px-12 { padding-inline-start: ; padding-inline-end: ; }
+8fd2a7f3163a	(racine)	:root { --font-body: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif; --pc-text: #ededf0; }
 900519acdf90	@layer utilities	.\[font-family\:Georgia\,serif\] { font-family: Georgia, serif; }
 904982a86d01	@layer utilities	.mt-2 { margin-top: calc(var(--spacing) * 2); }
 90ba656e3530	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-amber-900: oklch(41.4% .112 45.904); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-800: oklch(27.8% .033 256.848); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-normal: 400; --font-weight-semibold: 600; --font-weight-bold: 700; --tracking-wide: .025em; --default-font-family: var(--font-sans); }

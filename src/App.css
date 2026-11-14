@@ -11,8 +11,8 @@
 
 /* Fonts */
 :root {
-  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-body:    'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body:    'DM Sans Variable', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 
   /* Indigo / Slate palette (default) */
   --pc-bg:            #09090e;
