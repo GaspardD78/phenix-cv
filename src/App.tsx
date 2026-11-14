@@ -9,6 +9,7 @@ import { TrackerPage } from "@/components/tracker/TrackerPage";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 import { ImportPage } from "@/components/import/ImportPage";
 import { HelpPage } from "@/components/help/HelpPage";
+import { GlobalFileDropGuard } from "@/components/import/GlobalFileDropGuard";
 import { useSessionStore } from "@/stores/sessionStore";
 import PrintView from "@/pages/PrintView";
 import { Toaster } from "sonner";
@@ -47,6 +48,7 @@ function AppRoutes() {
 
   return (
     <Layout>
+      <GlobalFileDropGuard />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
@@ -56,6 +58,7 @@ function AppRoutes() {
         <Route path="/import" element={<ImportPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/aide" element={<HelpPage />} />
+        <Route path="/aide/:page" element={<HelpPage />} />
       </Routes>
     </Layout>
   );

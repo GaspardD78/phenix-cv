@@ -1,28 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { toast } from 'sonner';
-import { Upload, FileText, FileCode2, Braces, ArrowLeft, ArrowRight, Check, Copy, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileUp, ExternalLink, ClipboardPaste, ArrowLeft, ArrowRight, Check, Copy, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { WikiLink } from '@/components/help/WikiLink';
+import { useImportDropStore } from '@/stores/importDropStore';
 import { Button } from '@/components/ui/button';
 import { useProfileStore } from '@/stores/profileStore';
 import type { Profile, MasterEntry } from '@/types/profile';
 
 import type { ImportFormat, ImportPayload, ProfileFieldDiff, SelectableEntry } from '@/lib/import/types';
 import { parseLinkedInZip } from '@/lib/import/linkedin-parser';
-import { extractTextFromPdf } from '@/lib/import/pdf-extractor';
 import { extractTextFromDocx } from '@/lib/import/docx-extractor';
 import { buildImportPrompt } from '@/lib/import/import-prompt';
-import { parseImportJson } from '@/lib/import/json-validator';
+import { parseImportResponse } from '@/lib/import/extract-json';
+import { classifyDroppedPaths, SCANNED_PDF_MESSAGE } from '@/lib/import/file-kind';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Step indicators
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { id: 'source', label: 'Source' },
-  { id: 'process', label: 'Préparer' },
-  { id: 'preview', label: 'Prévisualiser' },
+  { id: 'source', label: 'Votre fichier' },
+  { id: 'process', label: 'Lecture par une IA' },
+  { id: 'preview', label: 'Vérification' },
   { id: 'done', label: 'Terminé' },
 ] as const;
 
@@ -68,81 +71,50 @@ function StepBar({ current }: { current: StepId }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Step 1 — Source selection
+// Étape 1 : votre fichier (glisser-déposer ou « Choisir un fichier »)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const FORMAT_OPTIONS: { id: ImportFormat; label: string; desc: string; icon: React.ElementType; accept: string }[] = [
-  {
-    id: 'linkedin',
-    label: 'LinkedIn ZIP',
-    desc: 'Export complet LinkedIn (Paramètres → Confidentialité → Obtenir une copie de vos données)',
-    icon: Upload,
-    accept: '.zip',
-  },
-  {
-    id: 'pdf',
-    label: 'CV en PDF',
-    desc: 'Extraction du texte puis génération d\'un prompt LLM pour structurer les données',
-    icon: FileText,
-    accept: '.pdf',
-  },
-  {
-    id: 'docx',
-    label: 'CV en DOCX',
-    desc: 'Extraction du texte puis génération d\'un prompt LLM pour structurer les données',
-    icon: FileCode2,
-    accept: '.docx,.doc',
-  },
-  {
-    id: 'json',
-    label: 'JSON structuré',
-    desc: "Collez directement la réponse d'une IA, au format attendu par Phénix CV",
-    icon: Braces,
-    accept: '',
-  },
-];
+/** Lit le fichier et en tire soit des données prêtes (LinkedIn), soit du texte à faire lire par une IA. */
+async function loadImportFile(path: string, format: ImportFormat): Promise<{ payload: ImportPayload | null; text?: string }> {
+  const bytes = await readFile(path);
+  const ab = bytes.buffer as ArrayBuffer;
+  if (format === 'linkedin') {
+    const payload = await parseLinkedInZip(ab);
+    if (!payload.entries?.length && !payload.profile) {
+      throw new Error("Aucune donnée trouvée dans ce fichier .zip. Vérifiez qu'il s'agit bien de l'export complet de LinkedIn.");
+    }
+    return { payload };
+  }
+  if (format === 'pdf') {
+    // Chargé à la demande : la bibliothèque PDF est lourde et inutile tant qu'on n'importe pas de PDF.
+    const { extractTextFromPdf } = await import('@/lib/import/pdf-extractor');
+    const text = await extractTextFromPdf(ab);
+    if (!text.trim()) throw new Error(SCANNED_PDF_MESSAGE);
+    return { payload: null, text };
+  }
+  const text = await extractTextFromDocx(ab);
+  if (!text.trim()) throw new Error("Nous n'avons pas pu lire le texte de ce document Word. Essayez de l'enregistrer en PDF, puis importez le PDF.");
+  return { payload: null, text };
+}
 
-function StepSource({ onNext }: { onNext: (format: ImportFormat, payload: ImportPayload | null, rawText?: string) => void }) {
-  const [selected, setSelected] = useState<ImportFormat | null>(null);
+function StepSource({
+  onNext,
+  onManual,
+}: {
+  onNext: (format: ImportFormat, payload: ImportPayload | null, rawText?: string) => void;
+  onManual: () => void;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dragging = useImportDropStore(s => s.dragging);
+  const pending = useImportDropStore(s => s.pending);
 
-  const handlePick = async () => {
-    if (!selected) return;
+  const processFile = async (path: string, format: ImportFormat) => {
     setError(null);
-
-    if (selected === 'json') {
-      onNext('json', null);
-      return;
-    }
-
-    const opt = FORMAT_OPTIONS.find(f => f.id === selected)!;
-    const filePath = await open({
-      filters: [{ name: opt.label, extensions: opt.accept.replace(/\./g, '').split(',') }],
-      multiple: false,
-    });
-    if (!filePath || typeof filePath !== 'string') return;
-
     setLoading(true);
     try {
-      const bytes = await readFile(filePath);
-      const ab = bytes.buffer as ArrayBuffer;
-
-      if (selected === 'linkedin') {
-        const payload = await parseLinkedInZip(ab);
-        if (!payload.entries?.length && !payload.profile) {
-          throw new Error('Aucune donnée trouvée dans le ZIP. Vérifie que le fichier est bien un export LinkedIn complet.');
-        }
-        onNext('linkedin', payload);
-      } else if (selected === 'pdf') {
-        const text = await extractTextFromPdf(ab);
-        if (!text.trim()) throw new Error('Impossible d\'extraire le texte de ce PDF (PDF scanné sans OCR ?).');
-        onNext('pdf', null, text);
-      } else if (selected === 'docx') {
-        const text = await extractTextFromDocx(ab);
-        if (!text.trim()) throw new Error('Impossible d\'extraire le texte de ce fichier DOCX.');
-        onNext('docx', null, text);
-      }
+      const { payload, text } = await loadImportFile(path, format);
+      onNext(format, payload, text);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -150,224 +122,238 @@ function StepSource({ onNext }: { onNext: (format: ImportFormat, payload: Import
     }
   };
 
+  // Fichier déposé n'importe où dans la fenêtre (voir GlobalFileDropGuard).
+  useEffect(() => {
+    if (!pending) return;
+    useImportDropStore.getState().setPending(null);
+    void processFile(pending.path, pending.format);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending]);
+
+  const pick = async (kind: 'cv' | 'linkedin') => {
+    setError(null);
+    const filePath = await open({
+      filters: kind === 'cv'
+        ? [{ name: 'CV (PDF ou Word)', extensions: ['pdf', 'docx'] }]
+        : [{ name: 'Export LinkedIn (.zip)', extensions: ['zip'] }],
+      multiple: false,
+    });
+    if (!filePath || typeof filePath !== 'string') return;
+    const result = classifyDroppedPaths([filePath]);
+    if (!result.ok) { setError(result.message); return; }
+    await processFile(result.path, result.format);
+  };
+
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Choisir la source d'import</h2>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-        Sélectionnez le format du fichier que vous souhaitez importer.
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Votre CV actuel</h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+        Déposez votre CV : nous en récupérons les informations pour remplir votre profil. Vous vérifiez tout avant que ce soit enregistré.
       </p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {FORMAT_OPTIONS.map(opt => {
-          const Icon = opt.icon;
-          const active = selected === opt.id;
-          return (
-            <button
-              key={opt.id}
-              onClick={() => setSelected(opt.id)}
-              className={`text-left p-4 rounded-xl border-2 transition-all ${
-                active
-                  ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 bg-white dark:bg-gray-800'
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-1">
-                <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-blue-600' : 'text-gray-500 dark:text-gray-400'}`} />
-                <span className={`font-semibold text-sm ${active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-800 dark:text-gray-100'}`}>
-                  {opt.label}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed pl-8">{opt.desc}</p>
-            </button>
-          );
-        })}
+
+      <div
+        data-testid="import-dropzone"
+        className={`flex flex-col items-center text-center gap-3 rounded-2xl border-2 border-dashed px-6 py-10 transition-colors ${
+          dragging
+            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+            : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50'
+        }`}
+      >
+        <FileUp className={`w-9 h-9 ${dragging ? 'text-blue-600' : 'text-gray-400'}`} />
+        <p className="text-base font-medium text-gray-800 dark:text-gray-100">
+          {dragging ? 'Relâchez pour importer' : 'Glissez votre CV ici'}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">PDF ou Word (.docx)</p>
+        <Button onClick={() => void pick('cv')} disabled={loading}>
+          {loading ? 'Lecture du fichier…' : 'Choisir un fichier'}
+        </Button>
       </div>
 
       {error && (
-        <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+        <div role="alert" className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
           <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}
 
-      <div className="mt-6 flex justify-end">
-        <Button onClick={handlePick} disabled={!selected || loading}>
-          {loading ? 'Traitement...' : selected === 'json' ? 'Continuer' : 'Ouvrir un fichier'}
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
+      <div className="mt-6 grid gap-2 text-sm">
+        <button onClick={() => void pick('linkedin')} disabled={loading} className="text-left text-blue-600 dark:text-blue-400 hover:underline">
+          J'ai un export LinkedIn (fichier .zip)
+        </button>
+        <button onClick={() => onNext('json', null)} disabled={loading} className="text-left text-blue-600 dark:text-blue-400 hover:underline">
+          J'ai déjà la réponse d'une IA à coller
+        </button>
+        <button onClick={onManual} disabled={loading} className="text-left text-blue-600 dark:text-blue-400 hover:underline">
+          Je préfère remplir moi-même
+        </button>
       </div>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Step 2 — Process (prompt-based for PDF/DOCX, JSON paste)
+// Étape 2 : lecture par une IA (facultative) ou saisie de la réponse
 // ─────────────────────────────────────────────────────────────────────────────
+
+const AI_SITES = [
+  { label: 'Ouvrir ChatGPT', url: 'https://chatgpt.com/' },
+  { label: 'Ouvrir Claude', url: 'https://claude.ai/new' },
+] as const;
+
+function HowItWorks() {
+  const items = [
+    { icon: Copy, title: '1. Copier', text: 'Copiez le texte préparé par l\'application.' },
+    { icon: ExternalLink, title: '2. Coller dans l\'IA', text: 'Ouvrez ChatGPT ou Claude, collez le texte et envoyez.' },
+    { icon: ClipboardPaste, title: '3. Recopier ici', text: 'Copiez la réponse de l\'IA et collez-la ci-dessous.' },
+  ];
+  return (
+    <ol className="grid gap-3 sm:grid-cols-3" aria-label="Les trois étapes">
+      {items.map(({ icon: Icon, title, text }) => (
+        <li key={title} className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800/50">
+          <Icon className="w-5 h-5 text-blue-600 mb-1.5" aria-hidden="true" />
+          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{title}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{text}</p>
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 function StepProcess({
   format,
   rawText,
   onNext,
   onBack,
+  onManual,
 }: {
   format: ImportFormat;
   rawText?: string;
   onNext: (payload: ImportPayload) => void;
   onBack: () => void;
+  onManual: () => void;
 }) {
-  const [jsonInput, setJsonInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [response, setResponse] = useState('');
+  const [error, setError] = useState<{ message: string; advice: string } | null>(null);
   const [copied, setCopied] = useState(false);
-  const [showRawText, setShowRawText] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
 
+  const isFromFile = format === 'pdf' || format === 'docx';
   const prompt = rawText ? buildImportPrompt(rawText) : '';
 
   const copyPrompt = async () => {
-    await navigator.clipboard.writeText(prompt);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleSubmit = () => {
-    setError(null);
     try {
-      const payload = parseImportJson(jsonInput);
-      onNext(payload);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      await navigator.clipboard.writeText(prompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      toast.error('La copie a échoué. Sélectionnez le texte dans « Voir le texte à copier » et copiez-le à la main.');
+      setShowPrompt(true);
     }
   };
 
-  const isPromptBased = format === 'pdf' || format === 'docx';
-  const formatLabel = format === 'pdf' ? 'PDF' : format === 'docx' ? 'DOCX' : 'JSON';
+  const openSite = async (url: string) => {
+    try {
+      await openUrl(url);
+    } catch {
+      toast.error(`Impossible d'ouvrir le site. Ouvrez votre navigateur et allez sur ${url}`);
+    }
+  };
+
+  const submit = () => {
+    const result = parseImportResponse(response);
+    if (result.ok) {
+      setError(null);
+      onNext(result.payload);
+    } else {
+      setError({ message: result.message, advice: result.advice });
+    }
+  };
 
   return (
     <div>
       <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
-        {isPromptBased ? `Analyser votre ${formatLabel} avec un LLM` : 'Coller le JSON structuré'}
+        {isFromFile ? 'Faire lire votre CV par une IA' : 'Coller la réponse d\'une IA'}
       </h2>
 
-      {isPromptBased ? (
+      {isFromFile ? (
         <div className="space-y-5">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Le texte de votre {formatLabel} a été extrait. Copiez le prompt ci-dessous, collez-le dans ChatGPT, Claude ou tout autre LLM, puis collez la réponse JSON dans le champ en bas.
+            Une IA (ChatGPT, Claude…) range très bien les informations d'un CV : expériences, formations, compétences. Votre fichier reste sur
+            votre ordinateur ; seul le texte que vous collez est envoyé, par vous, à l'IA de votre choix.{' '}
+            <WikiLink page="utiliser-une-ia">Pourquoi passer par une IA ?</WikiLink>
           </p>
 
-          {/* Prompt block */}
-          <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Prompt à copier</span>
-              <Button variant="ghost" size="sm" onClick={copyPrompt} className="h-7 px-2 text-xs gap-1.5">
-                <Copy className="w-3.5 h-3.5" />
-                {copied ? 'Copié !' : 'Copier'}
+          <HowItWorks />
+
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => void copyPrompt()}>
+              {copied ? <><Check className="w-4 h-4 mr-2" /> Texte copié</> : <><Copy className="w-4 h-4 mr-2" /> Copier le texte</>}
+            </Button>
+            {AI_SITES.map(site => (
+              <Button key={site.url} variant="outline" onClick={() => void openSite(site.url)}>
+                <ExternalLink className="w-4 h-4 mr-2" />
+                {site.label}
               </Button>
-            </div>
-            <pre className="p-4 text-xs text-gray-700 dark:text-gray-300 overflow-auto max-h-40 leading-relaxed whitespace-pre-wrap font-mono">
+            ))}
+          </div>
+
+          <button
+            onClick={() => setShowPrompt(v => !v)}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          >
+            {showPrompt ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {showPrompt ? 'Masquer le texte à copier' : 'Voir le texte à copier'}
+          </button>
+          {showPrompt && (
+            <pre className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap border border-gray-200 dark:border-gray-700">
               {prompt}
             </pre>
-          </div>
-
-          {/* Raw text toggle */}
-          {rawText && (
-            <button
-              onClick={() => setShowRawText(v => !v)}
-              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-            >
-              {showRawText ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              {showRawText ? 'Masquer le texte extrait' : 'Voir le texte extrait du fichier'}
-            </button>
           )}
-          {showRawText && rawText && (
-            <pre className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg p-3 overflow-auto max-h-40 whitespace-pre-wrap font-mono border border-gray-200 dark:border-gray-700">
-              {rawText}
-            </pre>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Réponse du LLM (JSON)
-            </label>
-            <textarea
-              value={jsonInput}
-              onChange={e => setJsonInput(e.target.value)}
-              placeholder='{ "profile": { ... }, "entries": [ ... ] }'
-              rows={8}
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-mono text-gray-800 dark:text-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-            />
-          </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Collez ici les données au format attendu par Phénix CV (produites par une IA ou saisies manuellement).
-          </p>
-          <div>
-            <details className="group">
-              <summary className="cursor-pointer text-xs text-blue-600 dark:text-blue-400 hover:underline select-none">
-                Voir le schéma JSON attendu
-              </summary>
-              <pre className="mt-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg p-3 overflow-auto max-h-56 font-mono border border-gray-200 dark:border-gray-700">
-{`{
-  "profile": {
-    "firstName": "Camille",
-    "lastName": "Martin",
-    "email": "camille.martin@example.com",
-    "phone": "06 00 00 00 00",
-    "city": "Paris",
-    "country": "France",
-    "title": "Assistante commerciale",
-    "summary": "10 ans d'expérience en relation client..."
-  },
-  "entries": [
-    {
-      "entryType": "experience",
-      "title": "Assistante commerciale senior",
-      "subtitle": "Maison Exemple SAS",
-      "location": "Paris",
-      "startDate": "2020-03",
-      "isCurrent": true,
-      "description": "- Suivi de 150 commandes par semaine\\n- Relation avec 40 clients grands comptes"
-    },
-    {
-      "entryType": "skill",
-      "title": "Négociation commerciale",
-      "subtitle": "Confirmé"
-    },
-    {
-      "entryType": "language",
-      "title": "Anglais",
-      "subtitle": "Courant (C1)"
-    }
-  ]
-}`}
-              </pre>
-            </details>
-          </div>
-          <textarea
-            value={jsonInput}
-            onChange={e => setJsonInput(e.target.value)}
-            placeholder='{ "profile": { ... }, "entries": [ ... ] }'
-            rows={12}
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-mono text-gray-800 dark:text-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-          />
-        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          Collez ici la réponse de l'IA, telle quelle. Les phrases autour et les balises éventuelles ne gênent pas.
+        </p>
       )}
+
+      <div className="mt-5">
+        <label htmlFor="ai-response" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          Réponse de l'IA
+        </label>
+        <textarea
+          id="ai-response"
+          value={response}
+          onChange={e => setResponse(e.target.value)}
+          placeholder="Collez ici la réponse complète de l'IA"
+          rows={8}
+          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+        />
+      </div>
 
       {error && (
-        <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+        <div role="alert" className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
           <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          <div className="text-sm text-red-700 dark:text-red-300 space-y-1">
+            <p className="font-medium">{error.message}</p>
+            <p>{error.advice}</p>
+          </div>
         </div>
       )}
 
-      <div className="mt-6 flex justify-between">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Button>
-        <Button onClick={handleSubmit} disabled={!jsonInput.trim()}>
-          Prévisualiser
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
+        <div className="flex items-center gap-4">
+          <button onClick={onManual} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+            Je préfère remplir moi-même
+          </button>
+          <Button onClick={submit} disabled={!response.trim()}>
+            Voir ce qui a été reconnu
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -738,16 +724,16 @@ export function ImportPage() {
           <ArrowLeft className="w-4 h-4" />
           Retour au profil
         </button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Importer un profil</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Importer mon CV</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Importez vos données depuis un CV existant ou un export LinkedIn.
+          Récupérez les informations de votre CV (PDF ou Word) ou de votre export LinkedIn.
         </p>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <StepBar current={step} />
 
-        {step === 'source' && <StepSource onNext={handleSourceNext} />}
+        {step === 'source' && <StepSource onNext={handleSourceNext} onManual={() => navigate('/profile')} />}
 
         {step === 'process' && format && (
           <StepProcess
@@ -755,6 +741,7 @@ export function ImportPage() {
             rawText={rawText}
             onNext={handleProcessNext}
             onBack={() => setStep('source')}
+            onManual={() => navigate('/profile')}
           />
         )}
 
