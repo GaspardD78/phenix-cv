@@ -18,6 +18,7 @@ import { buildImportPrompt } from '@/lib/import/import-prompt';
 import { parseImportResponse } from '@/lib/import/extract-json';
 import { classifyDroppedPaths, SCANNED_PDF_MESSAGE } from '@/lib/import/file-kind';
 import { HelpButton } from '@/components/help/HelpButton';
+import { applyImport } from '@/lib/import/apply-import';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Step indicators
@@ -98,7 +99,7 @@ async function loadImportFile(path: string, format: ImportFormat): Promise<{ pay
   return { payload: null, text };
 }
 
-function StepSource({
+export function StepSource({
   onNext,
   onManual,
 }: {
@@ -220,7 +221,7 @@ function HowItWorks() {
   );
 }
 
-function StepProcess({
+export function StepProcess({
   format,
   rawText,
   onNext,
@@ -422,7 +423,7 @@ function buildSelectableEntries(imported: SelectableEntry['data'][], existing: M
   });
 }
 
-function StepPreview({
+export function StepPreview({
   payload,
   onConfirm,
   onBack,
@@ -667,47 +668,15 @@ export function ImportPage() {
   const handleConfirm = async (diffs: ProfileFieldDiff[], entries: SelectableEntry[]) => {
     setImporting(true);
     try {
-      // Update profile fields
-      const profileUpdates: Partial<Profile> = {};
-      for (const diff of diffs) {
-        if (diff.useImported && diff.imported) {
-          (profileUpdates as Record<string, string>)[diff.key] = diff.imported;
-        }
-      }
-      if (Object.keys(profileUpdates).length > 0) {
-        await updateProfile(profileUpdates);
-      }
-
-      // Fetch the (potentially just-created) profile to get the real ID
-      const profileId = useProfileStore.getState().profile?.id ?? currentProfile?.id ?? '';
-
-      // Add selected entries
-      const selectedEntries = entries.filter(e => e.selected);
-      for (const { data } of selectedEntries) {
-        await addEntry({
-          profileId,
-          entryType: data.entryType,
-          title: data.title,
-          subtitle: data.subtitle ?? null,
-          location: data.location ?? null,
-          startDate: data.startDate ?? null,
-          endDate: data.endDate ?? null,
-          isCurrent: data.isCurrent ?? false,
-          description: data.description ?? null,
-          metadata: {},
-          sortOrder: 0,
-          tags: data.tags ?? [],
-        });
-      }
-
-      await fetchProfile();
-
-      setImportResult({
-        profileCount: Object.keys(profileUpdates).length,
-        entryCount: selectedEntries.length,
+      const result = await applyImport(diffs, entries, {
+        updateProfile,
+        addEntry,
+        fetchProfile,
+        getProfileId: () => useProfileStore.getState().profile?.id ?? currentProfile?.id ?? '',
       });
+      setImportResult(result);
       setStep('done');
-      toast.success(`Import réussi — ${selectedEntries.length} entrée(s) ajoutée(s)`);
+      toast.success(`Import réussi — ${result.entryCount} entrée(s) ajoutée(s)`);
     } catch (e) {
       toast.error(`Erreur lors de l'import : ${e instanceof Error ? e.message : String(e)}`);
     } finally {
