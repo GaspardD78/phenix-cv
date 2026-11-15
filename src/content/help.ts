@@ -118,6 +118,12 @@ export const HELP = {
     example: '« Gestion de la relation client », « Excel ».',
     page: 'profil-competences',
   },
+  photo: {
+    title: 'Photo',
+    summary: 'La photo est facultative. Si vous en mettez une, choisissez-la sobre : fond clair, visage centré, photo récente.',
+    example: 'Vous pouvez passer cette étape et ajouter une photo plus tard dans Mon profil.',
+    page: 'profil-photo',
+  },
   sauvegarde: {
     title: 'Sauvegarde',
     summary: 'Copiez vos données dans un fichier de sauvegarde (.cvmaker) que vous gardez en lieu sûr : clé USB, disque externe.',
