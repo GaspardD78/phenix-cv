@@ -318,7 +318,7 @@ export function TemplatePickerPopover({ currentTemplateId, onSelect }: TemplateP
         onClick={handleToggle}
         className="bg-gray-50 dark:bg-[var(--pc-bg)] border border-gray-300 dark:border-[var(--pc-border)] text-gray-900 dark:text-[var(--pc-text)] text-sm rounded-md focus:ring-lagon-500 focus:border-lagon-500 px-3 py-2 flex items-center gap-1.5 hover:bg-gray-100 transition-colors min-h-[44px]"
       >
-        <span className="text-gray-500 dark:text-[var(--pc-muted)] text-xs hidden sm:inline">Template :</span>
+        <span className="text-gray-500 dark:text-[var(--pc-muted)] text-xs hidden sm:inline">Modèle :</span>
         <span className="font-medium">{current.name}</span>
         <ChevronDown className="w-4 h-4 text-gray-400 dark:text-[var(--pc-muted)]" />
       </button>

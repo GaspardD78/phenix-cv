@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, FileDown, FolderOpen, PartyPopper 
 import { Button } from '@/components/ui/button';
 import { PrintableCV } from '@/components/export/PrintableCV';
 import { OverflowConfirmDialog } from '@/components/cv-builder/OverflowConfirmDialog';
+import { TemplatePickerPopover } from '@/components/cv-builder/TemplatePickerPopover';
 import { useProfileStore } from '@/stores/profileStore';
 import { useCvStore } from '@/stores/cvStore';
 import { useWizardStore } from '@/stores/wizardStore';
@@ -54,6 +55,7 @@ export function WizardExportStep() {
   const blocks = useCvStore(s => s.currentCvBlocks);
   const fetchCvById = useCvStore(s => s.fetchCvById);
   const fetchCvBlocks = useCvStore(s => s.fetchCvBlocks);
+  const setTemplate = useCvStore(s => s.setTemplate);
   const cvId = useWizardStore(s => s.wizard.cvId);
   const finished = useWizardStore(s => s.wizard.finished);
   const finish = useWizardStore(s => s.finish);
@@ -150,6 +152,14 @@ export function WizardExportStep() {
 
         <section className="space-y-3 rounded-xl border border-border bg-card p-4">
           <h2 className="font-semibold">CV « {currentCv?.name ?? '…'} »</h2>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">1. Choisissez un modèle</p>
+            {currentCv && (
+              <TemplatePickerPopover currentTemplateId={currentCv.templateId} onSelect={id => void setTemplate(id).catch(() => toast.error("Le modèle n'a pas pu être enregistré."))} />
+            )}
+            <p className="text-xs text-muted-foreground">L'aperçu change tout de suite. Les modèles « ATS » se lisent sans difficulté par les logiciels de recrutement.</p>
+          </div>
+          <p className="text-sm font-medium">2. Téléchargez-le</p>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => void exportAs('pdf')} disabled={!ready || busy !== null}>
               <FileDown className="size-4" aria-hidden />{busy === 'pdf' ? 'Export en cours…' : 'Télécharger en PDF'}

@@ -45,6 +45,7 @@ export const SETTINGS_TREE: readonly SettingsGroupDef[] = [
     ],
   },
   { label: 'Avancé', pages: [{ id: 'avance', label: "Options avancées" }] },
+  { label: 'Aide', pages: [{ id: 'guide', label: 'Guide de démarrage' }] },
   { label: 'Application', pages: [{ id: 'a-propos', label: 'À propos' }] },
 ];
 

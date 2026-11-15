@@ -28,7 +28,7 @@ const DEFAULT_PANEL = 380;
 export function CVBuilderPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentCv, currentCvBlocks, fetchCvById, fetchCvBlocks, updateCv, setMarkdownMode } = useCvStore();
+  const { currentCv, currentCvBlocks, fetchCvById, fetchCvBlocks, setMarkdownMode } = useCvStore();
   const { profile, entries, fetchProfile } = useProfileStore();
   const [isExporting, setIsExporting] = useState(false);
   const { status: saveStatus, notifySave } = useSaveIndicator();
@@ -179,9 +179,7 @@ export function CVBuilderPage() {
   };
 
   const handleTemplateChange = async (newTemplateId: string) => {
-    if (!currentCv) return;
-    useCvStore.setState({ currentCv: { ...currentCv, templateId: newTemplateId } });
-    await updateCv(currentCv.id, { templateId: newTemplateId });
+    await useCvStore.getState().setTemplate(newTemplateId);
   };
 
   if (!currentCv || !profile) {
