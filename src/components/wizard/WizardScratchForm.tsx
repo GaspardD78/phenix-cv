@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { useProfileStore } from '@/stores/profileStore';
 import { EMPTY_SCRATCH_FORM, MONTHS_FR, buildScratchResult, joinMonth, splitMonth, validateScratch, type ScratchErrors, type ScratchForm } from '@/lib/wizard/scratch';
 
-const FIELD = 'w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+const FIELD = 'w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function Field({ id, label, error, required, children }: { id: string; label: string; error?: string; required?: boolean; children: React.ReactNode }) {
   return (
@@ -112,21 +112,23 @@ export function WizardScratchForm({ onDone }: { onDone: () => void }) {
   });
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-6">
-      <fieldset className="space-y-3">
-        <legend className="mb-2 font-semibold">Qui êtes-vous ?</legend>
-        <div className="grid gap-3 sm:grid-cols-2">
+    <form onSubmit={submit} noValidate className="space-y-4">
+      <fieldset className="space-y-2">
+        <legend className="mb-1 text-sm font-semibold">Qui êtes-vous ?</legend>
+        <div className="grid gap-3 sm:grid-cols-3">
           <Field id="f-firstName" label="Prénom" required error={errors.firstName}><input {...input('firstName', { autoComplete: 'given-name' })} /></Field>
           <Field id="f-lastName" label="Nom" required error={errors.lastName}><input {...input('lastName', { autoComplete: 'family-name' })} /></Field>
+          <Field id="f-headline" label="Intitulé du profil"><input {...input('headline', { placeholder: 'ex. Assistante commerciale' })} /></Field>
         </div>
-        <Field id="f-headline" label="Intitulé de votre profil, par exemple « Assistante commerciale »"><input {...input('headline')} /></Field>
       </fieldset>
 
-      <fieldset className="space-y-3">
-        <legend className="mb-2 font-semibold">Une expérience</legend>
+      <fieldset className="space-y-2">
+        <legend className="mb-1 text-sm font-semibold">Une expérience</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field id="f-expTitle" label="Intitulé du poste" required error={errors.expTitle}><input {...input('expTitle')} /></Field>
           <Field id="f-expCompany" label="Entreprise"><input {...input('expCompany')} /></Field>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
           <MonthYearField id="f-expStart" label="Début" value={form.expStart} error={errors.expStart} onChange={v => set('expStart', v)} />
           <MonthYearField id="f-expEnd" label="Fin" value={form.expEnd} error={errors.expEnd} disabled={form.expCurrent} onChange={v => set('expEnd', v)} />
         </div>
@@ -136,16 +138,15 @@ export function WizardScratchForm({ onDone }: { onDone: () => void }) {
         </label>
       </fieldset>
 
-      <fieldset className="space-y-3">
-        <legend className="mb-2 font-semibold">Une formation</legend>
-        <div className="grid gap-3 sm:grid-cols-2">
+      <fieldset className="space-y-2">
+        <legend className="mb-1 text-sm font-semibold">Une formation</legend>
+        <div className="grid gap-3 sm:grid-cols-3">
           <Field id="f-eduTitle" label="Diplôme ou formation" required error={errors.eduTitle}><input {...input('eduTitle')} /></Field>
           <Field id="f-eduSchool" label="Établissement"><input {...input('eduSchool')} /></Field>
           <MonthYearField id="f-eduEnd" label="Obtenu en" value={form.eduEnd} error={errors.eduEnd} onChange={v => set('eduEnd', v)} />
         </div>
       </fieldset>
 
-      <p className="text-sm text-muted-foreground">Vous pourrez tout compléter ensuite dans Mon profil.</p>
       <div className="flex justify-end">
         <Button type="submit" disabled={saving}>
           {saving ? 'Enregistrement…' : 'Enregistrer et continuer'} <ArrowRight className="size-4" aria-hidden />

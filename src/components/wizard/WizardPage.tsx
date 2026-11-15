@@ -176,7 +176,7 @@ function ImportScreen() {
         </h1>
         <p className="text-muted-foreground">
           {manual
-            ? 'Quelques champs suffisent pour démarrer. Tout pourra être complété ensuite.'
+            ? 'Quelques champs suffisent pour démarrer. Vous compléterez le reste dans Mon profil.'
             : 'Déposez votre fichier ou choisissez-le. Vous vérifierez tout avant que rien ne soit enregistré.'}
         </p>
       </div>
@@ -185,7 +185,7 @@ function ImportScreen() {
       ) : (
         <WizardImportStep onManual={() => setManual(true)} onDone={() => void complete()} />
       )}
-      <div className="flex flex-wrap justify-between gap-3 border-t border-border pt-4">
+      <div className="flex flex-wrap justify-between gap-3 border-t border-border pt-3">
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => void back()}>
             <ArrowLeft className="size-4" aria-hidden /> Retour
@@ -232,7 +232,7 @@ export function WizardPage() {
   else screen = <PendingScreen step={step} />;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
+    <div className="mx-auto max-w-3xl space-y-4 p-4 sm:px-6 sm:py-4">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm text-muted-foreground">Guide de démarrage · étape {WIZARD_STEPS.indexOf(step) + 1} sur {WIZARD_STEPS.length}</span>
         <HelpButton id={step === 'start' ? 'guide-depart' : step === 'import' ? 'importer' : 'guide'} />
