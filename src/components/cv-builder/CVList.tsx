@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { NewCvDialog } from './NewCvDialog';
+import { DEFAULT_NEW_CV_MODE, parseNewCvMode } from '@/lib/new-cv';
 import { useCvStore } from '@/stores/cvStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { toast } from 'sonner';
@@ -167,43 +169,25 @@ function CVCard({ cv, onDelete, onDuplicate, onExportDocx, onExportPdf }: {
 }
 
 export function CVList() {
-  const { cvs, fetchCvs, createCv, deleteCv, duplicateCv } = useCvStore();
+  const { cvs, fetchCvs, deleteCv, duplicateCv } = useCvStore();
   const { profile, entries, fetchProfile } = useProfileStore();
-  const [showNewModal, setShowNewModal] = useState(false);
-  const [newCvName, setNewCvName] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedMode = parseNewCvMode(searchParams.get('nouveau'));
+  const [showNewModal, setShowNewModal] = useState(searchParams.has('nouveau'));
+  const newMode = requestedMode ?? DEFAULT_NEW_CV_MODE;
+
+  // Le lien « Créer un CV » de l'accueil ouvre directement le choix du parcours.
+  useEffect(() => {
+    if (searchParams.has('nouveau')) {
+      setShowNewModal(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     fetchCvs();
     fetchProfile();
   }, [fetchCvs, fetchProfile]);
-
-  const handleCreate = async () => {
-    if (!newCvName.trim() || !profile) return;
-    setIsCreating(true);
-    try {
-      await createCv({
-        profileId: profile.id,
-        name: newCvName,
-        templateId: 'ats-classic',
-        targetJob: null,
-        targetCompany: null,
-        customSummary: null,
-        settings: {},
-        isFavorite: false,
-        lastExported: null,
-        markdownContent: null,
-        markdownMode: 0,
-      });
-      setNewCvName('');
-      setShowNewModal(false);
-      toast.success('CV créé avec succès');
-    } catch {
-      toast.error('Erreur lors de la création du CV');
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   const handleDelete = async (id: string, name: string) => {
     const ok = await confirm(`Supprimer le CV "${name}" ?`, { title: 'Confirmer', kind: 'warning' });
@@ -258,7 +242,7 @@ export function CVList() {
           <h1 style={{
             fontSize: 22, fontWeight: 700, color: 'var(--pc-text)',
             fontFamily: 'var(--font-display)', letterSpacing: '-0.4px', margin: 0,
-          }}>Mes CVs</h1>
+          }}>Mes CV</h1>
           <p style={{ fontSize: 13, color: 'var(--pc-muted)', margin: '4px 0 0', fontFamily: 'var(--font-body)' }}>
             {cvs.length} document{cvs.length !== 1 ? 's' : ''}
           </p>
@@ -326,64 +310,7 @@ export function CVList() {
         </div>
       </div>
 
-      {/* New CV modal */}
-      {showNewModal && (
-        <div
-          onClick={() => setShowNewModal(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 50,
-            background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'var(--pc-card)', border: '1px solid var(--pc-border)',
-              borderRadius: 14, padding: 28, width: 420,
-              animation: 'modalIn 0.18s ease',
-              boxShadow: '0 24px 64px rgba(0,0,0,.6)',
-            }}
-          >
-            <h2 style={{
-              margin: '0 0 6px', fontSize: 18, fontWeight: 700,
-              fontFamily: 'var(--font-display)', color: 'var(--pc-text)', letterSpacing: '-0.3px',
-            }}>Nouveau CV</h2>
-            <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--pc-muted)', fontFamily: 'var(--font-body)' }}>
-              Donnez un nom à votre CV (ex&nbsp;: Assistante commerciale — PME)
-            </p>
-            <input
-              autoFocus
-              type="text"
-              placeholder="Nom du CV..."
-              value={newCvName}
-              onChange={(e) => setNewCvName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setShowNewModal(false); }}
-              style={{
-                width: '100%', padding: '10px 14px',
-                background: 'var(--pc-surface)', border: '1px solid var(--pc-border)',
-                borderRadius: 8, color: 'var(--pc-text)', fontSize: 14,
-                fontFamily: 'var(--font-body)', outline: 'none',
-                transition: 'border-color 0.12s',
-                boxSizing: 'border-box',
-              }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--pc-accent)'; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--pc-border)'; }}
-            />
-            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
-              <button className="pc-btn-secondary" onClick={() => setShowNewModal(false)}>Annuler</button>
-              <button
-                className="pc-btn-primary"
-                onClick={handleCreate}
-                disabled={isCreating || !newCvName.trim() || !profile}
-                style={{ opacity: (isCreating || !newCvName.trim()) ? 0.5 : 1 }}
-              >
-                {isCreating ? 'Création...' : 'Créer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {showNewModal && <NewCvDialog initialMode={newMode} onClose={() => setShowNewModal(false)} />}
     </div>
   );
 }

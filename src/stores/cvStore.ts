@@ -30,7 +30,8 @@ interface CVState {
   fetchCvs: () => Promise<void>;
   fetchCvById: (id: string) => Promise<void>;
   fetchCvBlocks: (cvId: string) => Promise<void>;
-  createCv: (cv: Omit<CVDocument, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  /** Crée le CV (avec tout le profil) et renvoie son identifiant. */
+  createCv: (cv: Omit<CVDocument, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string | null>;
   duplicateCv: (id: string) => Promise<void>;
   deleteCv: (id: string) => Promise<void>;
   updateCv: (id: string, updates: Partial<CVDocument>) => Promise<void>;
@@ -104,6 +105,7 @@ export const useCvStore = create<CVState>((set, get) => ({
   },
 
   createCv: (cv) => enqueueWrite(async () => {
+    let createdId: string | null = null;
     try {
       const db = await getDb();
       const snakeCv = filterAllowedColumns('cv_documents', keysToSnakeCase<Record<string, unknown>>(cv));
@@ -121,6 +123,7 @@ export const useCvStore = create<CVState>((set, get) => ({
       // Auto-import all master profile entries into the new CV
       if (insertResult.length > 0) {
         const newCvId = insertResult[0].id;
+        createdId = newCvId;
 
         // Lazy import to avoid circular dependency
         const { useProfileStore } = await import('@/stores/profileStore');
@@ -174,6 +177,7 @@ export const useCvStore = create<CVState>((set, get) => ({
       }
 
       await get().fetchCvs();
+      return createdId;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create CV';
       set({ error: message });

@@ -22,9 +22,10 @@ import { toast } from 'sonner';
 interface AIPromptPanelProps {
   cvId: string;
   onClose: () => void;
+  initialTab?: 'intent' | 'full';
 }
 
-export function AIPromptPanel({ onClose }: AIPromptPanelProps) {
+export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelProps) {
   const { profile, entries } = useProfileStore();
   const { currentCv, currentCvBlocks } = useCvStore();
   const {
@@ -47,7 +48,7 @@ export function AIPromptPanel({ onClose }: AIPromptPanelProps) {
   const [contactName, setContactName] = useState('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'intent' | 'standard' | 'full'>('intent');
+  const [activeTab, setActiveTab] = useState<'intent' | 'standard' | 'full'>(initialTab);
   const [jsonInput, setJsonInput] = useState('');
   const [fullPromptCopied, setFullPromptCopied] = useState(false);
   const [clarify, setClarify] = useState(false);

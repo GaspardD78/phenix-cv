@@ -143,7 +143,7 @@ export function SettingsPage() {
       <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Choisissez une rubrique dans le sommaire.</p>
       <div className="flex flex-col md:flex-row gap-6 items-start">
       <nav aria-label="Sommaire des paramètres" className="md:w-56 md:flex-shrink-0 md:sticky md:top-0 w-full">
-        {SETTINGS_TREE.map(group => (
+{SETTINGS_TREE.map(group => (
           <div key={group.label} className="mb-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 px-2 mb-1">{group.label}</p>
             <ul>
@@ -161,6 +161,26 @@ export function SettingsPage() {
                 </li>
               ))}
             </ul>
+            {(group.subgroups ?? []).map(sg => (
+              <div key={sg.label} className="mt-2">
+                <p className="text-xs font-medium text-gray-500 px-2 mb-0.5 italic">{sg.label}</p>
+                <ul>
+                  {sg.pages.map(p => (
+                    <li key={p.id}>
+                  <button
+                    onClick={() => choosePage(p.id)}
+                    aria-current={page === p.id ? 'page' : undefined}
+                    className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
+                      page === p.id ? 'bg-blue-50 text-blue-700 font-medium' : 'opacity-80 hover:opacity-100 hover:bg-white/10'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         ))}
       </nav>

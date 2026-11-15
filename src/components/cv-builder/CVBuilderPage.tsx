@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { parseNewCvMode } from '@/lib/new-cv';
 import { useCvStore } from '@/stores/cvStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { LeftPanel } from './LeftPanel';
@@ -40,7 +41,10 @@ export function CVBuilderPage() {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 
   // Onglet actif de la sidebar desktop (null = panel fermé → preview plein écran)
-  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab | null>('blocs');
+  // Un CV créé depuis « Nouveau CV » s'ouvre directement sur son parcours (?mode=standard | offer).
+  const [searchParams] = useSearchParams();
+  const startMode = parseNewCvMode(searchParams.get('mode'));
+  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab | null>(startMode ? 'ia' : 'blocs');
 
   // Détection mobile via matchMedia (évite d'appliquer panelWidth sur petit écran)
   const [isMobile, setIsMobile] = useState(() =>
@@ -362,6 +366,7 @@ export function CVBuilderPage() {
                     cvId={id!}
                     activeTab={activeSidebarTab!}
                     onRequestTabChange={setActiveSidebarTab}
+                    aiStartTab={startMode === 'offer' ? 'full' : 'intent'}
                   />
                 </div>
                 {/* Splitter draggable */}
@@ -380,6 +385,7 @@ export function CVBuilderPage() {
                     cvId={id!}
                     activeTab={activeSidebarTab || 'blocs'}
                     onRequestTabChange={setActiveSidebarTab}
+                    aiStartTab={startMode === 'offer' ? 'full' : 'intent'}
                   />
                 </div>
                 <SidebarNav

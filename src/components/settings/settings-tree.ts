@@ -3,22 +3,37 @@ export interface SettingsPageDef {
   id: string;
   label: string;
 }
-export interface SettingsGroupDef {
+export interface SettingsSubgroupDef {
+  /** Sous-titre affiché dans la rubrique (ex. « Avec une IA »). */
   label: string;
   pages: SettingsPageDef[];
+}
+export interface SettingsGroupDef {
+  label: string;
+  /** Pages directement sous la rubrique. */
+  pages: SettingsPageDef[];
+  /** Sous-sections titrées, affichées après les pages. */
+  subgroups?: SettingsSubgroupDef[];
 }
 
 export const SETTINGS_TREE: readonly SettingsGroupDef[] = [
   { label: 'Affichage', pages: [{ id: 'apparence', label: 'Apparence' }] },
   {
-    label: "Rédaction avec l'IA",
+    label: 'Rédaction du CV',
     pages: [
-      { id: 'ia-personnalisation', label: "Personnaliser l'IA" },
       { id: 'ia-longueur', label: 'Longueur du CV' },
-      { id: 'ia-regles', label: 'Règles personnelles' },
-      { id: 'ia-style', label: 'Style des phrases' },
       { id: 'ia-mises-en-avant', label: 'Mises en avant' },
       { id: 'ia-employeurs', label: "Types d'employeurs" },
+    ],
+    subgroups: [
+      {
+        label: 'Avec une IA',
+        pages: [
+          { id: 'ia-personnalisation', label: "Personnaliser l'IA" },
+          { id: 'ia-regles', label: 'Règles personnelles' },
+          { id: 'ia-style', label: 'Style des phrases' },
+        ],
+      },
     ],
   },
   {
@@ -36,7 +51,7 @@ export const SETTINGS_TREE: readonly SettingsGroupDef[] = [
 export const DEFAULT_SETTINGS_PAGE = 'apparence';
 
 export function allSettingsPageIds(): string[] {
-  return SETTINGS_TREE.flatMap(g => g.pages.map(p => p.id));
+  return SETTINGS_TREE.flatMap(g => [...g.pages, ...(g.subgroups ?? []).flatMap(sg => sg.pages)].map(p => p.id));
 }
 
 /** Page à afficher : l'identifiant demandé s'il existe, sinon la première. */

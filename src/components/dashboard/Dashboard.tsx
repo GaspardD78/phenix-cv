@@ -222,14 +222,20 @@ export function Dashboard() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', background: 'var(--pc-bg)' }}>
       <PageHeader title="Tableau de bord" subtitle={`${todayLabel} · ${greeting}`}>
+        <Link to="/cv?nouveau=1" style={{ textDecoration: 'none' }}>
+          <button className="pc-btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Créer un CV
+          </button>
+        </Link>
         <Link to="/cv" style={{ textDecoration: 'none' }}>
           <button className="pc-btn-secondary">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Mes CVs
+            Mes CV
           </button>
         </Link>
         <Link to="/tracker" style={{ textDecoration: 'none' }}>
-          <button className="pc-btn-primary">
+          <button className="pc-btn-secondary">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg>
             Suivi
           </button>
@@ -393,7 +399,7 @@ export function Dashboard() {
                 }) : (
                   <p style={{ fontSize: 12, color: 'var(--pc-muted)', padding: '12px 8px', fontFamily: 'var(--font-body)' }}>Aucun CV créé pour le moment.</p>
                 )}
-                <Link to="/cv" style={{ textDecoration: 'none', display: 'block' }}>
+                <Link to="/cv?nouveau=1" style={{ textDecoration: 'none', display: 'block' }}>
                   <div style={{
                     padding: '10px', borderRadius: 8, cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 6,

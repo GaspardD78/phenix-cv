@@ -86,7 +86,7 @@ describe('proposeCv : titre et accroche sans invention', () => {
 
   it('accroche : années calculées depuis les dates, secteur saisi, rien d\'autre', () => {
     const p = proposeCv(intent(), profile(), TEST_PROFILE, NOW);
-    expect(p.summary).toBe('Assistante commerciale avec 15 ans d\'expérience dans le secteur négoce.');
+    expect(p.summary).toBe('Assistante commerciale avec 15 ans d\'expérience, dont 7 ans dans ce métier, dans le secteur négoce.');
     expect(yearsOfExperience(profile(), NOW)).toBe(15);
     expect(yearsOfExperience([], NOW)).toBe(0);
   });
@@ -143,5 +143,85 @@ describe('intentToTarget : passage facultatif à une IA', () => {
   });
   it('tokens : accents, pluriels, mots vides', () => {
     expect([...tokens('Gestion des Commandes clients')].sort()).toEqual(['client', 'commande', 'gestion']);
+  });
+});
+
+import { experienceSpan, roleExperienceSpan } from './cv-intent';
+
+describe('années d\'expérience : périodes fusionnées', () => {
+  const now = new Date(Date.UTC(2026, 5, 15)); // juin 2026
+  const job = (id: string, title: string, start: string, end: string | null) =>
+    makeEntry(id, 'experience', title, { startDate: start, endDate: end, isCurrent: end === null });
+
+  it('deux postes en parallèle ne comptent pas double', () => {
+    const e = [job('a', 'Vendeuse', '2010-01', '2015-12'), job('b', 'Formatrice', '2012-01', '2013-12')];
+    const span = experienceSpan(e, now);
+    expect(span.months).toBe(72); // 2010 à 2015 : 6 ans, le second poste est inclus
+    expect(span.years).toBe(6);
+  });
+
+  it('les trous ne sont pas comptés', () => {
+    const e = [job('a', 'Vendeuse', '2010-01', '2011-12'), job('b', 'Vendeuse', '2015-01', '2016-12')];
+    expect(experienceSpan(e, now).months).toBe(48);
+  });
+
+  it('poste en cours : compté jusqu\'à aujourd\'hui', () => {
+    const e = [job('a', 'Assistante', '2020-06', null)];
+    expect(experienceSpan(e, now).months).toBe(73); // juin 2020 à juin 2026 inclus
+    expect(experienceSpan(e, now).years).toBe(6);
+  });
+
+  it('dates « AAAA » seules : année complète ; dates absentes ou incohérentes : ignorées et signalées', () => {
+    const e = [
+      makeEntry('a', 'experience', 'Stage', { startDate: '2008', endDate: '2008' }),
+      makeEntry('b', 'experience', 'Sans date', {}),
+      makeEntry('c', 'experience', 'Incohérent', { startDate: '2015-05', endDate: '2014-01' }),
+    ];
+    const span = experienceSpan(e, now);
+    expect(span.months).toBe(12);
+    expect(span.ignored).toBe(2);
+    expect(span.firstYear).toBe(2008);
+  });
+
+  it('un rapprochement par métier : seules les expériences de ce métier, sur la même logique', () => {
+    const e = [
+      job('a', 'Responsable ressources humaines', '2008-01', '2017-12'),
+      job('b', 'Chargée de recrutement', '2016-01', '2018-12'),
+      job('c', 'Vendeuse', '2019-01', '2026-06'),
+    ];
+    const total = experienceSpan(e, now);
+    const role = roleExperienceSpan(e, now, 'Responsable ressources humaines');
+    expect(total.years).toBe(18);
+    expect(role?.years).toBe(10);
+  });
+
+  it('accroche : total et « dont » dans le métier, sans double compte', () => {
+    const e = [
+      job('a', 'Responsable ressources humaines', '2008-01', '2017-12'),
+      job('b', 'Responsable ressources humaines', '2016-01', '2018-12'),
+      job('c', 'Vendeuse', '2019-01', null),
+    ];
+    const p = proposeCv(intent({ role: 'Responsable ressources humaines', sector: '' }), e, TEST_PROFILE, now);
+    expect(p.experience.totalYears).toBe(18);
+    expect(p.experience.roleYears).toBe(11);
+    expect(p.summary).toContain('18 ans');
+    expect(p.summary).toContain('dont 11 ans dans ce métier');
+  });
+
+  it('pas de « dont » si le métier couvre tout ou si rien ne correspond', () => {
+    const e = [job('a', 'Assistante commerciale', '2015-01', '2020-12')];
+    const same = proposeCv(intent({ role: 'Assistante commerciale' }), e, TEST_PROFILE, now);
+    expect(same.summary).not.toContain('dont');
+    const none = proposeCv(intent({ role: 'Architecte' }), e, TEST_PROFILE, now);
+    expect(none.summary).not.toContain('dont');
+    expect(none.summary).toContain('6 ans');
+    expect(none.summary).toContain('Architecte');
+  });
+
+  it('les périodes ignorées sont signalées à la personne', () => {
+    const e = [job('a', 'Vendeuse', '2015-01', '2020-12'), makeEntry('b', 'experience', 'Sans date', {})];
+    const p = proposeCv(intent({ role: 'Vendeuse' }), e, TEST_PROFILE, now);
+    expect(p.experience.ignored).toBe(1);
+    expect(p.notes.join(' ')).toContain('pas été comptée');
   });
 });

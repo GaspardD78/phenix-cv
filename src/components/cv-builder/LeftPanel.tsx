@@ -22,11 +22,14 @@ import { Plus, ChevronDown, AlignLeft, Type, LayoutTemplate } from 'lucide-react
 export function LeftPanel({
   cvId,
   activeTab,
-  onRequestTabChange
+  onRequestTabChange,
+  aiStartTab,
 }: {
   cvId: string;
   activeTab: SidebarTab | 'blocs';
   onRequestTabChange: (tab: SidebarTab | null) => void;
+  /** Onglet d'ouverture du panneau IA (CV standard par défaut). */
+  aiStartTab?: 'intent' | 'full';
 }) {
   const { currentCv, currentCvBlocks, createCvBlock, updateCv } = useCvStore();
   const masterProfile = useProfileStore(s => s.profile);
@@ -650,7 +653,7 @@ export function LeftPanel({
 
       {activeTab === 'ia' && (
         <div className="flex-1 overflow-hidden relative">
-          <AIPromptPanel cvId={cvId} onClose={() => onRequestTabChange(null)} />
+          <AIPromptPanel cvId={cvId} initialTab={aiStartTab} onClose={() => onRequestTabChange(null)} />
         </div>
       )}
 

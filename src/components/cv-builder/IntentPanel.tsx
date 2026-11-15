@@ -85,7 +85,21 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
         <div>
           <label htmlFor="intent-summary" className="block text-sm font-semibold text-gray-800 mb-1">Accroche</label>
           <textarea id="intent-summary" rows={3} className={`${field} resize-y`} value={proposal.summary} onChange={e => setProposal({ ...proposal, summary: e.target.value })} />
-          <p className="text-xs text-gray-500 mt-1">Deux ou trois lignes tournées vers le poste visé. Exemple : « Assistante commerciale avec 8 ans d'expérience dans le négoce. »</p>
+          <p className="text-xs text-gray-500 mt-1">Deux ou trois lignes tournées vers le poste visé. Vérifiez les chiffres avant d'appliquer.</p>
+        </div>
+
+        <div className="rounded-lg border border-[var(--pc-border)] bg-[var(--pc-accent-subtle)] p-3 text-sm" data-testid="intent-years">
+          <p className="font-semibold">Années calculées à partir de vos dates</p>
+          <p className="mt-1">
+            {proposal.experience.totalYears >= 1
+              ? <>Expérience totale : <strong>{proposal.experience.totalYears} an{proposal.experience.totalYears > 1 ? 's' : ''}</strong>
+                {proposal.experience.firstYear ? ` (depuis ${proposal.experience.firstYear})` : ''}.</>
+              : <>Pas assez de dates pour calculer l'expérience totale.</>}
+            {proposal.experience.roleYears !== null && (
+              <> Dans le métier « {proposal.experience.roleLabel} » : <strong>{proposal.experience.roleYears} an{proposal.experience.roleYears > 1 ? 's' : ''}</strong>.</>
+            )}
+          </p>
+          <p className="text-xs text-gray-600 mt-1">Les périodes qui se chevauchent comptent une fois, et les trous ne sont pas comptés. Si ce n'est pas exact, modifiez l'accroche ci-dessus.</p>
         </div>
 
         {proposal.notes.length > 0 && (

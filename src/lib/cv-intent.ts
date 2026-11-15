@@ -82,14 +82,74 @@ function startKey(e: MasterEntry): string {
   return e.isCurrent ? '9999-99' : (e.endDate ?? e.startDate ?? '0000');
 }
 
-/** Années d'expérience calculées à partir des dates des expériences (0 si aucune date exploitable). */
+/** Mois (index absolu) d'une date « AAAA-MM » ou « AAAA » ; `end` : fin du mois (ou de l'année). */
+function monthIndex(raw: string, end: boolean): number | null {
+  const m = /^(\d{4})(?:-(\d{1,2}))?/.exec(raw.trim());
+  if (!m) return null;
+  const year = Number(m[1]);
+  if (year < 1950 || year > 2100) return null;
+  const month = m[2] ? Math.min(12, Math.max(1, Number(m[2]))) : end ? 12 : 1;
+  return year * 12 + (month - 1);
+}
+
+export interface ExperienceSpan {
+  /** Mois couverts, périodes qui se chevauchent comptées une seule fois, trous ignorés. */
+  months: number;
+  /** Années entières (arrondi à l'inférieur, pour ne jamais surévaluer). */
+  years: number;
+  /** Première année d'activité retenue (`null` si aucune date exploitable). */
+  firstYear: number | null;
+  /** Nombre de périodes sans date exploitable, ignorées. */
+  ignored: number;
+}
+
+/** Durée cumulée des expériences : union des intervalles (un poste en parallèle ne compte pas deux fois). */
+export function experienceSpan(
+  entries: readonly MasterEntry[],
+  now: Date,
+  keep: (e: MasterEntry) => boolean = () => true,
+): ExperienceSpan {
+  const nowIdx = now.getUTCFullYear() * 12 + now.getUTCMonth();
+  const intervals: [number, number][] = [];
+  let ignored = 0;
+  for (const e of entries) {
+    if (e.entryType !== 'experience' || !keep(e)) continue;
+    const start = e.startDate ? monthIndex(e.startDate, false) : null;
+    if (start === null) { ignored++; continue; }
+    const endRaw = e.isCurrent || !e.endDate ? null : e.endDate;
+    const end = endRaw ? monthIndex(endRaw, true) : nowIdx;
+    if (end === null || end < start) { ignored++; continue; }
+    intervals.push([start, end]);
+  }
+  intervals.sort((a, b) => a[0] - b[0]);
+  let months = 0;
+  let cur: [number, number] | null = null;
+  for (const [a, b] of intervals) {
+    if (cur && a <= cur[1] + 1) cur[1] = Math.max(cur[1], b);
+    else {
+      if (cur) months += cur[1] - cur[0] + 1;
+      cur = [a, b];
+    }
+  }
+  if (cur) months += cur[1] - cur[0] + 1;
+  return {
+    months,
+    years: Math.floor(months / 12),
+    firstYear: intervals.length ? Math.floor(intervals[0][0] / 12) : null,
+    ignored,
+  };
+}
+
+/** Années d'expérience totales (compatibilité). */
 export function yearsOfExperience(entries: readonly MasterEntry[], now: Date): number {
-  const years = entries
-    .filter(e => e.entryType === 'experience' && e.startDate)
-    .map(e => Number.parseInt(String(e.startDate).slice(0, 4), 10))
-    .filter(y => Number.isFinite(y) && y > 1950);
-  if (years.length === 0) return 0;
-  return Math.max(0, now.getUTCFullYear() - Math.min(...years));
+  return experienceSpan(entries, now).years;
+}
+
+/** Expériences dont le titre correspond au métier visé (mots communs après normalisation). */
+export function roleExperienceSpan(entries: readonly MasterEntry[], now: Date, role: string): ExperienceSpan | null {
+  const target = tokens(role);
+  if (target.size === 0) return null;
+  return experienceSpan(entries, now, e => overlap(target, e.title) > 0);
 }
 
 // ── Proposition locale (sans IA) ─────────────────────────────────────────────
@@ -106,6 +166,14 @@ export interface ProposalItem {
 export interface CvProposal {
   title: string;
   summary: string;
+  /** Chiffres calculés, présentés à la personne pour qu'elle les valide ou les corrige. */
+  experience: {
+    totalYears: number;
+    firstYear: number | null;
+    roleYears: number | null;
+    roleLabel: string;
+    ignored: number;
+  };
   items: ProposalItem[];
   /** Libellés standard des sections, dans l'ordre proposé. */
   sectionOrder: string[];
@@ -218,9 +286,19 @@ export function proposeCv(intent: CvIntent, entries: readonly MasterEntry[], pro
   const title = intent.role.trim() || profile?.title?.trim() || '';
 
   // Accroche : uniquement des faits du profil.
-  const years = yearsOfExperience(entries, now);
+  const span = experienceSpan(entries, now);
+  const roleSpan = roleExperienceSpan(entries, now, intent.role);
+  const years = span.years;
+  const roleYears = roleSpan ? roleSpan.years : null;
+  const plural = (n: number) => `${n} an${n > 1 ? 's' : ''}`;
   const parts: string[] = [];
-  const first = `${title || 'Professionnel(le)'}${years >= 1 ? ` avec ${years} an${years > 1 ? 's' : ''} d'expérience` : ''}${intent.sector.trim() ? ` dans le secteur ${intent.sector.trim()}` : ''}.`;
+  let expression = '';
+  if (years >= 1) {
+    expression = ` avec ${plural(years)} d'expérience`;
+    // « dont X dans le métier visé » seulement si c'est une information différente de la totalité.
+    if (roleYears !== null && roleYears >= 1 && roleYears < years) expression += `, dont ${plural(roleYears)} dans ce métier`;
+  }
+  const first = `${title || 'Professionnel(le)'}${expression}${intent.sector.trim() ? `, dans le secteur ${intent.sector.trim()}` : ''}.`;
   parts.push(first);
   const employers = new Set(byType('experience').map(e => e.subtitle?.trim().toLowerCase()).filter(Boolean));
   const topSkills = skills.filter(s => items.find(i => i.id === s.e.id)?.include).slice(0, 3).map(s => s.e.title);
@@ -245,7 +323,15 @@ export function proposeCv(intent: CvIntent, entries: readonly MasterEntry[], pro
     ? ['Expériences Professionnelles', 'Compétences', 'Formations', 'Certifications', 'Projets', 'Bénévolat', 'Langues', "Centres d'intérêt"]
     : ['Formations', 'Compétences', 'Expériences Professionnelles', 'Certifications', 'Projets', 'Bénévolat', 'Langues', "Centres d'intérêt"];
   const present = new Set(items.filter(i => i.include).map(i => SECTION_BY_TYPE[i.type]));
-  return { title, summary, items, sectionOrder: order.filter(s => present.has(s)), notes };
+  const experience = {
+    totalYears: years,
+    firstYear: span.firstYear,
+    roleYears,
+    roleLabel: intent.role.trim(),
+    ignored: span.ignored,
+  };
+  if (span.ignored > 0) notes.push(`${span.ignored} période${span.ignored > 1 ? 's' : ''} sans date exploitable n'${span.ignored > 1 ? 'ont' : 'a'} pas été comptée${span.ignored > 1 ? 's' : ''} dans les années d'expérience. Ajoutez les dates dans « Mon profil » pour les inclure.`);
+  return { title, summary, experience, items, sectionOrder: order.filter(s => present.has(s)), notes };
 }
 
 /** Transforme la proposition (éventuellement modifiée) en réponse applicable par `applyAiCvToBlocks`. */
