@@ -30,7 +30,7 @@ export function TargetSheetsSettings() {
       <div className="p-6 border-b dark:border-gray-700">
         <div className="flex items-center gap-2 mb-1">
           <Target size={18} className="text-indigo-500" />
-          <h2 className="text-base font-semibold dark:text-gray-100">Fiches de ciblage</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Fiches de ciblage</h2>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Propres au profil {profile ? `« ${profile.firstName} ${profile.lastName} »` : 'actif'}. Une fiche décrit ce que lit chaque type de

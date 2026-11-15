@@ -144,7 +144,7 @@ export function GoogleDriveSync() {
         <div className={`p-6 ${configured === false ? 'opacity-70' : ''}`}>
           <div className="flex items-center gap-2 mb-1">
             <CloudOff size={18} className="text-gray-400" />
-            <h2 className="text-base font-semibold dark:text-gray-100">Synchronisation Google Drive</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Synchronisation Google Drive</h2>
           </div>
           {configured === false && (
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -163,7 +163,7 @@ export function GoogleDriveSync() {
       <div className="p-6 border-b dark:border-gray-700">
         <div className="flex items-center gap-2 mb-1">
           <Cloud size={18} className="text-blue-500" />
-          <h2 className="text-base font-semibold dark:text-gray-100">Synchronisation Google Drive</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Synchronisation Google Drive</h2>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Sauvegardez et synchronisez vos données entre PC et mobile via Google Drive.

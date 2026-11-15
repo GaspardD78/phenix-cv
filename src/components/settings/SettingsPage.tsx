@@ -4,6 +4,7 @@ import { MODULES, ModuleId, BackupData, exportBackup, pickAndParseBackup } from 
 import { ImportConflictModal } from './ImportConflictModal';
 import { GoogleDriveSync } from './GoogleDriveSync';
 import { AdvancedOptions } from './AdvancedOptions';
+import { SETTINGS_TREE, resolveSettingsPage } from './settings-tree';
 import { CvAnglesSettings } from './CvAnglesSettings';
 import { TargetSheetsSettings } from './TargetSheetsSettings';
 import { BulletFocusSelect } from '@/components/cv-builder/BulletFocusSelect';
@@ -14,7 +15,21 @@ import { useProfileStore } from '@/stores/profileStore';
 import { PERSONAL_RULES_TEMPLATE } from '@/lib/cv-prompt';
 import { useTheme } from '@/hooks/useTheme';
 
+const PAGE_KEY = 'phenixcv_settings_page';
+
+function SettingsPane({ id, active, children }: { id: string; active: string; children: React.ReactNode }) {
+  return <div hidden={id !== active} data-settings-page={id}>{children}</div>;
+}
+
 export function SettingsPage() {
+  const [page, setPage] = useState(() => {
+    try { return resolveSettingsPage(localStorage.getItem(PAGE_KEY)); } catch { return resolveSettingsPage(null); }
+  });
+  const choosePage = (id: string) => {
+    setPage(id);
+    try { localStorage.setItem(PAGE_KEY, id); } catch { /* facultatif */ }
+  };
+
   // ── AI Differentiator ───────────────────────────────────────────────────
   const { differentiator, loadDifferentiator, saveDifferentiator, isLoaded, targetPages, loadTargetPages, saveTargetPages } = usePromptStore();
   const [localDifferentiator, setLocalDifferentiator] = useState('');
@@ -122,16 +137,42 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="p-8 max-w-2xl h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto">
+     <div className="p-8 max-w-4xl">
       <h1 className="text-2xl font-bold mb-1 dark:text-gray-100">Paramètres</h1>
-      <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">Configuration et gestion des données de l'application.</p>
+      <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Choisissez une rubrique dans le sommaire.</p>
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+      <nav aria-label="Sommaire des paramètres" className="md:w-56 md:flex-shrink-0 md:sticky md:top-0 w-full">
+        {SETTINGS_TREE.map(group => (
+          <div key={group.label} className="mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 px-2 mb-1">{group.label}</p>
+            <ul>
+              {group.pages.map(p => (
+                <li key={p.id}>
+                  <button
+                    onClick={() => choosePage(p.id)}
+                    aria-current={page === p.id ? 'page' : undefined}
+                    className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
+                      page === p.id ? 'bg-blue-50 text-blue-700 font-medium' : 'opacity-80 hover:opacity-100 hover:bg-white/10'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+      <div className="flex-1 min-w-0 w-full">
 
+      <SettingsPane id="apparence" active={page}>
       {/* ── Apparence ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="p-6 border-b dark:border-gray-700">
           <div className="flex items-center gap-2 mb-1">
             <Sun size={18} className="text-yellow-500" />
-            <h2 className="text-base font-semibold dark:text-gray-100">Apparence</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Apparence</h2>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Choisissez le thème de l'application.
@@ -160,13 +201,15 @@ export function SettingsPage() {
           </div>
         </div>
       </section>
+      </SettingsPane>
 
+      <SettingsPane id="ia-personnalisation" active={page}>
       {/* ── AI Prompt Personalization ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="p-6 border-b dark:border-gray-700">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles size={18} className="text-amber-500" />
-            <h2 className="text-base font-semibold dark:text-gray-100">Personnalisation des prompts IA</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Personnalisation des prompts IA</h2>
           </div>
           <p className="text-sm text-gray-500">
             Ces paramètres sont utilisés par le générateur de prompts dans le CV builder.
@@ -206,13 +249,15 @@ export function SettingsPage() {
           </button>
         </div>
       </section>
+      </SettingsPane>
 
+      <SettingsPane id="ia-longueur" active={page}>
       {/* ── Pages cibles du CV généré par IA ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="p-6 border-b dark:border-gray-700">
           <div className="flex items-center gap-2 mb-1">
             <FileText size={18} className="text-indigo-500" />
-            <h2 className="text-base font-semibold dark:text-gray-100">Pages cibles</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Pages cibles</h2>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Nombre de pages visé par le CV généré par IA. À 1 page (défaut), le prompt impose une accroche de 3 lignes,
@@ -238,13 +283,15 @@ export function SettingsPage() {
           ))}
         </div>
       </section>
+      </SettingsPane>
 
+      <SettingsPane id="ia-regles" active={page}>
       {/* ── Règles personnelles du candidat (prompt « CV ciblé ») ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="p-6 border-b dark:border-gray-700">
           <div className="flex items-center gap-2 mb-1">
             <ClipboardList size={18} className="text-indigo-500" />
-            <h2 className="text-base font-semibold dark:text-gray-100">Règles personnelles</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Règles personnelles</h2>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Propres au profil {profile ? `« ${profile.firstName} ${profile.lastName} »` : 'actif'}. Injectées dans le prompt du CV ciblé
@@ -283,11 +330,13 @@ export function SettingsPage() {
           </div>
         </div>
       </section>
+      </SettingsPane>
 
+      <SettingsPane id="ia-style" active={page}>
       {/* ── Orientation des puces (par profil) ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-base font-semibold dark:text-gray-100">Orientation du CV</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Orientation du CV</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Ce que les puces mettent en avant par défaut. Modifiable pour chaque CV dans « Paramètres de ce CV ».
           </p>
@@ -308,22 +357,30 @@ export function SettingsPage() {
           </div>
         </div>
       </section>
+      </SettingsPane>
 
       {/* ── Angles de CV (bibliothèque + matrice d'affinité) ── */}
-      <CvAnglesSettings />
+      <SettingsPane id="ia-mises-en-avant" active={page}>
+        <CvAnglesSettings />
+      </SettingsPane>
 
       {/* ── Fiches de ciblage (type de structure) ── */}
-      <TargetSheetsSettings />
+      <SettingsPane id="ia-employeurs" active={page}>
+        <TargetSheetsSettings />
+      </SettingsPane>
 
       {/* ── Google Drive Sync ── */}
-      <GoogleDriveSync />
+      <SettingsPane id="drive" active={page}>
+        <GoogleDriveSync />
+      </SettingsPane>
 
+      <SettingsPane id="sauvegarde" active={page}>
       {/* ── Backup section ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="p-6 border-b dark:border-gray-700">
           <div className="flex items-center gap-2 mb-1">
             <Download size={18} className="text-blue-600" />
-            <h2 className="text-base font-semibold dark:text-gray-100">Sauvegarde des données</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Sauvegarde des données</h2>
           </div>
           <p className="text-sm text-gray-500">
             Exporte vos données dans un fichier <code className="bg-gray-100 px-1 rounded text-xs">.cvmaker</code> que vous pouvez stocker ou transférer sur une autre installation.
@@ -386,16 +443,18 @@ export function SettingsPage() {
           </button>
         </div>
       </section>
+      </SettingsPane>
 
+      <SettingsPane id="restauration" active={page}>
       {/* ── Restore section ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="p-6 border-b dark:border-gray-700">
           <div className="flex items-center gap-2 mb-1">
             <Upload size={18} className="text-orange-500" />
-            <h2 className="text-base font-semibold dark:text-gray-100">Restauration des données</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Restauration des données</h2>
           </div>
           <p className="text-sm text-gray-500">
-            Importe un fichier <code className="bg-gray-100 px-1 rounded text-xs">.cvmaker</code> pour restaurer ou fusionner des données.
+            Importez un fichier <code className="bg-gray-100 px-1 rounded text-xs">.cvmaker</code> pour restaurer ou fusionner des données.
             Vous pourrez choisir la stratégie module par module.
           </p>
         </div>
@@ -427,13 +486,17 @@ export function SettingsPage() {
           </button>
         </div>
       </section>
+      </SettingsPane>
 
-      <AdvancedOptions />
+      <SettingsPane id="avance" active={page}>
+        <AdvancedOptions />
+      </SettingsPane>
 
+      <SettingsPane id="a-propos" active={page}>
       {/* ── À propos ── */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mt-6 mb-12">
         <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-base font-semibold dark:text-gray-100">À propos</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">À propos</h2>
           <p className="text-sm text-gray-500">Phénix CV vous aide à créer un CV clair, de votre profil jusqu'à l'export.</p>
         </div>
         <div className="p-6 text-sm text-gray-600 dark:text-gray-300 space-y-2">
@@ -447,7 +510,11 @@ export function SettingsPage() {
           </p>
         </div>
       </section>
+      </SettingsPane>
 
+      </div>
+      </div>
+     </div>
       {/* Conflict resolution modal */}
       {pendingBackup && (
         <ImportConflictModal

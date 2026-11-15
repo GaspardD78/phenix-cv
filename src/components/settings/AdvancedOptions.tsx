@@ -42,7 +42,7 @@ export function AdvancedOptions() {
     <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mt-6">
       <details className="group">
         <summary className="p-6 cursor-pointer select-none">
-          <span className="text-base font-semibold dark:text-gray-100">Options avancées</span>
+          <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Options avancées</span>
           <span className="block text-sm text-gray-500">Réglages techniques, utiles seulement en cas de problème.</span>
         </summary>
         <div className="px-6 pb-6 space-y-3 border-t dark:border-gray-700 pt-4">
