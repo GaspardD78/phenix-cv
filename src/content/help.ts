@@ -94,6 +94,30 @@ export const HELP = {
     example: 'Un PDF de votre ancien CV suffit pour gagner du temps.',
     page: 'importer-cv',
   },
+  'profil-identite': {
+    title: 'Identité',
+    summary: 'Votre nom, l\'intitulé que vous visez et vos coordonnées. Ces informations apparaissent en haut de vos CV.',
+    example: 'Prénom et nom sont obligatoires ; le téléphone et l\'e-mail restent facultatifs.',
+    page: 'profil-remplir',
+  },
+  'profil-experiences': {
+    title: 'Expériences',
+    summary: 'Chaque poste avec son intitulé, son entreprise et ses dates. Le début est obligatoire.',
+    example: '« Assistante commerciale · Société Exemple · juin 2021 – juin 2024 ».',
+    page: 'profil-experiences',
+  },
+  'profil-formations': {
+    title: 'Formations',
+    summary: 'Vos diplômes et formations, avec l\'année d\'obtention si vous la connaissez.',
+    example: '« BTS Support à l\'action managériale · 2021 ».',
+    page: 'profil-formations',
+  },
+  'profil-competences': {
+    title: 'Compétences',
+    summary: 'Les compétences que vous voulez mettre en avant. Chacune peut être renommée ou supprimée.',
+    example: '« Gestion de la relation client », « Excel ».',
+    page: 'profil-competences',
+  },
   sauvegarde: {
     title: 'Sauvegarde',
     summary: 'Copiez vos données dans un fichier de sauvegarde (.cvmaker) que vous gardez en lieu sûr : clé USB, disque externe.',

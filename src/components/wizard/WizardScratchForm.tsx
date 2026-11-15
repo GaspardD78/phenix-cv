@@ -5,9 +5,9 @@ import { ArrowRight } from 'lucide-react';
 import { useProfileStore } from '@/stores/profileStore';
 import { EMPTY_SCRATCH_FORM, MONTHS_FR, buildScratchResult, canSave, joinMonth, splitMonth, validateScratch, type ScratchErrors, type ScratchForm } from '@/lib/wizard/scratch';
 
-const FIELD = 'w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+export const FIELD = 'w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
-function Field({ id, label, error, required, children }: { id: string; label: string; error?: string; required?: boolean; children: React.ReactNode }) {
+export function Field({ id, label, error, required, children }: { id: string; label: string; error?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
       <label htmlFor={id} className="text-sm font-medium">
@@ -20,7 +20,7 @@ function Field({ id, label, error, required, children }: { id: string; label: st
 }
 
 /** Mois (liste) et année (4 chiffres) : la valeur reste « AAAA-MM » pour l'enregistrement. */
-function MonthYearField({ id, label, value, onChange, error, disabled, required }: {
+export function MonthYearField({ id, label, value, onChange, error, disabled, required }: {
   id: string; label: string; value: string; onChange: (v: string) => void; error?: string; disabled?: boolean; required?: boolean;
 }) {
   const shown = required ? `${label} *` : label;
