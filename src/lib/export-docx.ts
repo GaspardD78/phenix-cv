@@ -794,7 +794,9 @@ export async function exportToDocx(
   profile: Profile,
   blocks: CVBlock[],
   entries: MasterEntry[],
-  template: CVTemplate
+  template: CVTemplate,
+  /** `onSaved` reçoit le chemin du fichier une fois le document écrit (ex. pour « Ouvrir le dossier »). */
+  options: { onSaved?: (filePath: string) => void } = {},
 ) {
   try {
     const defaultFilename = `${cv.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_ats.docx`;
@@ -808,6 +810,7 @@ export async function exportToDocx(
     if (!filePath) return false;
 
     await writeFile(filePath, new Uint8Array(await blob.arrayBuffer()));
+    options.onSaved?.(filePath);
     return true;
   } catch (error) {
     const msg = error instanceof Error ? error.message : JSON.stringify(error);
