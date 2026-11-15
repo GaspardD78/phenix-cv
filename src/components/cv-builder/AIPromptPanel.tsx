@@ -437,12 +437,12 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               }`}
             >
               {fullPromptCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {fullPromptCopied ? 'Prompt copié !' : '1. Copier le prompt d\'analyse'}
+              {fullPromptCopied ? 'Prompt copié !' : '1. Copier le texte d\'analyse'}
             </button>
 
             <div className="pt-4 border-t border-gray-200 dark:border-[var(--pc-border)]">
               <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
-                2. Coller le JSON de l'IA ici
+                2. Coller la réponse de l'IA ici
               </label>
               <textarea
                 value={jsonInput}
