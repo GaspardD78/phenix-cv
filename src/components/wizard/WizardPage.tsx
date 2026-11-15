@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, FileText, Linkedin, PenLine, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,8 @@ import { HelpButton } from '@/components/help/HelpButton';
 import { useWizardStore } from '@/stores/wizardStore';
 import { WIZARD_STEPS, START_PATHS, wizardProgress, type StartPath, type WizardStep } from '@/lib/wizard/state';
 import { cn } from '@/lib/utils';
+import { WizardImportStep } from '@/components/wizard/WizardImportStep';
+import { WizardScratchForm } from '@/components/wizard/WizardScratchForm';
 
 const STEP_LABELS: Record<WizardStep, string> = {
   welcome: 'Bienvenue',
@@ -158,6 +160,47 @@ function StartScreen() {
   );
 }
 
+function ImportScreen() {
+  const startPath = useWizardStore(s => s.wizard.startPath);
+  const complete = useWizardStore(s => s.complete);
+  const skip = useWizardStore(s => s.skip);
+  const back = useWizardStore(s => s.back);
+  const navigate = useNavigate();
+  const [manual, setManual] = useState(startPath === 'scratch');
+  const fromScratch = startPath === 'scratch';
+  return (
+    <>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold">
+          {manual ? 'Parlez-nous de vous' : 'Récupérons vos informations'}
+        </h1>
+        <p className="text-muted-foreground">
+          {manual
+            ? 'Quelques champs suffisent pour démarrer. Tout pourra être complété ensuite.'
+            : 'Déposez votre fichier ou choisissez-le. Vous vérifierez tout avant que rien ne soit enregistré.'}
+        </p>
+      </div>
+      {manual ? (
+        <WizardScratchForm onDone={() => void complete()} />
+      ) : (
+        <WizardImportStep onManual={() => setManual(true)} onDone={() => void complete()} />
+      )}
+      <div className="flex flex-wrap justify-between gap-3 border-t border-border pt-4">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => void back()}>
+            <ArrowLeft className="size-4" aria-hidden /> Retour
+          </Button>
+          {manual && !fromScratch && (
+            <Button variant="ghost" onClick={() => setManual(false)}>Revenir au fichier</Button>
+          )}
+          <Button variant="ghost" onClick={() => navigate('/')}>Quitter le guide</Button>
+        </div>
+        <Button variant="ghost" onClick={() => void skip()}>Passer cette étape</Button>
+      </div>
+    </>
+  );
+}
+
 function PendingScreen({ step }: { step: WizardStep }) {
   const back = useWizardStore(s => s.back);
   return (
@@ -185,13 +228,14 @@ export function WizardPage() {
   let screen;
   if (step === 'welcome') screen = <WelcomeScreen />;
   else if (step === 'start') screen = <StartScreen />;
+  else if (step === 'import') screen = <ImportScreen />;
   else screen = <PendingScreen step={step} />;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm text-muted-foreground">Guide de démarrage · étape {WIZARD_STEPS.indexOf(step) + 1} sur {WIZARD_STEPS.length}</span>
-        <HelpButton id={step === 'start' ? 'guide-depart' : 'guide'} />
+        <HelpButton id={step === 'start' ? 'guide-depart' : step === 'import' ? 'importer' : 'guide'} />
       </div>
       {screen}
     </div>

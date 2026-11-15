@@ -1,0 +1,51 @@
+import { describe, expect, it } from 'bun:test';
+import { EMPTY_SCRATCH_FORM, buildScratchResult, validateScratch, type ScratchForm } from './scratch';
+
+const camille: ScratchForm = {
+  firstName: 'Camille', lastName: 'Martin', headline: 'Assistante commerciale',
+  expTitle: 'Assistante commerciale', expCompany: 'Société Exemple', expStart: '2021-09', expEnd: '2024-06', expCurrent: false,
+  eduTitle: 'BTS Support à l\'action managériale', eduSchool: 'Lycée Exemple', eduEnd: '2021-06',
+};
+
+describe('validateScratch', () => {
+  it('la saisie complète de Camille Martin est valable', () => {
+    expect(validateScratch(camille)).toEqual({});
+  });
+
+  it('une saisie vide signale les cinq champs obligatoires', () => {
+    const e = validateScratch(EMPTY_SCRATCH_FORM);
+    expect(Object.keys(e).sort()).toEqual(['eduTitle', 'expStart', 'expTitle', 'firstName', 'lastName']);
+  });
+
+  it('une date de début mal formée est refusée', () => {
+    expect(validateScratch({ ...camille, expStart: '09/2021' }).expStart).toBeDefined();
+    expect(validateScratch({ ...camille, expStart: '2021-13' }).expStart).toBeDefined();
+  });
+
+  it('une fin antérieure au début est refusée ; un poste en cours ignore la fin', () => {
+    expect(validateScratch({ ...camille, expEnd: '2020-01' }).expEnd).toBe('La fin doit être après le début.');
+    expect(validateScratch({ ...camille, expCurrent: true, expEnd: '2020-01' })).toEqual({});
+  });
+
+  it('la fin et l\'année de formation restent facultatives', () => {
+    expect(validateScratch({ ...camille, expEnd: '', eduEnd: '' })).toEqual({});
+  });
+});
+
+describe('buildScratchResult', () => {
+  it('produit les champs du profil et deux entrées : une expérience et une formation', () => {
+    const r = buildScratchResult(camille, 'p1');
+    expect(r.profile).toEqual({ firstName: 'Camille', lastName: 'Martin', title: 'Assistante commerciale' });
+    expect(r.entries.map(e => e.entryType)).toEqual(['experience', 'education']);
+    expect(r.entries.every(e => e.profileId === 'p1')).toBe(true);
+    expect(r.entries[0]).toMatchObject({ title: 'Assistante commerciale', subtitle: 'Société Exemple', startDate: '2021-09', endDate: '2024-06', isCurrent: false });
+    expect(r.entries[1]).toMatchObject({ title: 'BTS Support à l\'action managériale', subtitle: 'Lycée Exemple', endDate: '2021-06' });
+  });
+
+  it('un poste en cours n\'a pas de date de fin ; les champs vides deviennent null', () => {
+    const r = buildScratchResult({ ...camille, expCurrent: true, headline: '  ', expCompany: '', eduEnd: '' }, 'p1');
+    expect(r.profile.title).toBeNull();
+    expect(r.entries[0]).toMatchObject({ endDate: null, isCurrent: true, subtitle: null });
+    expect(r.entries[1].endDate).toBeNull();
+  });
+});
