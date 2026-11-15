@@ -13,6 +13,7 @@ import { keysToCamelCase } from '@/lib/mapping';
 import { CVBlock, CVDocument } from '@/types/cv';
 import { readAngleSnapshot } from '@/lib/cv-angles';
 import { HelpButton } from '@/components/help/HelpButton';
+import { ImportCvButton } from './ImportCvButton';
 
 const TEMPLATE_ACCENTS: Record<string, string> = {
   'ats-classic':   'var(--pc-accent)',
@@ -175,6 +176,7 @@ export function CVList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedMode = parseNewCvMode(searchParams.get('nouveau'));
   const [showNewModal, setShowNewModal] = useState(searchParams.has('nouveau'));
+  const navigate = useNavigate();
   const newMode = requestedMode ?? DEFAULT_NEW_CV_MODE;
 
   // Le lien « Créer un CV » de l'accueil ouvre directement le choix du parcours.
@@ -249,12 +251,7 @@ export function CVList() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-          <button className="pc-btn-secondary">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 17" /><polyline points="17 6 23 6 23 12" />
-            </svg>
-            Importer
-          </button>
+          <ImportCvButton navigate={navigate} />
           <button className="pc-btn-primary" onClick={() => setShowNewModal(true)}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
