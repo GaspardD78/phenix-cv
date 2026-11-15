@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useProfileStore } from '@/stores/profileStore';
-import { EMPTY_SCRATCH_FORM, buildScratchResult, validateScratch, type ScratchErrors, type ScratchForm } from '@/lib/wizard/scratch';
+import { EMPTY_SCRATCH_FORM, MONTHS_FR, buildScratchResult, joinMonth, splitMonth, validateScratch, type ScratchErrors, type ScratchForm } from '@/lib/wizard/scratch';
 
 const FIELD = 'w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
@@ -15,6 +15,60 @@ function Field({ id, label, error, required, children }: { id: string; label: st
       </label>
       {children}
       {error && <p id={`${id}-erreur`} role="alert" className="text-sm text-destructive">{error}</p>}
+    </div>
+  );
+}
+
+/** Mois (liste) et année (4 chiffres) : la valeur reste « AAAA-MM » pour l'enregistrement. */
+function MonthYearField({ id, label, value, onChange, error, disabled }: {
+  id: string; label: string; value: string; onChange: (v: string) => void; error?: string; disabled?: boolean;
+}) {
+  // Brouillon local : une année incomplète reste affichée même si la valeur enregistrée est vide.
+  const [draft, setDraft] = useState(() => splitMonth(value));
+  useEffect(() => {
+    if (joinMonth(draft.month, draft.year) !== value) setDraft(splitMonth(value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+  const { month, year } = draft;
+  const update = (next: { month: string; year: string }) => {
+    setDraft(next);
+    onChange(joinMonth(next.month, next.year));
+  };
+  const describedBy = error ? `${id}-erreur` : undefined;
+  return (
+    <div className="space-y-1">
+      <span className="text-sm font-medium" id={`${id}-libelle`}>{label}</span>
+      <div className="grid grid-cols-[1fr_6rem] gap-2" role="group" aria-labelledby={`${id}-libelle`}>
+        <select
+          id={`${id}-mois`}
+          aria-label={`${label} : mois`}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+          disabled={disabled}
+          value={month}
+          onChange={e => update({ month: e.target.value, year })}
+          className={FIELD}
+        >
+          <option value="">Mois</option>
+          {MONTHS_FR.map((name, i) => (
+            <option key={name} value={String(i + 1).padStart(2, '0')}>{name}</option>
+          ))}
+        </select>
+        <input
+          id={`${id}-annee`}
+          aria-label={`${label} : année`}
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="AAAA"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+          disabled={disabled}
+          value={year}
+          onChange={e => update({ month, year: e.target.value.replace(/\D/g, '') })}
+          className={FIELD}
+        />
+      </div>
+      {error && <p id={describedBy} role="alert" className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }
@@ -73,10 +127,8 @@ export function WizardScratchForm({ onDone }: { onDone: () => void }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <Field id="f-expTitle" label="Intitulé du poste" required error={errors.expTitle}><input {...input('expTitle')} /></Field>
           <Field id="f-expCompany" label="Entreprise"><input {...input('expCompany')} /></Field>
-          <Field id="f-expStart" label="Début (mois et année)" required error={errors.expStart}><input type="month" {...input('expStart')} /></Field>
-          <Field id="f-expEnd" label="Fin (mois et année)" error={errors.expEnd}>
-            <input type="month" {...input('expEnd', { disabled: form.expCurrent })} />
-          </Field>
+          <MonthYearField id="f-expStart" label="Début" value={form.expStart} error={errors.expStart} onChange={v => set('expStart', v)} />
+          <MonthYearField id="f-expEnd" label="Fin" value={form.expEnd} error={errors.expEnd} disabled={form.expCurrent} onChange={v => set('expEnd', v)} />
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={form.expCurrent} onChange={e => set('expCurrent', e.target.checked)} />
@@ -89,7 +141,7 @@ export function WizardScratchForm({ onDone }: { onDone: () => void }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <Field id="f-eduTitle" label="Diplôme ou formation" required error={errors.eduTitle}><input {...input('eduTitle')} /></Field>
           <Field id="f-eduSchool" label="Établissement"><input {...input('eduSchool')} /></Field>
-          <Field id="f-eduEnd" label="Année d'obtention (mois et année)" error={errors.eduEnd}><input type="month" {...input('eduEnd')} /></Field>
+          <MonthYearField id="f-eduEnd" label="Obtenu en" value={form.eduEnd} error={errors.eduEnd} onChange={v => set('eduEnd', v)} />
         </div>
       </fieldset>
 

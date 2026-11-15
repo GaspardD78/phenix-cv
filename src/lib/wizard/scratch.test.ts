@@ -49,3 +49,26 @@ describe('buildScratchResult', () => {
     expect(r.entries[1].endDate).toBeNull();
   });
 });
+
+import { joinMonth, splitMonth } from './scratch';
+
+describe('conversion mois et année', () => {
+  it('assemble un mois et une année en AAAA-MM', () => {
+    expect(joinMonth('09', '2021')).toBe('2021-09');
+    expect(joinMonth('12', ' 2019 ')).toBe('2019-12');
+  });
+
+  it('rend vide tant que le mois ou l\'année manque, ou si l\'année est incomplète', () => {
+    expect(joinMonth('', '2021')).toBe('');
+    expect(joinMonth('09', '')).toBe('');
+    expect(joinMonth('09', '21')).toBe('');
+    expect(joinMonth('13', '2021')).toBe('');
+  });
+
+  it('découpe AAAA-MM pour l\'affichage, et aller-retour sans perte', () => {
+    expect(splitMonth('2021-09')).toEqual({ month: '09', year: '2021' });
+    expect(splitMonth(joinMonth('06', '2024'))).toEqual({ month: '06', year: '2024' });
+    expect(splitMonth('')).toEqual({ month: '', year: '' });
+    expect(splitMonth('09/2021')).toEqual({ month: '', year: '' });
+  });
+});

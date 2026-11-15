@@ -86,3 +86,21 @@ export function buildScratchResult(form: ScratchForm, profileId: string): Scratc
     ],
   };
 }
+
+export const MONTHS_FR = [
+  'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+] as const;
+
+/** Assemble un mois (01 à 12) et une année (4 chiffres) en « AAAA-MM ». Vide tant que l'un des deux manque. */
+export function joinMonth(month: string, year: string): string {
+  const y = year.trim();
+  if (!/^\d{4}$/.test(y) || !/^(0[1-9]|1[0-2])$/.test(month)) return '';
+  return `${y}-${month}`;
+}
+
+/** Découpe « AAAA-MM » en mois et année pour l'affichage. */
+export function splitMonth(value: string): { month: string; year: string } {
+  const m = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(value);
+  return m ? { year: m[1], month: m[2] } : { month: '', year: '' };
+}
