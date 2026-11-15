@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, HelpCircle, OctagonAlert } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Lightbulb, OctagonAlert } from 'lucide-react';
 import type { GuardReport } from '@/lib/ai-cv-guard';
 import { warningsLabel } from '@/lib/cv-focus-rules';
 
@@ -7,124 +6,114 @@ interface AiCvGuardReportProps {
   report: GuardReport;
 }
 
+/** Bloc titré du rapport : un titre clair, puis son contenu en texte lisible (jamais de jargon). */
+function Block({ icon, title, tone, children, testId }: {
+  icon: React.ReactNode; title: string; tone: 'red' | 'amber' | 'sky' | 'gray'; children: React.ReactNode; testId?: string;
+}) {
+  const tones = {
+    red: 'border-red-200 bg-red-50 text-red-900',
+    amber: 'border-amber-200 bg-amber-50 text-amber-900',
+    sky: 'border-sky-200 bg-sky-50 text-sky-900',
+    gray: 'border-gray-200 bg-white text-gray-800',
+  } as const;
+  return (
+    <section className={`rounded-lg border p-3 ${tones[tone]}`} data-testid={testId}>
+      <h4 className="flex items-center gap-2 text-sm font-semibold mb-1.5">{icon}{title}</h4>
+      <div className="text-sm leading-relaxed space-y-1.5">{children}</div>
+    </section>
+  );
+}
+
+const List = ({ items }: { items: string[] }) => (
+  <ul className="list-disc pl-5 space-y-1">{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
+);
+
 /**
- * Rapport compact du garde-fou post-LLM : score de couverture des mots-clés,
- * écarts signalés par l'IA, points bloquants (chiffres absents de la source),
- * avertissements (repliés) et questions de l'IA. L'écran appelant adapte son
- * bouton (« Appliquer quand même ») quand `report.errors` n'est pas vide.
+ * Rapport de contrôle d'un CV préparé par une IA, en langage courant :
+ * verdict d'abord, puis ce qui bloque, ce qui est à savoir, puis les conseils et questions de l'IA.
+ * L'écran appelant adapte son bouton (« Appliquer quand même ») quand `report.errors` n'est pas vide.
  */
 export function AiCvGuardReport({ report }: AiCvGuardReportProps) {
-  const [open, setOpen] = useState(false);
-  const { keywordCoverage: cov, ecarts, estimatedLines, budgetLines, pageBudget, visibleBullets, overflow } = report.metrics;
+  const { keywordCoverage: cov, ecarts, estimatedLines, pageBudget, visibleBullets, overflow } = report.metrics;
   const hasErrors = report.errors.length > 0;
+  const pages = `${pageBudget} page${pageBudget > 1 ? 's' : ''}`;
 
   return (
-    <div
-      className={`rounded-lg border p-3 space-y-2 text-xs ${
-        hasErrors
-          ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
-          : 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20'
-      }`}
-      data-testid="ai-cv-guard-report"
-    >
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-semibold text-gray-700 dark:text-gray-200">
-        {hasErrors ? <OctagonAlert className="w-4 h-4 text-red-500" /> : <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-        <span>{hasErrors ? 'À vérifier avant d\'appliquer' : 'Contrôles passés'}</span>
-        {cov.pct !== null && (
-          <span title={cov.missing.length > 0 ? `Manquants : ${cov.missing.join(', ')}` : 'Tous les indispensables sont couverts'}>
-            Mots-clés : {cov.found}/{cov.total} ({cov.pct} %)
-          </span>
-        )}
-        <span title={`Capacité estimée : ${budgetLines} lignes`}>
-          Volume : ≈ {estimatedLines} lignes, {visibleBullets} puces ({pageBudget} page{pageBudget > 1 ? 's' : ''} visée{pageBudget > 1 ? 's' : ''})
-        </span>
+    <div className="space-y-3" data-testid="ai-cv-guard-report">
+      <div
+        className={`rounded-lg border p-3 flex items-start gap-2 ${
+          hasErrors ? 'border-red-300 bg-red-50 text-red-900' : 'border-emerald-300 bg-emerald-50 text-emerald-900'
+        }`}
+      >
+        {hasErrors ? <OctagonAlert className="w-5 h-5 mt-0.5 shrink-0 text-red-500" /> : <CheckCircle2 className="w-5 h-5 mt-0.5 shrink-0 text-emerald-600" />}
+        <div className="text-sm">
+          <p className="font-semibold">{hasErrors ? "À vérifier avant d'appliquer" : 'Tout est en ordre : vous pouvez appliquer'}</p>
+          <p className="mt-0.5 text-xs opacity-90">
+            {cov.pct !== null && <>Mots importants de l'annonce retrouvés : {cov.found} sur {cov.total} ({cov.pct} %). </>}
+            Longueur : environ {estimatedLines} lignes et {visibleBullets} puces, pour {pages} visée{pageBudget > 1 ? 's' : ''}.
+          </p>
+        </div>
       </div>
 
-      {report.errors.length > 0 && (
-        <ul className="space-y-1 text-red-700 dark:text-red-300">
-          {report.errors.map((e, i) => (
-            <li key={i} className="flex gap-1.5"><OctagonAlert className="w-3.5 h-3.5 mt-0.5 shrink-0" />{e.message}</li>
-          ))}
-        </ul>
+      {hasErrors && (
+        <Block icon={<OctagonAlert className="w-4 h-4" />} title="Points à corriger" tone="red">
+          <List items={report.errors.map(e => e.message)} />
+        </Block>
       )}
 
       {overflow.exceedsTarget && (
-        <div className="text-amber-800 dark:text-amber-200" data-testid="ai-cv-overflow">
-          <p className="font-semibold flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            Dépasse probablement {pageBudget} page{pageBudget > 1 ? 's' : ''} (≈ {overflow.excessLines} ligne{overflow.excessLines > 1 ? 's' : ''} en trop)
-          </p>
+        <Block
+          icon={<AlertTriangle className="w-4 h-4" />}
+          tone="amber"
+          testId="ai-cv-overflow"
+          title={`Dépasse probablement ${pages} (environ ${overflow.excessLines} ligne${overflow.excessLines > 1 ? 's' : ''} en trop)`}
+        >
           {overflow.removalCandidates.length > 0 && (
             <>
-              <p className="mt-0.5">À retirer en priorité :</p>
+              <p>À retirer en priorité :</p>
               <ol className="list-decimal pl-5 space-y-0.5">
                 {overflow.removalCandidates.map((c, i) => (
-                  <li key={i}>{c.label} <span className="opacity-75">({c.reason}, ≈ {c.savedLines} l.)</span></li>
+                  <li key={i}>{c.label} <span className="opacity-75">({c.reason}, environ {c.savedLines} ligne{c.savedLines > 1 ? 's' : ''})</span></li>
                 ))}
               </ol>
             </>
           )}
-        </div>
+        </Block>
       )}
 
-      {cov.missing.length > 0 && (
-        <p className="text-gray-600 dark:text-gray-300">
-          <span className="font-semibold">Mots-clés absents du CV :</span> {cov.missing.join(', ')}
-        </p>
-      )}
-
-      {ecarts.length > 0 && (
-        <p className="text-gray-600 dark:text-gray-300">
-          <span className="font-semibold">Écarts avec l'annonce (non comblés) :</span> {ecarts.join(', ')}
-        </p>
+      {(cov.missing.length > 0 || ecarts.length > 0) && (
+        <Block icon={<Lightbulb className="w-4 h-4" />} title="Ce que l'annonce demande et que votre profil ne montre pas" tone="gray">
+          {cov.missing.length > 0 && <p><span className="font-medium">Mots importants absents du CV :</span> {cov.missing.join(', ')}.</p>}
+          {ecarts.length > 0 && <p><span className="font-medium">Exigences non couvertes :</span> {ecarts.join(', ')}.</p>}
+          <p className="text-xs text-gray-500">Si c'est vrai pour vous, ajoutez-le dans « Mon profil » : rien n'est ajouté sans votre accord.</p>
+        </Block>
       )}
 
       {report.angle && (
-        <p className="text-gray-600 dark:text-gray-300" data-testid="ai-cv-angle">
-          <span className="font-semibold">Angle :</span> {report.angle.label}
+        <p className="text-sm text-gray-700" data-testid="ai-cv-angle">
+          <span className="font-medium">Mise en avant choisie :</span> {report.angle.label}
         </p>
       )}
 
       {report.metrics.alertesCap.length > 0 && (
-        <div className="text-amber-800 dark:text-amber-200" data-testid="ai-cv-alertes-cap">
-          <p className="font-semibold flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            L'annonce contredit tes critères de recherche (la génération n'est pas bloquée)
-          </p>
-          <ul className="list-disc pl-5 space-y-0.5">
-            {report.metrics.alertesCap.map((a, i) => <li key={i}>{a}</li>)}
-          </ul>
-        </div>
+        <Block icon={<AlertTriangle className="w-4 h-4" />} tone="amber" testId="ai-cv-alertes-cap"
+          title="L'annonce contredit vos critères de recherche (rien n'est bloqué)">
+          <List items={report.metrics.alertesCap} />
+        </Block>
       )}
 
       {report.aiWarnings.length > 0 && (
-        <div className="text-sky-700 dark:text-sky-300">
-          {warningsLabel(report.focus) && <p className="font-semibold mb-1">{warningsLabel(report.focus)}</p>}
-          <ul className="space-y-1">
-            {report.aiWarnings.map((w, i) => (
-              <li key={i} className="flex gap-1.5"><HelpCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />{w}</li>
-            ))}
-          </ul>
-        </div>
+        <Block icon={<Lightbulb className="w-4 h-4" />} title={warningsLabel(report.focus) || "Conseils et questions de l'IA"} tone="sky">
+          <List items={report.aiWarnings} />
+          <p className="text-xs opacity-80">Ce sont des pistes : répondez-y en complétant « Mon profil », puis recommencez si vous le souhaitez.</p>
+        </Block>
       )}
 
       {report.warnings.length > 0 && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setOpen(o => !o)}
-            className="flex items-center gap-1 font-semibold text-amber-700 dark:text-amber-300"
-          >
-            {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-            <AlertTriangle className="w-3.5 h-3.5" />
-            {report.warnings.length} avertissement{report.warnings.length > 1 ? 's' : ''}
-          </button>
-          {open && (
-            <ul className="mt-1 space-y-1 pl-5 list-disc text-gray-600 dark:text-gray-300">
-              {report.warnings.map((w, i) => <li key={i}>{w.message}</li>)}
-            </ul>
-          )}
-        </div>
+        <Block icon={<AlertTriangle className="w-4 h-4" />} tone="amber"
+          title={`À savoir (${report.warnings.length})`}>
+          <List items={report.warnings.map(w => w.message)} />
+        </Block>
       )}
     </div>
   );

@@ -39,7 +39,7 @@ describe('AiCvGuardReport - alertes de cohérence et angle', () => {
     expect(report.metrics.alertesCap).toEqual(['4 jours sur site exigés']);
     expect(report.errors).toHaveLength(0);
     const html = renderToStaticMarkup(<AiCvGuardReport report={report} />);
-    expect(html).toContain('L&#x27;annonce contredit tes critères de recherche');
+    expect(html).toContain('L&#x27;annonce contredit vos critères de recherche');
     expect(html).toContain('4 jours sur site exigés');
   });
 
