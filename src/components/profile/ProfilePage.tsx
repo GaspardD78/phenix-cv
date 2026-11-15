@@ -375,7 +375,7 @@ export function ProfilePage() {
             Importer
           </button>
           <button className="pc-btn-secondary" onClick={() => setIsEnrichModalOpen(true)} style={{ color: 'var(--pc-accent)' }}>
-            ✨ Enrichir avec l'IA
+            ✨ Enrichir avec une IA
           </button>
           <button className="pc-btn-secondary" onClick={() => setIsEditingProfile(!isEditingProfile)}>
             {isEditingProfile ? 'Annuler' : 'Modifier'}

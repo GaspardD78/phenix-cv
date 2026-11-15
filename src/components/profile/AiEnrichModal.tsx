@@ -43,9 +43,9 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
 type WizardStep = 'context' | 'prompt' | 'review' | 'done';
 
 const WIZARD_STEPS = [
-  { id: 'context', label: 'Contexte' },
-  { id: 'prompt', label: 'Prompt' },
-  { id: 'review', label: 'Résultat' },
+  { id: 'context', label: 'Votre objectif' },
+  { id: 'prompt', label: 'Texte à copier' },
+  { id: 'review', label: 'Réponse de l\'IA' },
 ] as const;
 
 function StepBar({ current }: { current: WizardStep }) {
@@ -126,14 +126,14 @@ function Step1Context({ onNext }: { onNext: (jobPosting: string) => void }) {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Contexte (optionnel)</h2>
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Votre objectif (facultatif)</h2>
       <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
-        Si vous avez une offre d'emploi en tête, collez-la ici. Le prompt généré orientera les questions du coach vers ce poste. Laissez vide pour un audit complet du profil (nettoyage, cohérence, consolidation et enrichissement de toutes les sections).
+        Si vous visez une offre précise, collez-la ici : l'IA orientera ses questions vers ce poste. Laissez vide pour une relecture complète de votre profil (corrections, cohérence, compléments).
       </p>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1.5">
-          Annonce ciblée (optionnel)
+          Annonce visée (facultatif)
         </label>
         <textarea
           value={jobPosting}
@@ -146,7 +146,7 @@ function Step1Context({ onNext }: { onNext: (jobPosting: string) => void }) {
 
       <div className="mt-6 flex justify-end">
         <Button onClick={() => onNext(jobPosting)}>
-          Générer le prompt
+          Préparer le texte à copier
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>
@@ -182,14 +182,14 @@ function Step2Prompt({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Prompt à copier dans un LLM</h2>
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Texte à copier dans une IA générative</h2>
       <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
-        Copiez ce prompt et collez-le dans Claude, ChatGPT ou tout autre LLM. Répondez aux questions posées une par une, puis collez le JSON final à l'étape suivante.
+        Ce texte demande à une IA générative (ChatGPT, Claude, Le Chat…) de jouer le rôle d'un conseiller CV expérimenté. Copiez-le, collez-le dans l'IA de votre choix et répondez à ses questions une par une. À la fin, elle vous donnera une réponse à recoller à l'étape suivante.
       </p>
 
       <div className="rounded-xl border border-gray-200 dark:border-[var(--pc-border)] overflow-hidden">
         <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-[var(--pc-bg)] border-b border-gray-200 dark:border-[var(--pc-border)]">
-          <span className="text-xs font-semibold text-gray-600 dark:text-[var(--pc-muted)] uppercase tracking-wide">Prompt Coach CV</span>
+          <span className="text-xs font-semibold text-gray-600 dark:text-[var(--pc-muted)] uppercase tracking-wide">Texte pour l'IA · rôle : conseiller CV</span>
           <Button variant="ghost" size="sm" onClick={handleCopy} className="h-7 px-2 text-xs gap-1.5">
             <Copy className="w-3.5 h-3.5" />
             {copied ? 'Copié !' : 'Copier'}
@@ -209,7 +209,7 @@ function Step2Prompt({
           Retour
         </Button>
         <Button onClick={onNext}>
-          J'ai obtenu le JSON
+          J'ai la réponse de l'IA
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>
@@ -244,7 +244,7 @@ function Step3Review({
       const selectables = buildSelectableEntries(payload.entries ?? [], existingEntries);
 
       if (diffs.length === 0 && selectables.length === 0) {
-        setError('Aucune modification détectée dans le JSON. Assurez-vous que le LLM a bien enrichi votre profil et produit un JSON non vide.');
+        setError('Aucune modification trouvée dans cette réponse. Vérifiez que l\'IA a bien terminé et que vous avez copié sa dernière réponse en entier.');
         return;
       }
 
@@ -284,15 +284,15 @@ function Step3Review({
   if (phase === 'paste') {
     return (
       <div>
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Coller le JSON retourné par le LLM</h2>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Coller la réponse de l'IA</h2>
         <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
-          Une fois la conversation terminée avec le LLM, collez ici le JSON qu'il a produit.
+          Une fois l'échange terminé, copiez la dernière réponse de l'IA en entier et collez-la ici. Vous vérifierez chaque proposition avant qu'elle n'entre dans votre profil.
         </p>
 
         <textarea
           value={jsonInput}
           onChange={e => setJsonInput(e.target.value)}
-          placeholder={'{ "profile": { ... }, "entries": [ ... ] }'}
+          placeholder="Collez ici la dernière réponse de l'IA…"
           rows={12}
           className="w-full rounded-lg border border-gray-300 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] text-sm font-mono text-gray-800 dark:text-[var(--pc-text)] p-3 focus:outline-none focus:ring-2 focus:ring-lagon-500 resize-y"
         />
@@ -579,7 +579,7 @@ export function AiEnrichModal({ onClose }: AiEnrichModalProps) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-lagon-600" />
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-[var(--pc-text)]">Enrichir avec l'IA</h1>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-[var(--pc-text)]">Enrichir avec une IA</h1>
           </div>
           <button
             onClick={onClose}
