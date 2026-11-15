@@ -12,6 +12,7 @@ import { getDb } from '@/lib/db';
 import { keysToCamelCase } from '@/lib/mapping';
 import { CVBlock, CVDocument } from '@/types/cv';
 import { readAngleSnapshot } from '@/lib/cv-angles';
+import { HelpButton } from '@/components/help/HelpButton';
 
 const TEMPLATE_ACCENTS: Record<string, string> = {
   'ats-classic':   'var(--pc-accent)',
@@ -239,10 +240,10 @@ export function CVList() {
         flexShrink: 0,
       }}>
         <div>
-          <h1 style={{
+          <div className="flex items-center gap-2"><h1 style={{
             fontSize: 22, fontWeight: 700, color: 'var(--pc-text)',
             fontFamily: 'var(--font-display)', letterSpacing: '-0.4px', margin: 0,
-          }}>Mes CV</h1>
+          }}>Mes CV</h1><HelpButton id="mes-cv" /></div>
           <p style={{ fontSize: 13, color: 'var(--pc-muted)', margin: '4px 0 0', fontFamily: 'var(--font-body)' }}>
             {cvs.length} document{cvs.length !== 1 ? 's' : ''}
           </p>

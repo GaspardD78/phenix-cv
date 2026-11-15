@@ -14,6 +14,7 @@ import { usePromptStore } from '@/stores/promptStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { PERSONAL_RULES_TEMPLATE } from '@/lib/cv-prompt';
 import { useTheme } from '@/hooks/useTheme';
+import { HelpButton } from '@/components/help/HelpButton';
 
 const PAGE_KEY = 'phenixcv_settings_page';
 
@@ -139,7 +140,7 @@ export function SettingsPage() {
   return (
     <div className="h-full overflow-y-auto">
      <div className="p-8 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-1 dark:text-[var(--pc-text)]">Paramètres</h1>
+      <div className="flex items-center gap-2 mb-1"><h1 className="text-2xl font-bold dark:text-[var(--pc-text)]">Paramètres</h1><HelpButton id="parametres" /></div>
       <p className="text-gray-500 dark:text-[var(--pc-muted)] text-sm mb-6">Choisissez une rubrique dans le sommaire.</p>
       <div className="flex flex-col md:flex-row gap-6 items-start">
       <nav aria-label="Sommaire des paramètres" className="md:w-56 md:flex-shrink-0 md:sticky md:top-0 w-full">
@@ -400,7 +401,7 @@ export function SettingsPage() {
         <div className="p-6 border-b dark:border-[var(--pc-border)]">
           <div className="flex items-center gap-2 mb-1">
             <Download size={18} className="text-lagon-600" />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Sauvegarde des données</h2>
+            <div className="flex items-center gap-2"><h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Sauvegarde des données</h2><HelpButton id="sauvegarde" /></div>
           </div>
           <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Exporte vos données dans un fichier <code className="bg-gray-100 px-1 rounded text-xs">.cvmaker</code> que vous pouvez stocker ou transférer sur une autre installation.

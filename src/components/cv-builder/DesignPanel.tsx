@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Palette, SlidersHorizontal, Settings2 } from 'l
 import type { CVTemplate } from '../../types/template';
 import { DENSITY_PRESETS, type DensityId } from '../../theme/tokens';
 import type { DateFormat, DateStyle } from '../../lib/entry-dates';
+import { HelpButton } from '@/components/help/HelpButton';
 
 interface DesignPanelProps {
   onFitToPage: () => void;
@@ -267,7 +268,7 @@ export function DesignPanel({
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Dates</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Dates <HelpButton id="dates" /></p>
               <div className="space-y-2">
                 <div>
                   <label htmlFor="design-date-format" className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Format des dates</label>

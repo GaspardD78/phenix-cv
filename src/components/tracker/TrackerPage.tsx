@@ -8,6 +8,7 @@ import { ExportApplicationsModal } from './ExportApplicationsModal';
 import { toast } from 'sonner';
 import { Application, ApplicationSource } from '@/types/application';
 import { isMobilePlatform } from '@/lib/platform';
+import { HelpButton } from '@/components/help/HelpButton';
 
 const SOURCE_FILTERS: { id: ApplicationSource | 'all'; label: string }[] = [
   { id: 'all', label: 'Toutes' },
@@ -107,10 +108,10 @@ export function TrackerPage() {
         alignItems: 'center', flexShrink: 0, flexWrap: 'wrap', gap: 8,
       }}>
         <div>
-          <h1 style={{
+          <div className="flex items-center gap-2"><h1 style={{
             margin: '0 0 3px', fontSize: 'clamp(17px, 5vw, 22px)', fontWeight: 700, color: 'var(--pc-text)',
             fontFamily: 'var(--font-display)', letterSpacing: '-0.4px',
-          }}>Suivi des candidatures</h1>
+          }}>Suivi des candidatures</h1><HelpButton id="candidatures" /></div>
           <p style={{ margin: 0, fontSize: 13, color: 'var(--pc-muted)', fontFamily: 'var(--font-body)' }}>
             {applications.length} candidature{applications.length !== 1 ? 's' : ''} · Kanban interactif
           </p>

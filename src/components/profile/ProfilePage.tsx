@@ -10,6 +10,7 @@ import { HeaderExtrasEditor } from './HeaderExtrasEditor';
 import { parseHeaderExtras } from '@/lib/header-extras';
 import { VariantHistoryPanel } from './VariantHistoryPanel';
 import { DuplicateScanModal } from './DuplicateScanModal';
+import { HelpButton } from '@/components/help/HelpButton';
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 12px', borderRadius: 8,
@@ -361,7 +362,7 @@ export function ProfilePage() {
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
       }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--pc-text)', fontFamily: 'var(--font-display)', letterSpacing: '-0.4px', margin: 0 }}>Profil Maître</h1>
+          <div className="flex items-center gap-2"><h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--pc-text)', fontFamily: 'var(--font-display)', letterSpacing: '-0.4px', margin: 0 }}>Mon profil</h1><HelpButton id="profil" /></div>
           <p style={{ fontSize: 13, color: 'var(--pc-muted)', margin: '4px 0 0', fontFamily: 'var(--font-body)' }}>
             Vos informations personnelles et expériences
           </p>

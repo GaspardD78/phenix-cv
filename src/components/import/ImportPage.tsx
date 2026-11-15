@@ -17,6 +17,7 @@ import { extractTextFromDocx } from '@/lib/import/docx-extractor';
 import { buildImportPrompt } from '@/lib/import/import-prompt';
 import { parseImportResponse } from '@/lib/import/extract-json';
 import { classifyDroppedPaths, SCANNED_PDF_MESSAGE } from '@/lib/import/file-kind';
+import { HelpButton } from '@/components/help/HelpButton';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Step indicators
@@ -724,7 +725,7 @@ export function ImportPage() {
           <ArrowLeft className="w-4 h-4" />
           Retour au profil
         </button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--pc-text)]">Importer mon CV</h1>
+        <div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--pc-text)]">Importer mon CV</h1><HelpButton id="importer" /></div>
         <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mt-1">
           Récupérez les informations de votre CV (PDF ou Word) ou de votre export LinkedIn.
         </p>

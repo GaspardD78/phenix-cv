@@ -10,6 +10,7 @@ import { SettingsPage } from "@/components/settings/SettingsPage";
 import { ImportPage } from "@/components/import/ImportPage";
 import { HelpPage } from "@/components/help/HelpPage";
 import { GlobalFileDropGuard } from "@/components/import/GlobalFileDropGuard";
+import { GlobalHelpShortcut } from "@/components/help/GlobalHelpShortcut";
 import { useSessionStore } from "@/stores/sessionStore";
 import PrintView from "@/pages/PrintView";
 import { Toaster } from "sonner";
@@ -49,6 +50,7 @@ function AppRoutes() {
   return (
     <Layout>
       <GlobalFileDropGuard />
+      <GlobalHelpShortcut />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/profile" element={<ProfilePage />} />

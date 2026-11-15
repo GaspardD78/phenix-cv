@@ -18,6 +18,7 @@ import { readCvLanguage } from '@/lib/cv-language';
 import { applyAiCvToBlocks } from '@/lib/apply-ai-cv';
 import { CVBlock, CVDocument } from '@/types/cv';
 import { toast } from 'sonner';
+import { HelpButton } from '@/components/help/HelpButton';
 
 interface AIPromptPanelProps {
   cvId: string;
@@ -219,6 +220,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
           <h2 className="text-sm font-bold text-gray-900 dark:text-[var(--pc-text)] flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-500" />
             Créer et adapter mon CV
+            <HelpButton id={activeTab === 'intent' ? 'cv-standard' : 'cv-offre'} />
           </h2>
         </div>
         <div className="flex px-4 gap-4 border-t border-gray-100" role="tablist">

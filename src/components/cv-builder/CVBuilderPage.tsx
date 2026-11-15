@@ -18,6 +18,7 @@ import { useSaveIndicator } from '@/hooks/useSaveIndicator';
 import { TemplatePickerPopover } from './TemplatePickerPopover';
 import { ReconciliationReviewModal } from './ReconciliationReviewModal';
 import { OverflowConfirmDialog } from './OverflowConfirmDialog';
+import { HelpButton } from '@/components/help/HelpButton';
 
 const PANEL_WIDTH_KEY = 'phenixcv_panel_width';
 const MIN_PANEL = 280;
@@ -238,6 +239,7 @@ export function CVBuilderPage() {
             currentTemplateId={currentCv.templateId}
             onSelect={handleTemplateChange}
           />
+          <HelpButton id="editeur" />
 
           {currentCv.markdownMode === 0 && (
             <button
@@ -252,6 +254,7 @@ export function CVBuilderPage() {
 
           {/* Boutons export — desktop : visibles individuellement | mobile : regroupés sous "..." */}
           <div className="hidden sm:flex items-center gap-1.5 sm:gap-3">
+            <HelpButton id="export" />
             <button
               onClick={handleExportDocx}
               disabled={isExporting}
