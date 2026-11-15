@@ -27,7 +27,7 @@ export const EMPTY_SCRATCH_FORM: ScratchForm = {
 
 export type ScratchErrors = Partial<Record<keyof ScratchForm, string>>;
 
-const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+export const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 /** Renvoie les messages d'erreur par champ ; un objet vide signifie que la saisie est valable. */
 export function validateScratch(form: ScratchForm): ScratchErrors {

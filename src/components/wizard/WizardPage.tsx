@@ -8,6 +8,7 @@ import { WIZARD_STEPS, START_PATHS, wizardProgress, type StartPath, type WizardS
 import { cn } from '@/lib/utils';
 import { WizardImportStep } from '@/components/wizard/WizardImportStep';
 import { WizardScratchForm } from '@/components/wizard/WizardScratchForm';
+import { WizardVerifyStep } from '@/components/wizard/WizardVerifyStep';
 
 const STEP_LABELS: Record<WizardStep, string> = {
   welcome: 'Bienvenue',
@@ -229,13 +230,14 @@ export function WizardPage() {
   if (step === 'welcome') screen = <WelcomeScreen />;
   else if (step === 'start') screen = <StartScreen />;
   else if (step === 'import') screen = <ImportScreen />;
+  else if (step === 'verify') screen = <WizardVerifyStep />;
   else screen = <PendingScreen step={step} />;
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-4 sm:px-6 sm:py-4">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm text-muted-foreground">Guide de démarrage · étape {WIZARD_STEPS.indexOf(step) + 1} sur {WIZARD_STEPS.length}</span>
-        <HelpButton id={step === 'start' ? 'guide-depart' : step === 'import' ? 'importer' : 'guide'} />
+        <HelpButton id={step === 'start' ? 'guide-depart' : step === 'import' ? 'importer' : step === 'verify' ? 'profil' : 'guide'} />
       </div>
       {screen}
     </div>
