@@ -10,7 +10,7 @@ import type { ImportFormat, ImportPayload, ProfileFieldDiff, SelectableEntry } f
 type Sub = 'source' | 'process' | 'preview' | 'done';
 
 /** Écran 3, chemin « J'ai déjà un CV » ou « export LinkedIn » : mêmes étapes que la page d'import. */
-export function WizardImportStep({ onManual, onDone }: { onManual: () => void; onDone: () => void }) {
+export function WizardImportStep({ onManual, onDone, showIntro = true }: { onManual: () => void; onDone: () => void; showIntro?: boolean }) {
   const [sub, setSub] = useState<Sub>('source');
   const [format, setFormat] = useState<ImportFormat | null>(null);
   const [rawText, setRawText] = useState<string | undefined>();
@@ -48,7 +48,7 @@ export function WizardImportStep({ onManual, onDone }: { onManual: () => void; o
     }
   };
 
-  if (sub === 'source') return <StepSource onNext={handleSource} onManual={onManual} />;
+  if (sub === 'source') return <StepSource onNext={handleSource} onManual={onManual} showIntro={showIntro} />;
   if (sub === 'process' && format) {
     return (
       <StepProcess

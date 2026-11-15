@@ -102,9 +102,12 @@ async function loadImportFile(path: string, format: ImportFormat): Promise<{ pay
 export function StepSource({
   onNext,
   onManual,
+  showIntro = true,
 }: {
   onNext: (format: ImportFormat, payload: ImportPayload | null, rawText?: string) => void;
   onManual: () => void;
+  /** Phrase d'explication sous le titre (masquée quand l'écran la porte déjà, ex. le guide). */
+  showIntro?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -149,9 +152,11 @@ export function StepSource({
   return (
     <div>
       <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Votre CV actuel</h2>
-      <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
-        Déposez votre CV : nous en récupérons les informations pour remplir votre profil. Vous vérifiez tout avant que ce soit enregistré.
-      </p>
+      {showIntro && (
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
+          Déposez votre CV : nous en récupérons les informations pour remplir votre profil. Vous vérifiez tout avant que ce soit enregistré.
+        </p>
+      )}
 
       <div
         data-testid="import-dropzone"

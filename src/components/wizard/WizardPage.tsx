@@ -177,13 +177,13 @@ function ImportScreen() {
         <p className="text-muted-foreground">
           {manual
             ? 'Quelques champs suffisent pour démarrer. Vous compléterez le reste dans Mon profil.'
-            : 'Déposez votre fichier ou choisissez-le. Vous vérifierez tout avant que rien ne soit enregistré.'}
+            : 'Nous récupérons les informations de votre CV ou de votre export LinkedIn, et vous les vérifiez avant tout enregistrement.'}
         </p>
       </div>
       {manual ? (
         <WizardScratchForm onDone={() => void complete()} />
       ) : (
-        <WizardImportStep onManual={() => setManual(true)} onDone={() => void complete()} />
+        <WizardImportStep onManual={() => setManual(true)} onDone={() => void complete()} showIntro={false} />
       )}
       <div className="flex flex-wrap justify-between gap-3 border-t border-border pt-3">
         <div className="flex flex-wrap gap-2">
