@@ -124,6 +124,18 @@ export const HELP = {
     example: 'Vous pouvez passer cette étape et ajouter une photo plus tard dans Mon profil.',
     page: 'profil-photo',
   },
+  enrichir: {
+    title: 'Enrichir son profil',
+    summary: 'Ces informations sont facultatives, mais elles rendent votre CV plus convaincant : une accroche, vos missions, vos compétences, vos langues.',
+    example: '« Suivi des commandes et de la facturation pour 40 clients. »',
+    page: 'bien-rediger',
+  },
+  'enrichir-ia': {
+    title: 'Enrichir avec une IA',
+    summary: 'Une IA peut proposer des formulations à partir de votre profil. Vous relisez chaque proposition : rien n\'est ajouté sans votre accord.',
+    example: 'Vous copiez un texte préparé dans l\'IA de votre choix, puis vous collez sa réponse.',
+    page: 'utiliser-ia',
+  },
   sauvegarde: {
     title: 'Sauvegarde',
     summary: 'Copiez vos données dans un fichier de sauvegarde (.cvmaker) que vous gardez en lieu sûr : clé USB, disque externe.',
