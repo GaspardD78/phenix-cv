@@ -63,3 +63,26 @@ describe('écran 8 : aide et ouverture du dossier', () => {
     expect(capability).toContain('"opener:default"');
   });
 });
+
+import { useCvStore } from '@/stores/cvStore';
+
+describe('choix du modèle (écran 8)', () => {
+  it('l\'écran 8 propose le sélecteur de modèles de l\'éditeur', () => {
+    const step = readFileSync(new URL('../../components/wizard/WizardExportStep.tsx', import.meta.url), 'utf8');
+    expect(step).toContain('<TemplatePickerPopover');
+    expect(step).toContain('setTemplate(');
+  });
+
+  it('setTemplate met à jour le CV courant puis l\'enregistre ; même modèle : rien n\'est écrit', async () => {
+    const writes: { id: string; templateId?: string }[] = [];
+    const base = { id: 'cv-1', templateId: 'ats-classic' } as never;
+    const original = useCvStore.getState().updateCv;
+    useCvStore.setState({ currentCv: base, updateCv: async (id: string, u: { templateId?: string }) => { writes.push({ id, templateId: u.templateId }); } } as never);
+    await useCvStore.getState().setTemplate('elegant');
+    expect(useCvStore.getState().currentCv?.templateId).toBe('elegant');
+    expect(writes).toEqual([{ id: 'cv-1', templateId: 'elegant' }]);
+    await useCvStore.getState().setTemplate('elegant');
+    expect(writes).toHaveLength(1);
+    useCvStore.setState({ currentCv: null, updateCv: original });
+  });
+});

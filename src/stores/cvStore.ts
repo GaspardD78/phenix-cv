@@ -35,6 +35,8 @@ interface CVState {
   duplicateCv: (id: string) => Promise<void>;
   deleteCv: (id: string) => Promise<void>;
   updateCv: (id: string, updates: Partial<CVDocument>) => Promise<void>;
+  /** Change le modèle du CV courant : l'aperçu suit tout de suite, puis le choix est enregistré. */
+  setTemplate: (templateId: string) => Promise<void>;
   createCvBlock: (block: Omit<CVBlock, 'id' | 'createdAt'>) => Promise<void>;
   updateCvBlock: (id: string, updates: Partial<CVBlock>) => Promise<void>;
   deleteCvBlock: (id: string) => Promise<void>;
@@ -241,6 +243,13 @@ export const useCvStore = create<CVState>((set, get) => ({
       throw err;
     }
   }),
+
+  setTemplate: async (templateId) => {
+    const cv = get().currentCv;
+    if (!cv || cv.templateId === templateId) return;
+    set({ currentCv: { ...cv, templateId } });
+    await get().updateCv(cv.id, { templateId });
+  },
 
   updateCv: (id, updates) => enqueueWrite(async () => {
     try {
