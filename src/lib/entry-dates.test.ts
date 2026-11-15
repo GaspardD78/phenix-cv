@@ -52,72 +52,72 @@ describe('yearOf', () => {
 
 describe('formatEntryDates, mois et année (comportement historique)', () => {
   test('expérience : période, en cours, début seul, fin seule', () => {
-    expect(formatEntryDates(exp('2020-03', '2022-08'), undefined, MONTH_YEAR)).toBe('mars 2020 - août 2022');
-    expect(formatEntryDates(exp('2022-09', null, true), undefined, MONTH_YEAR)).toBe('septembre 2022 - Présent');
+    expect(formatEntryDates(exp('2020-03', '2022-08'), undefined, MONTH_YEAR)).toBe('mars 2020 – août 2022');
+    expect(formatEntryDates(exp('2022-09', null, true), undefined, MONTH_YEAR)).toBe('septembre 2022 – auj.');
     expect(formatEntryDates(exp('2020-03'), undefined, MONTH_YEAR)).toBe('mars 2020');
     expect(formatEntryDates(exp(null, '2022-08'), undefined, MONTH_YEAR)).toBe('août 2022');
-    expect(formatEntryDates(exp(null, null, true), undefined, MONTH_YEAR)).toBe('Présent');
+    expect(formatEntryDates(exp(null, null, true), undefined, MONTH_YEAR)).toBe('auj.');
     expect(formatEntryDates(exp(), undefined, MONTH_YEAR)).toBe('');
   });
 
   test('« en cours » l\'emporte sur une date de fin', () => {
-    expect(formatEntryDates(exp('2022-09', '2023-01', true), undefined, MONTH_YEAR)).toBe('septembre 2022 - Présent');
+    expect(formatEntryDates(exp('2022-09', '2023-01', true), undefined, MONTH_YEAR)).toBe('septembre 2022 – auj.');
   });
 
   test('formation et certification : années seules, comme avant', () => {
-    expect(formatEntryDates(edu('2010-09', '2012-06'), undefined, MONTH_YEAR)).toBe('2010 - 2012');
-    expect(formatEntryDates(cert('2023-01', '2025-01'), undefined, MONTH_YEAR)).toBe('2023 - 2025');
+    expect(formatEntryDates(edu('2010-09', '2012-06'), undefined, MONTH_YEAR)).toBe('2010 – 2012');
+    expect(formatEntryDates(cert('2023-01', '2025-01'), undefined, MONTH_YEAR)).toBe('2023 – 2025');
     expect(formatEntryDates(cert('2024-06'), undefined, MONTH_YEAR)).toBe('2024');
   });
 
   test('projet : mois et année', () => {
-    expect(formatEntryDates({ entryType: 'project', startDate: '2021-05', endDate: '2022-01' }, undefined, MONTH_YEAR)).toBe('mai 2021 - janvier 2022');
+    expect(formatEntryDates({ entryType: 'project', startDate: '2021-05', endDate: '2022-01' }, undefined, MONTH_YEAR)).toBe('mai 2021 – janvier 2022');
   });
 
   test("masquer les années de formation ne touche pas aux autres types", () => {
     expect(formatEntryDates(edu('2010-09', '2012-06'), undefined, MONTH_YEAR_NO_EDUCATION)).toBe('');
-    expect(formatEntryDates(exp('2020-03', '2022-08'), undefined, MONTH_YEAR_NO_EDUCATION)).toBe('mars 2020 - août 2022');
-    expect(formatEntryDates(cert('2023-01', '2025-01'), undefined, MONTH_YEAR_NO_EDUCATION)).toBe('2023 - 2025');
+    expect(formatEntryDates(exp('2020-03', '2022-08'), undefined, MONTH_YEAR_NO_EDUCATION)).toBe('mars 2020 – août 2022');
+    expect(formatEntryDates(cert('2023-01', '2025-01'), undefined, MONTH_YEAR_NO_EDUCATION)).toBe('2023 – 2025');
   });
 
-  test("missingEnd « today » (DOCX) : « Aujourd'hui » sans date de fin, jamais pour « en cours » ni sans début", () => {
-    expect(formatEntryDates(exp('2020-03'), undefined, MONTH_YEAR, { missingEnd: 'today' })).toBe("mars 2020 - Aujourd'hui");
+  test("missingEnd « today » (DOCX) : « auj. » sans date de fin, jamais pour « en cours » ni sans début", () => {
+    expect(formatEntryDates(exp('2020-03'), undefined, MONTH_YEAR, { missingEnd: 'today' })).toBe("mars 2020 – auj.");
     expect(formatEntryDates(exp('2020-03'), undefined, MONTH_YEAR, { missingEnd: 'omit' })).toBe('mars 2020');
-    expect(formatEntryDates(exp('2020-03', null, true), undefined, MONTH_YEAR, { missingEnd: 'today' })).toBe('mars 2020 - Présent');
+    expect(formatEntryDates(exp('2020-03', null, true), undefined, MONTH_YEAR, { missingEnd: 'today' })).toBe('mars 2020 – auj.');
     expect(formatEntryDates(exp(), undefined, MONTH_YEAR, { missingEnd: 'today' })).toBe('');
   });
 });
 
 describe('formatEntryDates, mode année', () => {
   test('toutes les dates en année seule', () => {
-    expect(formatEntryDates(exp('2020-03', '2022-08'), undefined, YEAR)).toBe('2020 - 2022');
-    expect(formatEntryDates({ entryType: 'project', startDate: '2021-05', endDate: '2023-01' }, undefined, YEAR)).toBe('2021 - 2023');
-    expect(formatEntryDates(edu('2010-09', '2012-06'), undefined, YEAR)).toBe('2010 - 2012');
-    expect(formatEntryDates(cert('2023-01', '2025-01'), undefined, YEAR)).toBe('2023 - 2025');
+    expect(formatEntryDates(exp('2020-03', '2022-08'), undefined, YEAR)).toBe('2020 – 2022');
+    expect(formatEntryDates({ entryType: 'project', startDate: '2021-05', endDate: '2023-01' }, undefined, YEAR)).toBe('2021 – 2023');
+    expect(formatEntryDates(edu('2010-09', '2012-06'), undefined, YEAR)).toBe('2010 – 2012');
+    expect(formatEntryDates(cert('2023-01', '2025-01'), undefined, YEAR)).toBe('2023 – 2025');
   });
 
-  test('« Présent » conservé pour les postes en cours', () => {
-    expect(formatEntryDates(exp('2022-09', null, true), undefined, YEAR)).toBe('2022 - Présent');
-    expect(formatEntryDates(exp('2022-09', '2023-04', true), undefined, YEAR)).toBe('2022 - Présent');
-    expect(formatEntryDates(exp(null, null, true), undefined, YEAR)).toBe('Présent');
+  test('« auj. » conservé pour les postes en cours', () => {
+    expect(formatEntryDates(exp('2022-09', null, true), undefined, YEAR)).toBe('2022 – auj.');
+    expect(formatEntryDates(exp('2022-09', '2023-04', true), undefined, YEAR)).toBe('2022 – auj.');
+    expect(formatEntryDates(exp(null, null, true), undefined, YEAR)).toBe('auj.');
     // Même année de début et « en cours » : on garde la mention.
-    expect(formatEntryDates(exp('2026-02', null, true), undefined, YEAR)).toBe('2026 - Présent');
+    expect(formatEntryDates(exp('2026-02', null, true), undefined, YEAR)).toBe('2026 – auj.');
   });
 
-  test("« Aujourd'hui » conservé avec missingEnd « today »", () => {
-    expect(formatEntryDates(exp('2020-03'), undefined, YEAR, { missingEnd: 'today' })).toBe("2020 - Aujourd'hui");
+  test("« auj. » conservé avec missingEnd « today »", () => {
+    expect(formatEntryDates(exp('2020-03'), undefined, YEAR, { missingEnd: 'today' })).toBe("2020 – auj.");
     expect(formatEntryDates(exp('2020-03'), undefined, YEAR)).toBe('2020');
   });
 
-  test('période dans une seule année : une année, pas « 2023 - 2023 »', () => {
+  test('période dans une seule année : une année, pas « 2023 – 2023 »', () => {
     expect(formatEntryDates(exp('2023-02', '2023-09'), undefined, YEAR)).toBe('2023');
     expect(formatEntryDates(edu('2023-01', '2023-12'), undefined, YEAR)).toBe('2023');
   });
 
   test('un intercontrat entre deux années disparaît visuellement', () => {
     // décembre 2015 → janvier 2016 : deux périodes qui se touchent en années.
-    expect(formatEntryDates(exp('2014-09', '2015-12'), undefined, YEAR)).toBe('2014 - 2015');
-    expect(formatEntryDates(exp('2016-01', '2020-02'), undefined, YEAR)).toBe('2016 - 2020');
+    expect(formatEntryDates(exp('2014-09', '2015-12'), undefined, YEAR)).toBe('2014 – 2015');
+    expect(formatEntryDates(exp('2016-01', '2020-02'), undefined, YEAR)).toBe('2016 – 2020');
   });
 
   test('début seul, fin seule, aucune date', () => {
@@ -127,9 +127,9 @@ describe('formatEntryDates, mode année', () => {
   });
 
   test('insensible au fuseau : « 2007-01 » reste 2007', () => {
-    expect(formatEntryDates(edu('2007-01', '2010-06'), undefined, YEAR)).toBe('2007 - 2010');
-    expect(formatEntryDates(exp('2016-01', '2020-01'), undefined, YEAR)).toBe('2016 - 2020');
-    expect(formatEntryDates(exp('2020', '2022'), undefined, YEAR)).toBe('2020 - 2022');
+    expect(formatEntryDates(edu('2007-01', '2010-06'), undefined, YEAR)).toBe('2007 – 2010');
+    expect(formatEntryDates(exp('2016-01', '2020-01'), undefined, YEAR)).toBe('2016 – 2020');
+    expect(formatEntryDates(exp('2020', '2022'), undefined, YEAR)).toBe('2020 – 2022');
   });
 });
 
@@ -140,17 +140,17 @@ describe('formatEntryDates, masquage des années de formation', () => {
   });
 
   test('masque aussi la surcharge datesOverride des formations', () => {
-    expect(formatEntryDates(edu('2010-09', '2012-06'), '2010 - 2012', YEAR_NO_EDUCATION)).toBe('');
+    expect(formatEntryDates(edu('2010-09', '2012-06'), '2010 – 2012', YEAR_NO_EDUCATION)).toBe('');
   });
 
   test('ne touche ni les expériences, ni les projets, ni les certifications', () => {
-    expect(formatEntryDates(exp('2020-03', '2022-08'), undefined, YEAR_NO_EDUCATION)).toBe('2020 - 2022');
-    expect(formatEntryDates({ entryType: 'project', startDate: '2021-05', endDate: '2023-01' }, undefined, YEAR_NO_EDUCATION)).toBe('2021 - 2023');
-    expect(formatEntryDates(cert('2023-01', '2025-01'), undefined, YEAR_NO_EDUCATION)).toBe('2023 - 2025');
+    expect(formatEntryDates(exp('2020-03', '2022-08'), undefined, YEAR_NO_EDUCATION)).toBe('2020 – 2022');
+    expect(formatEntryDates({ entryType: 'project', startDate: '2021-05', endDate: '2023-01' }, undefined, YEAR_NO_EDUCATION)).toBe('2021 – 2023');
+    expect(formatEntryDates(cert('2023-01', '2025-01'), undefined, YEAR_NO_EDUCATION)).toBe('2023 – 2025');
   });
 
   test('affichées par défaut', () => {
-    expect(formatEntryDates(edu('2010-09', '2012-06'), undefined, YEAR)).toBe('2010 - 2012');
+    expect(formatEntryDates(edu('2010-09', '2012-06'), undefined, YEAR)).toBe('2010 – 2012');
   });
 });
 
@@ -161,14 +161,14 @@ describe('formatEntryDates, datesOverride', () => {
   });
 
   test('ignorée si vide, blanche ou pas une chaîne', () => {
-    expect(formatEntryDates(exp('2020-03', '2022-08'), '', YEAR)).toBe('2020 - 2022');
-    expect(formatEntryDates(exp('2020-03', '2022-08'), '   ', YEAR)).toBe('2020 - 2022');
-    expect(formatEntryDates(exp('2020-03', '2022-08'), 2020, YEAR)).toBe('2020 - 2022');
-    expect(formatEntryDates(exp('2020-03', '2022-08'), null, YEAR)).toBe('2020 - 2022');
+    expect(formatEntryDates(exp('2020-03', '2022-08'), '', YEAR)).toBe('2020 – 2022');
+    expect(formatEntryDates(exp('2020-03', '2022-08'), '   ', YEAR)).toBe('2020 – 2022');
+    expect(formatEntryDates(exp('2020-03', '2022-08'), 2020, YEAR)).toBe('2020 – 2022');
+    expect(formatEntryDates(exp('2020-03', '2022-08'), null, YEAR)).toBe('2020 – 2022');
   });
 
   test('suffit à elle seule, sans aucune date', () => {
-    expect(formatEntryDates(exp(), '2021 - 2023', MONTH_YEAR)).toBe('2021 - 2023');
+    expect(formatEntryDates(exp(), '2021 – 2023', MONTH_YEAR)).toBe('2021 – 2023');
   });
 });
 
@@ -233,10 +233,10 @@ describe('indépendance du fuseau horaire', () => {
   test('même résultat dans 9 fuseaux, positifs et négatifs', () => {
     const expected = [
       ['janvier 2007', 'mars 2020', 'janvier 2020', 'décembre 2020', 'janvier 2020', 'janvier 2020'],
-      'janvier 2016 - février 2020',
-      '2007 - 2010',
-      '2016 - 2020',
-      '2007 - 2010',
+      'janvier 2016 – février 2020',
+      '2007 – 2010',
+      '2016 – 2020',
+      '2007 – 2010',
     ];
     for (const tz of ZONES) expect(run(tz)).toEqual(expected);
   });
@@ -253,19 +253,49 @@ describe('langue du CV (cv.settings.cvLanguage)', () => {
 
   test('anglais : mois en anglais, « Present »', () => {
     const s = readDateSettings({ cvLanguage: 'en' });
-    expect(formatEntryDates(exp('2021-01', null, true), undefined, s)).toBe('January 2021 - Present');
-    expect(formatEntryDates(exp('2018-09', '2020-12'), undefined, s)).toBe('September 2018 - December 2020');
-    expect(formatEntryDates(exp('2020-03', null), undefined, s, { missingEnd: 'today' })).toBe('March 2020 - Today');
+    expect(formatEntryDates(exp('2021-01', null, true), undefined, s)).toBe('January 2021 – now');
+    expect(formatEntryDates(exp('2018-09', '2020-12'), undefined, s)).toBe('September 2018 – December 2020');
+    expect(formatEntryDates(exp('2020-03', null), undefined, s, { missingEnd: 'today' })).toBe('March 2020 – now');
   });
 
   test('allemand : mois via Intl, « Heute »', () => {
     const s = readDateSettings({ cvLanguage: 'de' });
-    expect(formatEntryDates(exp('2021-03', null, true), undefined, s)).toBe('März 2021 - Heute');
+    expect(formatEntryDates(exp('2021-03', null, true), undefined, s)).toBe('März 2021 – heute');
   });
 
   test('mode année et surcharge inchangés quelle que soit la langue', () => {
     const s = { ...readDateSettings({ cvLanguage: 'en', dateFormat: 'year' }) };
-    expect(formatEntryDates(exp('2021-01', '2022-05'), undefined, s)).toBe('2021 - 2022');
-    expect(formatEntryDates(exp('2021-01', null, true), '2021 - now', s)).toBe('2021 - now');
+    expect(formatEntryDates(exp('2021-01', '2022-05'), undefined, s)).toBe('2021 – 2022');
+    expect(formatEntryDates(exp('2021-01', null, true), '2021 – now', s)).toBe('2021 – now');
+  });
+});
+
+describe('forme des périodes (cv.settings.dateStyle)', () => {
+  const LONG = { ...MONTH_YEAR, dateStyle: 'long' as const };
+  const NUM = { ...MONTH_YEAR, dateStyle: 'numeric' as const };
+  const current = { entryType: 'experience', startDate: '2024-06', endDate: null, isCurrent: true };
+
+  test('défaut : « juin 2024 – auj. »', () => {
+    expect(readDateSettings({}).dateStyle).toBe('short');
+    expect(formatEntryDates(current, undefined, readDateSettings({}))).toBe('juin 2024 – auj.');
+  });
+  test('long : « juin 2024 – aujourd\'hui »', () => {
+    expect(formatEntryDates(current, undefined, LONG)).toBe("juin 2024 – aujourd'hui");
+  });
+  test('numérique : « 06/2024 – auj. »', () => {
+    expect(formatEntryDates(current, undefined, NUM)).toBe('06/2024 – auj.');
+    expect(formatEntryDates({ entryType: 'experience', startDate: '2019-03', endDate: '2021-12' }, undefined, NUM)).toBe('03/2019 – 12/2021');
+  });
+  test('valeur inconnue ou absente : forme courte', () => {
+    expect(readDateSettings({ dateStyle: 'n\'importe-quoi' }).dateStyle).toBe('short');
+  });
+  test('l\'année seule et les formations gardent leur forme', () => {
+    const edu = { entryType: 'education', startDate: '2008', endDate: '2010' };
+    expect(formatEntryDates(edu, undefined, NUM)).toBe('2008 – 2010');
+  });
+  test('anglais : « now » en court, « today » en long', () => {
+    const EN = { ...MONTH_YEAR, language: 'en' };
+    expect(formatEntryDates(current, undefined, { ...EN, dateStyle: 'short' })).toBe('June 2024 – now');
+    expect(formatEntryDates(current, undefined, { ...EN, dateStyle: 'long' })).toBe('June 2024 – today');
   });
 });

@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 155,
+  "overflowMm": 202.3,
   "remainingMm": 0,
-  "hiddenLines": 12,
-  "lastVisibleLine": "Baccalauréat professionnel Gestion-administration | Lycée Exemple - Lyon 2011 - 2014",
-  "firstCutLine": "Certifications"
+  "hiddenLines": 18,
+  "lastVisibleLine": "Relancer les clients en retard de paiement et réduire les impayés de 15 %",
+  "firstCutLine": "Formation"
 }

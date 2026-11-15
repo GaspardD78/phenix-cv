@@ -47,7 +47,7 @@ describe('résolution d\'un groupe', () => {
     expect(r.ok && r.merge.description).toBe('');
   });
 
-  it('une entrée en cours : « Présent » (isCurrent), sans date de fin', () => {
+  it('une entrée en cours : « auj. » (isCurrent), sans date de fin', () => {
     expect(mergedDates([A, D])).toEqual({ startDate: '2011-03', endDate: null, isCurrent: true });
     expect(mergedDates([A, B]).endDate).toBe('2013-12');
   });
@@ -119,7 +119,7 @@ describe('garde-fou : fusions', () => {
   });
 
   it('datesOverride d\'une entrée fusionnée : ignoré', () => {
-    const r = guardAiCv(resp({ mergedEntries: [GROUP], entries: [{ id: 'a2', visible: true, datesOverride: '2012 - 2014' }, { id: 'd1', visible: true, datesOverride: 'garde' }] }), ctx());
+    const r = guardAiCv(resp({ mergedEntries: [GROUP], entries: [{ id: 'a2', visible: true, datesOverride: '2012 – 2014' }, { id: 'd1', visible: true, datesOverride: 'garde' }] }), ctx());
     expect(r.data.entries.find(e => e.id === 'a2')?.datesOverride).toBeUndefined();
     expect(r.data.entries.find(e => e.id === 'd1')?.datesOverride).toBe('garde');
     expect(codes(r)).toContain('merge-dates-ignored');
@@ -187,7 +187,7 @@ describe('application : bloc porteur, blocs masqués, idempotence', () => {
   it('jamais de datesOverride sur une ligne fusionnée, même fourni par l\'IA ou déjà présent', async () => {
     const blocks = makeBlocks().map(b => (b.id === 'b-a3' ? { ...b, overrideData: { datesOverride: 'ancien' } } : b));
     const store = makeFakeStore(blocks);
-    await run(store, resp({ mergedEntries: [GROUP], entries: [{ id: 'a3', visible: true, datesOverride: '2014 - 2015' }] }));
+    await run(store, resp({ mergedEntries: [GROUP], entries: [{ id: 'a3', visible: true, datesOverride: '2014 – 2015' }] }));
     expect(store.currentCvBlocks.find(b => b.id === 'b-a3')!.overrideData.datesOverride).toBeUndefined();
   });
 
@@ -277,25 +277,25 @@ describe('affichage', () => {
     const html = renderToStaticMarkup(<PrintableCV cv={cv} profile={TEST_PROFILE} blocks={blocks} entries={entries} template={getTemplate('ats-classic')} />);
     expect(html).toContain('Conseillère clientèle');
     expect(html).toContain('Employeur C, Employeur B, Employeur A');
-    expect(html).toContain('2011 - 2015');
+    expect(html).toContain('2011 – 2015');
     expect(html).not.toContain('Employeur A)');
     expect(html).not.toContain('Traiter des profils techniques pour 12 postes');
     // Un seul « Conseillère clientèle » : les deux autres postes de ce titre sont masqués.
     expect(html.match(/Conseillère clientèle/g)).toHaveLength(1);
   });
 
-  it('dates par défaut (mois et année) : période calculée, « Présent » si une entrée est en cours', async () => {
+  it('dates par défaut (mois et année) : période calculée, « auj. » si une entrée est en cours', async () => {
     const store = makeFakeStore(makeBlocks());
     await applyAiCvToBlocks('cv1', resp({ mergedEntries: [{ ids: ['a1', 'd1'], titleOverride: 'Suivi' }] }), { store: () => store, entries });
     const html = renderToStaticMarkup(<PrintableCV cv={{ ...cv, settings: {} }} profile={TEST_PROFILE} blocks={store.sorted()} entries={entries} template={getTemplate('ats-classic')} />);
-    expect(html).toContain('mars 2011 - Présent');
+    expect(html).toContain('mars 2011 – auj.');
   });
 
   it('export DOCX : même ligne fusionnée', async () => {
     const blob = await generateDocxBlob(cv, TEST_PROFILE, await merged(), entries, getTemplate('ats-classic'));
     const xml = await (await JSZip.loadAsync(await blob.arrayBuffer())).file('word/document.xml')!.async('string');
     expect(xml).toContain('Employeur C, Employeur B, Employeur A');
-    expect(xml).toContain('2011 - 2015');
+    expect(xml).toContain('2011 – 2015');
   });
 
   it('entry-display : pas d\'employeur en double dans le titre fusionné', () => {

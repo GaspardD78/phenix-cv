@@ -829,7 +829,9 @@ export function guardAiCv(input: AiCvResponse, ctx: GuardContext): { data: AiCvR
     }
     const bullets = bulletsOf(e.description);
     visibleBullets += bullets.length;
-    const entryLines = 1.5 + bullets.reduce((n, b) => n + Math.ceil(b.length / CHARS_PER_LINE), 0);
+    // Ligne 1 : intitulé et dates ; ligne 2 : entreprise · lieu (si l'une des deux existe).
+    const metaLine = (e.subtitle || e.entry.subtitle || e.entry.location) ? 1 : 0;
+    const entryLines = 1.5 + metaLine + bullets.reduce((n, b) => n + Math.ceil(b.length / CHARS_PER_LINE), 0);
     lines += entryLines;
     costs.set(e.entry.id, entryLines);
     // Cible 1 page : une expérience ancienne et sans lien peut tenir en une ligne, sans description.

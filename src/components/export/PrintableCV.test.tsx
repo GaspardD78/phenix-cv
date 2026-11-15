@@ -1,3 +1,5 @@
+import { readDateSettings } from '../../lib/entry-dates';
+import { CVEntryBlock } from './CVEntryBlock';
 import { describe, it, expect } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PrintableCV } from './PrintableCV';
@@ -96,15 +98,15 @@ describe('PrintableCV - sous-en-têtes de compétences', () => {
 });
 
 describe('PrintableCV - C : langue du CV', () => {
-  it('rend « Present » quand le CV est en anglais', () => {
+  it('rend « now » quand le CV est en anglais', () => {
     const html = render(makeBlocks(entries), 'ats-classic', { cvLanguage: 'en' });
-    expect(html).toContain('Present');
-    expect(html).not.toContain('Présent');
+    expect(html).toContain('now');
+    expect(html).not.toContain('auj.');
     expect(html).toContain('January 2021');
   });
 
   it('reste en français par défaut', () => {
-    expect(render(makeBlocks(entries))).toContain('Présent');
+    expect(render(makeBlocks(entries))).toContain('auj.');
   });
 });
 
@@ -175,5 +177,46 @@ describe('PrintableCV - titre sans employeur en double (lib/entry-display.ts)', 
     const html = (b: CVBlock) => renderToStaticMarkup(<PrintableCV cv={cv} profile={TEST_PROFILE} blocks={[b]} entries={own} template={getTemplate('ats-classic')} />);
     expect(html(block)).toMatch(/cv-title[^>]*>Assistante commerciale<\/span>/);
     expect(html({ ...block, overrideData: { title: 'Lead (Acme)' } })).toMatch(/cv-title[^>]*>Lead \(Acme\)<\/span>/);
+  });
+});
+
+describe('PrintableCV - mise en page des expériences et formations', () => {
+  const block = (id: string) => makeBlocks(entries).find(b => b.entryId === id)!;
+  const entryHtml = (id: string, settings: Record<string, unknown> = {}) =>
+    renderToStaticMarkup(
+      <CVEntryBlock block={block(id)} entry={entries.find(e => e.id === id)!} template={getTemplate('ats-classic')} dateSettings={readDateSettings(settings)} />,
+    );
+
+  it('ligne 1 : intitulé puis dates ; ligne 2 : entreprise · lieu', () => {
+    const html = entryHtml('x1');
+    const title = html.indexOf('cv-title');
+    const date = html.indexOf('cv-date');
+    const meta = html.indexOf('cv-meta-row');
+    expect(title).toBeGreaterThan(-1);
+    expect(date).toBeGreaterThan(title);
+    expect(meta).toBeGreaterThan(date); // la ligne 2 vient après la ligne 1
+    expect(html).toContain('>ACME<');
+  });
+
+  it('une entrée sans entreprise ni lieu n\'a pas de ligne 2', () => {
+    const bare = [makeEntry('b1', 'skill', 'Excel')];
+    const html = renderToStaticMarkup(
+      <CVEntryBlock block={makeBlocks(bare)[1]} entry={bare[0]} template={getTemplate('ats-classic')} />,
+    );
+    expect(html).not.toContain('cv-meta-row');
+  });
+
+  it('dates : forme courte par défaut, forme longue et numérique au choix', () => {
+    expect(entryHtml('x1')).toContain('janvier 2021 – auj.');
+    expect(entryHtml('x1', { dateStyle: 'long' })).toContain('– aujourd&#x27;hui');
+    expect(entryHtml('x1', { dateStyle: 'numeric' })).toContain('01/2021 – auj.');
+  });
+
+  it('les dates ne se coupent jamais sur deux lignes (règle d\'impression)', () => {
+    const html = renderToStaticMarkup(
+      <PrintableCV cv={cv} profile={TEST_PROFILE} blocks={makeBlocks(entries)} entries={entries} template={getTemplate('ats-classic')} />,
+    );
+    expect(html).toContain('white-space: nowrap');
+    expect(html).toContain('.cv-meta-row');
   });
 });

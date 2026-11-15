@@ -105,15 +105,15 @@ describe('assistante commerciale généraliste : pipeline complet sans retouche 
       'Master Commerce et gestion', 'Licence Économie',                                        // formation
     ]);
     // Dates calculées de chaque ligne fusionnée, au format habituel (mois et année).
-    expect(text).toContain('mars 2013 - mai 2015');
-    expect(text).toContain('septembre 2010 - février 2013');
+    expect(text).toContain('mars 2013 – mai 2015');
+    expect(text).toContain('septembre 2010 – février 2013');
     expect(text).toContain('Epsilon, Zeta');
     expect(text).toContain('Eta, Theta, Iota');
     // Aucun poste fusionné n'apparaît seul, ni son titre à parenthèse.
     for (const gone of ['(Epsilon)', '(Zeta)', '(Eta)', '(Theta)', '(Iota)']) expect(text).not.toContain(gone);
 
-    // Poste en cours : « Présent ».
-    expect(text).toContain('janvier 2022 - Présent');
+    // Poste en cours : « auj. ».
+    expect(text).toContain('janvier 2022 – auj.');
 
     // 7 lignes de compétences reformulées, aucune catégorie du profil.
     expect(html.match(/class="cv-desc cv-skill-line /g)).toHaveLength(7);
@@ -122,8 +122,8 @@ describe('assistante commerciale généraliste : pipeline complet sans retouche 
 
     // Formation sur 2 lignes : une ligne chacune, sans description.
     expect(text).toContain('Université fictive');
-    expect(text).toContain('2008 - 2010');
-    expect(text).toContain('2005 - 2008');
+    expect(text).toContain('2008 – 2010');
+    expect(text).toContain('2005 – 2008');
   });
 
   it('ciblage public : aucun terme d\'avoidTerms ne passe, ni dans le garde-fou ni dans le CV rendu', async () => {
@@ -170,7 +170,7 @@ describe('assistante commerciale généraliste : pipeline complet sans retouche 
     const { store, cv } = await produce();
     const blob = await generateDocxBlob(cv, GENERALIST_PROFILE, store.currentCvBlocks, GENERALIST_ENTRIES, getTemplate('ats-classic'));
     const xml = await (await JSZip.loadAsync(await blob.arrayBuffer())).file('word/document.xml')!.async('string');
-    for (const expected of ['Permis B', 'Epsilon, Zeta', 'Eta, Theta, Iota', 'mars 2013 - mai 2015', 'septembre 2010 - février 2013', 'Master Commerce et gestion', 'Licence Économie']) {
+    for (const expected of ['Permis B', 'Epsilon, Zeta', 'Eta, Theta, Iota', 'mars 2013 – mai 2015', 'septembre 2010 – février 2013', 'Master Commerce et gestion', 'Licence Économie']) {
       expect(xml).toContain(expected);
     }
     for (const l of GENERALIST_SKILL_LINES) expect(xml).toContain(l.text.replace(/'/g, '&apos;'));

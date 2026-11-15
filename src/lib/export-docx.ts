@@ -1,7 +1,7 @@
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
   BorderStyle, LevelFormat, Table, TableRow, TableCell, WidthType,
-  ShadingType, VerticalAlign, ImageRun, ExternalHyperlink,
+  ShadingType, VerticalAlign, ImageRun, ExternalHyperlink, TabStopType,
 } from 'docx';
 import { CVDocument, CVBlock } from '../types/cv';
 import { MasterEntry, Profile } from '../types/profile';
@@ -662,21 +662,31 @@ export async function generateDocxBlob(
 
         // Sans l'employeur en double (lib/entry-display.ts) ; une surcharge de titre prime.
         const titleText = entryDisplayTitle(entry, block.overrideData);
-        let subtitleText = entryData.subtitle ? ` | ${entryData.subtitle}` : '';
-        if (entryData.location) {
-          subtitleText += subtitleText ? ` - ${entryData.location}` : ` | ${entryData.location}`;
-        }
+        // Ligne 2 : entreprise · lieu (même présentation que le PDF).
+        const meta = [entryData.subtitle, entryData.location]
+          .map(v => (typeof v === 'string' ? v.trim() : ''))
+          .filter(Boolean)
+          .join(' · ');
+        // Ligne 1 : intitulé, puis une tabulation vers la marge droite pour les dates (pas de tableau,
+        // pour rester lisible par les logiciels de recrutement).
+        const contentWidth = (effectiveTemplate.docx.pageSize === 'A4' ? 11906 : 12240)
+          - effectiveMargins.left - effectiveMargins.right;
 
-        const textRuns: TextRun[] = [];
-        if (titleText)   textRuns.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
-        if (subtitleText) textRuns.push(new TextRun({ text: subtitleText, italics: true, size: B, font: F }));
-        if (dateText)    textRuns.push(new TextRun({ text: `  (${dateText})`, size: B, font: F, color: '666666' }));
-        if (!textRuns.length) textRuns.push(new TextRun({ text: '' }));
-
+        const line1: TextRun[] = [];
+        if (titleText) line1.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
+        if (dateText) line1.push(new TextRun({ text: `\t${dateText}`, size: B, font: F, color: '666666' }));
+        if (!line1.length) line1.push(new TextRun({ text: '' }));
         bodyChildren.push(new Paragraph({
-          children: textRuns,
-          spacing: { before: 60, after: 20 },
+          children: line1,
+          tabStops: [{ type: TabStopType.RIGHT, position: contentWidth }],
+          spacing: { before: 60, after: meta ? 0 : 20 },
         }));
+        if (meta) {
+          bodyChildren.push(new Paragraph({
+            children: [new TextRun({ text: meta, size: B - 2, font: F, color: '555555' })],
+            spacing: { after: 20 },
+          }));
+        }
 
         if (entryData.description && typeof entryData.description === 'string') {
           for (const line of entryData.description.split('\n')) {

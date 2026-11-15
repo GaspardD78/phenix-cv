@@ -20,24 +20,35 @@
  * est affiché tel quel dans les deux modes, sauf formation masquée.
  */
 
-import { DEFAULT_CV_LANGUAGE, presentLabel, readCvLanguage, todayLabel } from './cv-language';
+import { DEFAULT_CV_LANGUAGE, readCvLanguage, todayLabel } from './cv-language';
 
 export type DateFormat = 'month-year' | 'year';
 
+/**
+ * Forme de la période : « juin 2024 – aujourd'hui » (long), « juin 2024 – auj. » (court, défaut),
+ * « 06/2024 – auj. » (numérique). Ne concerne que les dates au mois ; « année » reste « 2020 – 2024 ».
+ */
+export const DATE_STYLES = ['long', 'short', 'numeric'] as const;
+export type DateStyle = (typeof DATE_STYLES)[number];
+export const DEFAULT_DATE_STYLE: DateStyle = 'short';
+
 export interface DateSettings {
   dateFormat: DateFormat;
+  /** Absente : `short`. */
+  dateStyle?: DateStyle;
   showEducationYears: boolean;
   /** Langue du CV (code ISO 639-1, `cv.settings.cvLanguage`) : mois et « Présent ». Absente : `fr`. */
   language?: string;
 }
 
-export const DEFAULT_DATE_SETTINGS: DateSettings = { dateFormat: 'month-year', showEducationYears: true, language: DEFAULT_CV_LANGUAGE };
+export const DEFAULT_DATE_SETTINGS: DateSettings = { dateFormat: 'month-year', dateStyle: DEFAULT_DATE_STYLE, showEducationYears: true, language: DEFAULT_CV_LANGUAGE };
 
 /** Lit les réglages de dates d'un CV ; toute valeur inattendue (sauvegarde importée…) retombe sur le défaut. */
 export function readDateSettings(settings: Record<string, unknown> | null | undefined): DateSettings {
   const s = settings ?? {};
   return {
     dateFormat: s.dateFormat === 'year' ? 'year' : 'month-year',
+    dateStyle: (DATE_STYLES as readonly string[]).includes(String(s.dateStyle)) ? (s.dateStyle as DateStyle) : DEFAULT_DATE_STYLE,
     showEducationYears: s.showEducationYears === false || s.showEducationYears === 'false' ? false : true,
     language: readCvLanguage(s),
   };
@@ -96,6 +107,26 @@ export function formatMonthYear(dateString: string, languageArg: string = DEFAUL
   return fallbackMonthYear(dateString, language);
 }
 
+/** « 06/2024 » pour `2024-06` ; année seule pour `2024`. */
+export function formatNumericMonth(dateString: string): string {
+  const m = ISO_DATE.exec(dateString);
+  if (m) {
+    if (m[2] === undefined) return m[1];
+    const month = parseInt(m[2], 10);
+    if (month >= 1 && month <= 12) return `${String(month).padStart(2, '0')}/${m[1]}`;
+  }
+  return fallbackMonthYear(dateString, DEFAULT_CV_LANGUAGE);
+}
+
+/** Libellé « en cours » selon la forme : « aujourd'hui » (long) ou « auj. » (court et numérique). */
+export function openEndLabel(style: DateStyle, language: string): string {
+  if (style === 'short' || style === 'numeric') {
+    return language === 'fr' ? 'auj.' : language === 'en' ? 'now' : todayLabel(language).toLowerCase();
+  }
+  const today = todayLabel(language);
+  return language === 'fr' ? "aujourd'hui" : today.charAt(0).toLowerCase() + today.slice(1);
+}
+
 /** Année seule d'une chaîne qui n'est pas lisible dans le texte : lecture via Date (heure locale). */
 function legacyYear(dateString: string): string {
   const date = new Date(dateString);
@@ -127,18 +158,22 @@ export function formatEntryDates(
   const override = typeof datesOverride === 'string' ? datesOverride.trim() : '';
   if (override) return override;
 
+  const language = settings.language ?? DEFAULT_CV_LANGUAGE;
+  const style = settings.dateStyle ?? DEFAULT_DATE_STYLE;
   const yearOnly = settings.dateFormat === 'year' || entry.entryType === 'education' || entry.entryType === 'certification';
-  const fmt = yearOnly ? yearOf : (d: string) => formatMonthYear(d, settings.language ?? DEFAULT_CV_LANGUAGE);
+  const fmt = yearOnly
+    ? yearOf
+    : style === 'numeric' ? formatNumericMonth : (d: string) => formatMonthYear(d, language);
 
   const start = entry.startDate ? fmt(entry.startDate) : '';
   const end = entry.endDate ? fmt(entry.endDate) : '';
   const endText = entry.isCurrent
-    ? presentLabel(settings.language ?? DEFAULT_CV_LANGUAGE)
-    : end || (start && options.missingEnd === 'today' ? todayLabel(settings.language ?? DEFAULT_CV_LANGUAGE) : '');
+    ? openEndLabel(style, language)
+    : end || (start && options.missingEnd === 'today' ? openEndLabel(style, language) : '');
 
   if (!start) return endText;
   if (!endText) return start;
-  // Période contenue dans une seule année : « 2023 », pas « 2023 - 2023 ».
+  // Période contenue dans une seule année : « 2023 », pas « 2023 – 2023 ».
   if (settings.dateFormat === 'year' && !entry.isCurrent && endText === start) return start;
-  return `${start} - ${endText}`;
+  return `${start} – ${endText}`;
 }

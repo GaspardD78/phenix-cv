@@ -1,6 +1,6 @@
 <div class="bg-white bg-white border-indigo-700 border-l-[4px] dark:bg-white dark:text-black max-w-[210mm] mx-auto print:m-0 print:max-w-none print:p-0 print:shadow-none print:w-full px-12 py-11 shadow-lg text-black text-gray-900" id="printable-cv" style="font-family: Calibri, Arial, sans-serif;">
   <style>
-    "#printable-cv { font-variant-ligatures: none; }\n#printable-cv .cv-title-row { column-gap: 8px; }\n#printable-cv .cv-title-row > :first-child { flex: 1 1 0; min-width: 0; }\n#printable-cv .cv-title-row > .cv-date { flex: 0 0 auto; max-width: 45%; }\n#printable-cv .cv-title-row > :first-child::after { content: \" \"; white-space: pre; }\n#printable-cv h3 { letter-spacing: 0.06em; }\n@media print { #printable-cv { padding: 8px 10px !important; } }"
+    "#printable-cv { font-variant-ligatures: none; }\n#printable-cv .cv-title-row { column-gap: 8px; }\n#printable-cv .cv-title-row > :first-child { flex: 1 1 0; min-width: 0; }\n#printable-cv .cv-title-row > .cv-date { flex: 0 0 auto; max-width: 45%; white-space: nowrap; }\n#printable-cv .cv-meta-row { margin: 0 0 2px; line-height: 1.35; }\n#printable-cv .cv-meta-row .cv-subtitle { display: block; font-size: 0.92em; font-weight: 400; font-style: normal; color: #55656B; }\n#printable-cv .cv-title-row > :first-child::after { content: \" \"; white-space: pre; }\n#printable-cv h3 { letter-spacing: 0.06em; }\n@media print { #printable-cv { padding: 8px 10px !important; } }"
   <div class="cv-header-block dark:text-black mb-4 text-black text-center">
     <div class="">
       <h1 class="[font-family:Georgia,serif] cv-name font-semibold mb-1 text-[32px] text-gray-900 tracking-wide">
@@ -26,14 +26,14 @@
   <h3 class="[font-family:Georgia,serif] border-b border-indigo-200 font-semibold mb-3.5 mt-6 pb-1.5 print:break-after-avoid text-[12px] text-indigo-800 tracking-[0.28em] uppercase">
     "Expérience professionnelle"
   <div class="cv-entry mb-5 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="[font-family:Georgia,serif] cv-title font-semibold text-[14px] text-gray-900">
-          "Responsable adjointe de l'administration des ventes et de la relation avec les clients grands comptes"
-        <span class="cv-subtitle font-normal italic text-[12.5px] text-indigo-700">
-          " | Société anonyme de distribution de matériaux de construction et d'outillage professionnel - Villeurbanne, Auvergne-Rhône-Alpes"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="[font-family:Georgia,serif] cv-title font-semibold text-[14px] text-gray-900">
+        "Responsable adjointe de l'administration des ventes et de la relation avec les clients grands comptes"
       <span class="cv-date mb-1 tabular-nums text-[11.5px] text-gray-600 tracking-wide">
-        "janvier 2020 - Présent"
+        "janvier 2020 – auj."
+    <div class="cv-meta-row">
+      <span class="cv-subtitle font-normal italic text-[12.5px] text-indigo-700">
+        "Société anonyme de distribution de matériaux de construction et d'outillage professionnel · Villeurbanne, Auvergne-Rhône-Alpes"
     <div class="cv-desc leading-relaxed text-[12px] text-gray-700 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>
@@ -41,14 +41,14 @@
         <li>
           "Suivre la facturation des comptes stratégiques"
   <div class="cv-entry mb-5 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="[font-family:Georgia,serif] cv-title font-semibold text-[14px] text-gray-900">
-          "Assistante commerciale"
-        <span class="cv-subtitle font-normal italic text-[12.5px] text-indigo-700">
-          " | Maison Lambert - Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="[font-family:Georgia,serif] cv-title font-semibold text-[14px] text-gray-900">
+        "Assistante commerciale"
       <span class="cv-date mb-1 tabular-nums text-[11.5px] text-gray-600 tracking-wide">
-        "mars 2017 - décembre 2019"
+        "mars 2017 – décembre 2019"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle font-normal italic text-[12.5px] text-indigo-700">
+        "Maison Lambert · Lyon"
     <div class="cv-desc leading-relaxed text-[12px] text-gray-700 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>

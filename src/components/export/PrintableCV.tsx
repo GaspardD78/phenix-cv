@@ -246,7 +246,13 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       // la date sur deux lignes (« janvier 2010 » puis « - août 2015 »).
       `#printable-cv .cv-title-row { column-gap: ${ENTRY_DATE_GAP_PX}px; }`,
       '#printable-cv .cv-title-row > :first-child { flex: 1 1 0; min-width: 0; }',
-      '#printable-cv .cv-title-row > .cv-date { flex: 0 0 auto; max-width: 45%; }',
+      // Les dates ne se coupent jamais sur deux lignes (« juin 2024 – auj. » reste d'un bloc).
+      '#printable-cv .cv-title-row > .cv-date { flex: 0 0 auto; max-width: 45%; white-space: nowrap; }',
+      // Ligne 2 (entreprise · lieu) : sous l'intitulé, en texte secondaire un peu plus petit.
+      '#printable-cv .cv-meta-row { margin: 0 0 2px; line-height: 1.35; }',
+      // Texte secondaire : gris lisible (contraste AA) quel que soit le modèle ; la couleur choisie
+      // par la personne (réglage « couleur principale ») reste prioritaire, voir plus bas.
+      '#printable-cv .cv-meta-row .cv-subtitle { display: block; font-size: 0.92em; font-weight: 400; font-style: normal; color: #55656B; }',
       '#printable-cv .cv-title-row > :first-child::after { content: " "; white-space: pre; }',
       // Lisibilité ATS : plafond de letter-spacing (voir MAX_LETTER_SPACING_EM).
       letterSpacingCap('#printable-cv h3', template.preview.headingClass),

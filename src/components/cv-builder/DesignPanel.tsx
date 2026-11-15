@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Palette, SlidersHorizontal, Settings2 } from 'lucide-react';
 import type { CVTemplate } from '../../types/template';
 import { DENSITY_PRESETS, type DensityId } from '../../theme/tokens';
-import type { DateFormat } from '../../lib/entry-dates';
+import type { DateFormat, DateStyle } from '../../lib/entry-dates';
 
 interface DesignPanelProps {
   onFitToPage: () => void;
@@ -44,6 +44,7 @@ interface DesignPanelProps {
   titleFontStyle: string; setTitleFontStyle: (v: string) => void;
   contactFontSize: string; setContactFontSize: (v: string) => void;
   dateFormat: DateFormat; setDateFormat: (v: DateFormat) => void;
+  dateStyle: DateStyle; setDateStyle: (v: DateStyle) => void;
   showEducationYears: boolean; setShowEducationYears: (v: boolean) => void;
 }
 
@@ -86,6 +87,7 @@ export function DesignPanel({
   titleFontStyle, setTitleFontStyle,
   contactFontSize, setContactFontSize,
   dateFormat, setDateFormat,
+  dateStyle, setDateStyle,
   showEducationYears, setShowEducationYears,
 }: DesignPanelProps) {
   const [isStandardOpen, setIsStandardOpen] = useState(true);
@@ -274,6 +276,16 @@ export function DesignPanel({
                     <option value="month-year">Mois et année</option>
                     <option value="year">Année seule</option>
                   </select>
+                </div>
+                <div>
+                  <label htmlFor="design-date-style" className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Forme des périodes</label>
+                  <select id="design-date-style" value={dateStyle} onChange={e => setDateStyle((e.target.value as DateStyle) || 'short')} disabled={dateFormat === 'year'}
+                    className="w-full p-1 border rounded text-sm focus:ring focus:ring-lagon-200 disabled:opacity-50 dark:bg-[var(--pc-surface)] dark:border-[var(--pc-border-active)] dark:text-[var(--pc-text)]">
+                    <option value="short">juin 2024 – auj. (conseillé)</option>
+                    <option value="long">juin 2024 – aujourd'hui</option>
+                    <option value="numeric">06/2024 – auj.</option>
+                  </select>
+                  <p className="text-[11px] text-gray-500 dark:text-[var(--pc-muted)] mt-1">Plus court : une ligne de plus de place sur la page.</p>
                 </div>
                 <label className="flex items-center gap-2 text-xs text-gray-700 dark:text-[var(--pc-muted)] cursor-pointer">
                   <input type="checkbox" checked={showEducationYears} onChange={e => setShowEducationYears(e.target.checked)}

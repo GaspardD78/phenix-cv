@@ -30,9 +30,9 @@ const SPECS: Spec[] = [
   { key: 'MemeAnnee', type: 'experience', start: '2023-02', end: '2023-09' },
   { key: 'SansFin', type: 'experience', start: '2019-05' },
   { key: 'SansDebut', type: 'experience', current: true },
-  { key: 'Surcharge', type: 'experience', start: '2011-09', end: '2012-09', datesOverride: '2011 – 2012 (alternance, 1 an)' },
+  { key: 'Surcharge', type: 'experience', start: '2011-09', end: '2012-09', datesOverride: '2011 – 2012' },
   { key: 'Formation', type: 'education', start: '2010-09', end: '2012-06' },
-  { key: 'FormationSurcharge', type: 'education', start: '2007-01', end: '2010-06', datesOverride: '2007 - 2010 (diplôme)' },
+  { key: 'FormationSurcharge', type: 'education', start: '2007-01', end: '2010-06', datesOverride: '2007 – 2010 (diplôme)' },
   { key: 'Projet', type: 'project', start: '2021-05', end: '2022-01' },
 ];
 
@@ -56,7 +56,7 @@ function build(settings: Record<string, unknown>): { cv: CVDocument; blocks: CVB
 
 const decode = (t: string) => t.replace(/&apos;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 
-/** Date affichée (texte entre parenthèses) de chaque entrée du DOCX, par titre ; null si le paragraphe n'en porte pas. */
+/** Date affichée (alignée à droite après une tabulation) de chaque entrée du DOCX, par titre ; null si le paragraphe n'en porte pas. */
 async function docxDates(settings: Record<string, unknown>): Promise<Record<string, string | null>> {
   const { cv, blocks, entries } = build(settings);
   const blob = await generateDocxBlob(cv, profile, blocks, entries, getTemplate('ats-classic'));
@@ -67,7 +67,9 @@ async function docxDates(settings: Record<string, unknown>): Promise<Record<stri
     const texts = [...paragraph.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)].map((m) => decode(m[1]));
     const key = SPECS.find((s) => texts.includes(s.key))?.key;
     if (!key) continue;
-    out[key] = texts.map((t) => /^ {2}\((.*)\)$/.exec(t)?.[1]).find((d) => d !== undefined) ?? null;
+    // Ligne 1 : intitulé puis date après une tabulation (dernier texte du paragraphe).
+    const rest = texts.filter((t) => t !== key);
+    out[key] = rest.length ? rest[rest.length - 1].replace(/^\t/, '') : null;
   }
   return out;
 }
@@ -77,20 +79,20 @@ async function docxDates(settings: Record<string, unknown>): Promise<Record<stri
 describe('export DOCX, mois et année (défaut)', () => {
   test('comportement historique conservé, « Aujourd\'hui » compris', async () => {
     const d = await docxDates({});
-    expect(d.EnCours).toBe('septembre 2022 - Présent');
-    expect(d.Terminee).toBe('mars 2020 - août 2022');
-    expect(d.MemeAnnee).toBe('février 2023 - septembre 2023');
-    expect(d.SansFin).toBe("mai 2019 - Aujourd'hui");
-    expect(d.Formation).toBe('2010 - 2012');
-    expect(d.Projet).toBe('mai 2021 - janvier 2022');
+    expect(d.EnCours).toBe('septembre 2022 – auj.');
+    expect(d.Terminee).toBe('mars 2020 – août 2022');
+    expect(d.MemeAnnee).toBe('février 2023 – septembre 2023');
+    expect(d.SansFin).toBe("mai 2019 – auj.");
+    expect(d.Formation).toBe('2010 – 2012');
+    expect(d.Projet).toBe('mai 2021 – janvier 2022');
   });
 
   test('surcharge datesOverride affichée telle quelle', async () => {
-    expect((await docxDates({})).Surcharge).toBe('2011 – 2012 (alternance, 1 an)');
+    expect((await docxDates({})).Surcharge).toBe('2011 – 2012');
   });
 
   test('« en cours » sans date de début : « Présent », comme le PDF', async () => {
-    expect((await docxDates({})).SansDebut).toBe('Présent');
+    expect((await docxDates({})).SansDebut).toBe('auj.');
   });
 });
 
@@ -99,12 +101,12 @@ describe('export DOCX, mode année', () => {
 
   test('toutes les dates en années seules, « Présent » et « Aujourd\'hui » conservés', async () => {
     const d = await docxDates(settings);
-    expect(d.EnCours).toBe('2022 - Présent');
-    expect(d.Terminee).toBe('2020 - 2022');
-    expect(d.SansFin).toBe("2019 - Aujourd'hui");
-    expect(d.SansDebut).toBe('Présent');
-    expect(d.Formation).toBe('2010 - 2012');
-    expect(d.Projet).toBe('2021 - 2022');
+    expect(d.EnCours).toBe('2022 – auj.');
+    expect(d.Terminee).toBe('2020 – 2022');
+    expect(d.SansFin).toBe("2019 – auj.");
+    expect(d.SansDebut).toBe('auj.');
+    expect(d.Formation).toBe('2010 – 2012');
+    expect(d.Projet).toBe('2021 – 2022');
   });
 
   test('période dans une seule année : une année', async () => {
@@ -112,11 +114,11 @@ describe('export DOCX, mode année', () => {
   });
 
   test('surcharge datesOverride conservée telle quelle', async () => {
-    expect((await docxDates(settings)).Surcharge).toBe('2011 – 2012 (alternance, 1 an)');
+    expect((await docxDates(settings)).Surcharge).toBe('2011 – 2012');
   });
 
   test('une valeur inattendue retombe sur mois et année', async () => {
-    expect((await docxDates({ dateFormat: 'annee' })).Terminee).toBe('mars 2020 - août 2022');
+    expect((await docxDates({ dateFormat: 'annee' })).Terminee).toBe('mars 2020 – août 2022');
   });
 });
 
@@ -131,16 +133,16 @@ describe('export DOCX, années de formation masquées', () => {
 
   test('les autres types gardent leurs dates', async () => {
     const d = await docxDates({ dateFormat: 'year', showEducationYears: false });
-    expect(d.EnCours).toBe('2022 - Présent');
-    expect(d.Terminee).toBe('2020 - 2022');
-    expect(d.Projet).toBe('2021 - 2022');
-    expect(d.Surcharge).toBe('2011 – 2012 (alternance, 1 an)');
+    expect(d.EnCours).toBe('2022 – auj.');
+    expect(d.Terminee).toBe('2020 – 2022');
+    expect(d.Projet).toBe('2021 – 2022');
+    expect(d.Surcharge).toBe('2011 – 2012');
   });
 
   test('affichées par défaut, surcharge comprise', async () => {
     const d = await docxDates({});
-    expect(d.Formation).toBe('2010 - 2012');
-    expect(d.FormationSurcharge).toBe('2007 - 2010 (diplôme)');
+    expect(d.Formation).toBe('2010 – 2012');
+    expect(d.FormationSurcharge).toBe('2007 – 2010 (diplôme)');
   });
 });
 
@@ -196,12 +198,12 @@ describe('export DOCX, sections vides (même règle que le PDF)', () => {
     expect(paragraphs).not.toContain('LANGAGES');
   });
 
-  test('« Present » quand le CV est en anglais', async () => {
+  test('« now » quand le CV est en anglais', async () => {
     const { cv: enCv, blocks, entries: e } = build({ cvLanguage: 'en' });
     const blob = await generateDocxBlob(enCv, profile, blocks, e, getTemplate('ats-classic'));
     const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     const xml = await zip.file('word/document.xml')!.async('string');
-    expect(xml).toContain('September 2022 - Present');
+    expect(xml).toContain('September 2022 – now');
   });
 });
 
@@ -273,7 +275,7 @@ describe('export DOCX, catégories de compétences', () => {
 });
 
 describe('export DOCX, titre sans employeur en double', () => {
-  test('« Assistante commerciale (Acme) » chez Acme s\'affiche « Assistante commerciale | Acme »', async () => {
+  test('« Assistante commerciale (Acme) » chez Acme s\'affiche sur deux lignes : « Assistante commerciale » puis « Acme » sur la ligne suivante', async () => {
     const entries: MasterEntry[] = [{
       id: 'x', profileId: 'p', entryType: 'experience', title: 'Assistante commerciale (Acme)', subtitle: 'Acme', location: null,
       startDate: null, endDate: null, isCurrent: false, description: null, metadata: {}, sortOrder: 0, tags: [], createdAt: TS, updatedAt: TS,
@@ -283,9 +285,25 @@ describe('export DOCX, titre sans employeur en double', () => {
       sortOrder: 0, isVisible: true, overrideData: {}, createdAt: TS,
     }];
     const text = await docxLines(blocks, entries);
-    expect(text).toContain('Assistante commerciale | Acme');
+    expect(text).toContain('Assistante commerciale');
+    expect(text).toContain('Acme');
+    expect(text).not.toContain('Assistante commerciale (Acme)');
     // Surcharge de titre du bloc : affichée telle quelle.
     const over = await docxLines([{ ...blocks[0], overrideData: { title: 'Sales Assistant (Acme)' } }], entries);
-    expect(over).toContain('Sales Assistant (Acme) | Acme');
+    expect(over).toContain('Sales Assistant (Acme)');
+    expect(over).not.toContain('Sales Assistant (Acme) | Acme');
+  });
+});
+
+describe('export DOCX : mise en page des entrées (deux lignes, dates à droite)', () => {
+  test('dates alignées à droite par une tabulation, sans tableau pour les expériences', async () => {
+    const { cv, blocks, entries } = build({});
+    const blob = await generateDocxBlob(cv, profile, blocks, entries, getTemplate('ats-classic'));
+    const xml = await (await JSZip.loadAsync(await blob.arrayBuffer())).file('word/document.xml')!.async('string');
+    expect(xml).toMatch(/<w:tab w:val="right" w:pos="\d+"\/>/);
+    expect(xml).toMatch(/<w:tab\/>|\t/);
+    // Les entrées n'utilisent pas de tableau : aucun tableau ne contient l'intitulé d'une expérience.
+    const tables = [...xml.matchAll(/<w:tbl>[\s\S]*?<\/w:tbl>/g)].map(m => m[0]);
+    for (const t of tables) expect(t).not.toContain('Assistante commerciale');
   });
 });

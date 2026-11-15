@@ -24,23 +24,27 @@ export function CVEntryBlock({ block, entry, template, dateSettings = DEFAULT_DA
     dateSettings,
   );
 
+  // Ligne 2 : entreprise (ou établissement) · lieu, en texte secondaire.
+  const meta = [entryData.subtitle, entryData.location]
+    .map(v => (typeof v === 'string' ? v.trim() : ''))
+    .filter(Boolean)
+    .join(' · ');
+
   return (
     <div className={`cv-entry ${template.preview.entryClass} print:break-inside-avoid`}>
-      <div className="cv-title-row flex justify-between items-baseline mb-1">
-        <div>
-          <span className={`cv-title ${template.preview.titleClass}`}>{entryDisplayTitle(entry, block.overrideData)}</span>
-          {(entryData.subtitle || entryData.location) && (
-            <span className={`cv-subtitle ${template.preview.subtitleClass}`}>
-              {' '}
-              | {entryData.subtitle}
-              {entryData.subtitle && entryData.location ? ` - ${entryData.location}` : entryData.location || ''}
-            </span>
-          )}
-        </div>
+      {/* Ligne 1 : intitulé à gauche, dates à droite (jamais coupées). */}
+      <div className="cv-title-row flex justify-between items-baseline mb-0.5">
+        <span className={`cv-title ${template.preview.titleClass}`}>{entryDisplayTitle(entry, block.overrideData)}</span>
         {dateText && (
           <span className={`cv-date ${template.preview.dateClass}`}>{dateText}</span>
         )}
       </div>
+      {/* Ligne 2 : entreprise · lieu. */}
+      {meta && (
+        <div className="cv-meta-row">
+          <span className={`cv-subtitle ${template.preview.subtitleClass}`}>{meta}</span>
+        </div>
+      )}
       {entryData.description && (
         <div className={`cv-desc ${template.preview.descriptionClass}`}>
           <MarkdownRenderer text={entryData.description as string} />

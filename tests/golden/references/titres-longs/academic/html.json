@@ -1,6 +1,6 @@
 {
-  "exportHtmlSha256": "63c8ec269ced21897944d7e864861e9f5883f9938abe3681876f53b28f065e01",
-  "markupSha256": "b091a8537fd55fa6e5da3987a0763730ce40deb322dbf1c6fe87eca1b94738d5",
+  "exportHtmlSha256": "15cb3a47843f91cf92ab81397199a39642149720bacf4caace308a026ca7ecd0",
+  "markupSha256": "ed1f7180892f4e64fb2c38475d9a18036496924062d98c982583d31f7af2189c",
   "rules": [
     "90ba656e3530",
     "04e3960b1259",
@@ -40,7 +40,6 @@
     "13b42347624d",
     "3c2f3eca8dd0",
     "0e5c7c1015ce",
-    "8d64c0420f17",
     "d754ae6e594b",
     "16408cd44bc0",
     "fee51ebac4e3",
@@ -129,7 +128,9 @@
     "4bc78e66aee4",
     "5e004b8ab027",
     "507cf51d29a5",
-    "b5d17cbe7a88",
+    "06ee30f154e1",
+    "085bcf87fdee",
+    "771b60f42b3d",
     "d5dcdb0e19f1",
     "417dff9b6020",
     "a332ffe7cbd2",
@@ -139,7 +140,9 @@
     "4bc78e66aee4",
     "5e004b8ab027",
     "507cf51d29a5",
-    "b5d17cbe7a88",
+    "06ee30f154e1",
+    "085bcf87fdee",
+    "771b60f42b3d",
     "d5dcdb0e19f1",
     "417dff9b6020",
     "a332ffe7cbd2"

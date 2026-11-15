@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 49.4,
+  "overflowMm": 91.9,
   "remainingMm": 0,
-  "hiddenLines": 7,
-  "lastVisibleLine": "Langues",
-  "firstCutLine": "Français - Langue maternelle Anglais - Courant - C1"
+  "hiddenLines": 12,
+  "lastVisibleLine": "Certifications",
+  "firstCutLine": "TOSA Excel - niveau avancé - Isograd Sauveteur secouriste du travail - INRS"
 }

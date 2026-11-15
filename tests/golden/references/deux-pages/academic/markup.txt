@@ -1,6 +1,6 @@
 <div class="[font-family:Cambria,Georgia,serif] bg-white bg-white dark:bg-white dark:text-black max-w-[210mm] mx-auto print:m-0 print:max-w-none print:p-0 print:shadow-none print:w-full px-12 py-10 shadow-lg text-black text-gray-900" id="printable-cv" style="font-family: Calibri, Arial, sans-serif;">
   <style>
-    "#printable-cv { font-variant-ligatures: none; }\n#printable-cv .cv-title-row { column-gap: 8px; }\n#printable-cv .cv-title-row > :first-child { flex: 1 1 0; min-width: 0; }\n#printable-cv .cv-title-row > .cv-date { flex: 0 0 auto; max-width: 45%; }\n#printable-cv .cv-title-row > :first-child::after { content: \" \"; white-space: pre; }\n#printable-cv h3 { letter-spacing: 0.06em; }\n@media print { #printable-cv { padding: 8px 10px !important; } }"
+    "#printable-cv { font-variant-ligatures: none; }\n#printable-cv .cv-title-row { column-gap: 8px; }\n#printable-cv .cv-title-row > :first-child { flex: 1 1 0; min-width: 0; }\n#printable-cv .cv-title-row > .cv-date { flex: 0 0 auto; max-width: 45%; white-space: nowrap; }\n#printable-cv .cv-meta-row { margin: 0 0 2px; line-height: 1.35; }\n#printable-cv .cv-meta-row .cv-subtitle { display: block; font-size: 0.92em; font-weight: 400; font-style: normal; color: #55656B; }\n#printable-cv .cv-title-row > :first-child::after { content: \" \"; white-space: pre; }\n#printable-cv h3 { letter-spacing: 0.06em; }\n@media print { #printable-cv { padding: 8px 10px !important; } }"
   <div class="cv-header-block dark:text-black flex gap-6 items-center mb-4 text-black">
     <div class="border-2 border-gray-200 flex-shrink-0 overflow-hidden rounded-full" style="width: 96px; height: 96px;">
       <img alt="Photo de profil" class="h-full object-cover w-full" src="data:image/png;sha256=f61caf571cf64bd9;len=8762">
@@ -31,14 +31,14 @@
   <h3 class="border-amber-900/40 border-b font-bold mb-2.5 mt-5 pb-1 print:break-after-avoid text-[11.5px] text-amber-900 tracking-[0.16em] uppercase">
     "Expérience professionnelle"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "Responsable administration des ventes"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Maison Lambert - Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "Responsable administration des ventes"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "mars 2021 - Présent"
+        "mars 2021 – auj."
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Maison Lambert · Lyon"
     <div class="cv-desc leading-[1.45] text-[11.5px] text-gray-800 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>
@@ -52,14 +52,14 @@
         <li>
           "Mettre en place une procédure de classement des contrats"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "Assistante commerciale"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Maison Lambert - Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "Assistante commerciale"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "septembre 2018 - février 2021"
+        "septembre 2018 – février 2021"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Maison Lambert · Lyon"
     <div class="cv-desc leading-[1.45] text-[11.5px] text-gray-800 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>
@@ -71,14 +71,14 @@
         <li>
           "Former deux nouvelles collègues aux outils de gestion"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "Assistante administrative"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Atelier Dupré - Villeurbanne"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "Assistante administrative"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "septembre 2016 - août 2018"
+        "septembre 2016 – août 2018"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Atelier Dupré · Villeurbanne"
     <div class="cv-desc leading-[1.45] text-[11.5px] text-gray-800 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>
@@ -90,14 +90,14 @@
         <li>
           "Former deux nouvelles collègues aux outils de gestion"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "Hôtesse d'accueil"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Groupe Horizon - Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "Hôtesse d'accueil"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "septembre 2014 - août 2016"
+        "septembre 2014 – août 2016"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Groupe Horizon · Lyon"
     <div class="cv-desc leading-[1.45] text-[11.5px] text-gray-800 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>
@@ -107,14 +107,14 @@
         <li>
           "Préparer chaque mois le tableau de bord des ventes pour la direction"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "Vendeuse"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Boutique du Marché - Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "Vendeuse"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "septembre 2012 - août 2014"
+        "septembre 2012 – août 2014"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Boutique du Marché · Lyon"
     <div class="cv-desc leading-[1.45] text-[11.5px] text-gray-800 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>
@@ -124,14 +124,14 @@
         <li>
           "Préparer chaque mois le tableau de bord des ventes pour la direction"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "Employée polyvalente"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Restaurant La Table - Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "Employée polyvalente"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "juin 2011 - août 2012"
+        "juin 2011 – août 2012"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Restaurant La Table · Lyon"
     <div class="cv-desc leading-[1.45] text-[11.5px] text-gray-800 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>
@@ -141,23 +141,23 @@
   <h3 class="border-amber-900/40 border-b font-bold mb-2.5 mt-5 pb-1 print:break-after-avoid text-[11.5px] text-amber-900 tracking-[0.16em] uppercase">
     "Formation"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "BTS Support à l'action managériale"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Lycée Exemple - Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "BTS Support à l'action managériale"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "2014 - 2016"
+        "2014 – 2016"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Lycée Exemple · Lyon"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "Baccalauréat professionnel Gestion-administration"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Lycée Exemple - Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "Baccalauréat professionnel Gestion-administration"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "2011 - 2014"
+        "2011 – 2014"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Lycée Exemple · Lyon"
   <h3 class="border-amber-900/40 border-b font-bold mb-2.5 mt-5 pb-1 print:break-after-avoid text-[11.5px] text-amber-900 tracking-[0.16em] uppercase">
     "Certifications"
   <div class="cv-entry mb-3 print:break-inside-avoid">
@@ -191,14 +191,14 @@
   <h3 class="border-amber-900/40 border-b font-bold mb-2.5 mt-5 pb-1 print:break-after-avoid text-[11.5px] text-amber-900 tracking-[0.16em] uppercase">
     "Bénévolat"
   <div class="cv-entry mb-3 print:break-inside-avoid">
-    <div class="cv-title-row flex items-baseline justify-between mb-1">
-      <div>
-        <span class="cv-title font-semibold text-[12.5px] text-gray-900">
-          "Bénévole"
-        <span class="cv-subtitle italic text-[12px] text-amber-900">
-          " | Association Entraide Lyon"
+    <div class="cv-title-row flex items-baseline justify-between mb-0.5">
+      <span class="cv-title font-semibold text-[12.5px] text-gray-900">
+        "Bénévole"
       <span class="cv-date mb-0.5 tabular-nums text-[11px] text-gray-600">
-        "janvier 2019 - janvier 2023"
+        "janvier 2019 – janvier 2023"
+    <div class="cv-meta-row">
+      <span class="cv-subtitle italic text-[12px] text-amber-900">
+        "Association Entraide Lyon"
     <div class="cv-desc leading-[1.45] text-[11.5px] text-gray-800 whitespace-pre-line">
       <ul class="list-disc my-1 pl-5">
         <li>
