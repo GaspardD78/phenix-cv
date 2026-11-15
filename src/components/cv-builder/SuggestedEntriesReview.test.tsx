@@ -12,7 +12,7 @@ describe('SuggestedEntriesReview', () => {
   });
   it('liste les suggestions, décochées par défaut, avec l\'avertissement opt-in', () => {
     const html = renderToStaticMarkup(<SuggestedEntriesReview suggestions={suggestions} accepted={new Set()} onToggle={() => {}} />);
-    expect(html).toContain('Entrées suggérées hors profil maître');
+    expect(html).toContain('Entrées suggérées, absentes de votre profil');
     expect(html).toContain('Non cochées : ignorées (rien n&#x27;est écrit)');
     expect(html).toContain('Accueil du public');
     expect(html).toContain('Compétence');

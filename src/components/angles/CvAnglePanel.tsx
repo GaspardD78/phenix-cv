@@ -149,7 +149,7 @@ export function CvAnglePanel({ profile, entries, offerText, company, personalRul
       {mode === 'propose' && (
         <div className="space-y-2">
           <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-            1. Copie le prompt d'analyse et colle-le dans ton IA. 2. Colle sa réponse ci-dessous. 3. Choisis une proposition : le prompt du CV l'utilisera.
+            1. Copiez le texte d'analyse et collez-le dans votre IA. 2. Collez sa réponse ci-dessous. 3. Choisissez une proposition : le prompt du CV l'utilisera.
           </p>
           <button type="button" className={small} onClick={copyAnglePrompt}>
             {promptCopied ? <><Check className="inline w-3 h-3" /> Copié</> : <><Copy className="inline w-3 h-3" /> Copier le prompt d'analyse</>}
@@ -166,7 +166,7 @@ export function CvAnglePanel({ profile, entries, offerText, company, personalRul
               {parsed.value.analyse?.alertesCap && (
                 <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-2 text-[11px] text-amber-800 dark:text-amber-200">
                   <AlertTriangle className="inline w-3 h-3 mr-1" />
-                  Alertes sur tes critères : {parsed.value.analyse.alertesCap.join(' ; ')}
+                  Alertes sur vos critères : {parsed.value.analyse.alertesCap.join(' ; ')}
                 </div>
               )}
               {parsed.value.warnings.length > 0 && (

@@ -355,7 +355,7 @@ function buildAdvice(
       type: 'synonym_expansion',
       severity: 'low',
       axis: m.axis,
-      message: `Tu utilises "${m.cvTerm}"${context} — l'annonce mentionne "${m.jobTerm}". Pour les ATS, ajoute aussi le terme exact.`,
+      message: `Vous utilisez "${m.cvTerm}"${context} — l'annonce mentionne "${m.jobTerm}". Pour les logiciels de tri, ajoutez aussi le terme exact.`,
       cvRef: m.cvRef,
     });
   }
@@ -379,14 +379,14 @@ function buildAdvice(
   for (const { jobTerm, weight, axis } of bestPerTerm.values()) {
     const severity = weight > 0.7 ? 'high' : weight > 0.35 ? 'medium' : 'low';
     const axisLabel =
-      axis === 'skills'     ? 'tes compétences' :
-      axis === 'experience' ? 'tes expériences' :
-      axis === 'education'  ? 'ta formation'    : 'ton CV';
+      axis === 'skills'     ? 'vos compétences' :
+      axis === 'experience' ? 'vos expériences' :
+      axis === 'education'  ? 'votre formation' : 'votre CV';
 
     const actionable = getAllVariants(jobTerm).length > 1;
     const message = actionable
-      ? `«${jobTerm}» est absent de ${axisLabel} — tu peux le couvrir en ajoutant une de ses variantes connues.`
-      : `«${jobTerm}» est mentionné dans l'annonce mais absent de ${axisLabel} (terme spécifique sans équivalent connu dans ton CV).`;
+      ? `«${jobTerm}» est absent de ${axisLabel} — vous pouvez le couvrir en ajoutant une de ses variantes connues.`
+      : `«${jobTerm}» est mentionné dans l'annonce mais absent de ${axisLabel} (terme spécifique sans équivalent connu dans votre CV).`;
 
     advice.push({
       type: 'missing_keyword',

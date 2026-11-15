@@ -107,13 +107,13 @@ export function AIAnalysisModal({ application, onClose }: Props) {
     try {
       parsed = extractJson(jsonInput);
     } catch {
-      setParseError('JSON invalide — vérifie que tu as bien copié la réponse complète de l\'IA.');
+      setParseError('Réponse illisible : vérifiez que vous avez bien copié la réponse complète de l\'IA.');
       return;
     }
 
     if (!validateAIJson(parsed)) {
       setParseError(
-        'Le JSON ne correspond pas au format attendu. Assure-toi d\'avoir utilisé le prompt généré et que l\'IA a bien retourné tous les champs requis.',
+        'Le JSON ne correspond pas au format attendu. Assurez-vous d\'avoir utilisé le texte préparé par l\'application et que l\'IA a bien retourné tous les champs requis.',
       );
       return;
     }
@@ -179,8 +179,8 @@ export function AIAnalysisModal({ application, onClose }: Props) {
           {step === 'generate' && (
             <>
               <p className="text-sm text-gray-600">
-                Ce prompt contient ton CV et le texte de l'offre.
-                Copie-le et colle-le dans l'IA de ton choix (Claude, ChatGPT, Gemini…).
+                Ce texte contient votre CV et le texte de l'offre.
+                Copiez-le et collez-le dans l'IA de votre choix (Claude, ChatGPT, Gemini…).
               </p>
 
               {!application.jobDescription?.trim() && (
@@ -188,7 +188,7 @@ export function AIAnalysisModal({ application, onClose }: Props) {
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
                   <span>
                     Aucun texte d'annonce renseigné. L'analyse sera moins précise.
-                    Colle le texte de l'offre dans le panneau "Score de compatibilité" avant de générer.
+                    Collez le texte de l'offre dans le panneau "Score de compatibilité" avant de générer.
                   </span>
                 </div>
               )}
@@ -230,7 +230,7 @@ export function AIAnalysisModal({ application, onClose }: Props) {
           {step === 'paste' && (
             <>
               <p className="text-sm text-gray-600">
-                Colle ici le JSON retourné par l'IA. Il doit commencer par <code className="text-xs bg-gray-100 px-1 rounded">{`{`}</code> et contenir les champs <code className="text-xs bg-gray-100 px-1 rounded">score_global</code>, <code className="text-xs bg-gray-100 px-1 rounded">scores</code>, etc.
+                Collez ici la réponse de l'IA. Il doit commencer par <code className="text-xs bg-gray-100 px-1 rounded">{`{`}</code> et contenir les champs <code className="text-xs bg-gray-100 px-1 rounded">score_global</code>, <code className="text-xs bg-gray-100 px-1 rounded">scores</code>, etc.
               </p>
 
               <textarea

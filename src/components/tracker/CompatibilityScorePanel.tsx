@@ -119,7 +119,7 @@ export function CompatibilityScorePanel({ application }: Props) {
                 value={jobDescription}
                 onChange={e => setJobDescription(e.target.value)}
                 onBlur={handleSaveDescription}
-                placeholder="Colle ici le texte complet de l'offre d'emploi…"
+                placeholder="Collez ici le texte complet de l'offre d'emploi…"
                 rows={4}
                 className="w-full px-3 py-2 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-400 outline-none resize-y"
               />

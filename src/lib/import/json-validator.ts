@@ -16,7 +16,7 @@ export function parseImportJson(raw: string): ImportPayload {
     const cleaned = raw.trim().replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
     parsed = JSON.parse(cleaned);
   } catch {
-    throw new Error('JSON invalide. Vérifie que tu as copié la réponse complète du LLM.');
+    throw new Error("Réponse illisible. Vérifiez que vous avez copié la réponse complète de l'IA.");
   }
 
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
@@ -38,7 +38,7 @@ export function parseImportJson(raw: string): ImportPayload {
   }
 
   if (!result.profile && (!result.entries || result.entries.length === 0)) {
-    throw new Error('Le JSON ne contient ni "profile" ni "entries". Vérifie la réponse du LLM.');
+    throw new Error("La réponse ne contient ni profil ni éléments. Vérifiez la réponse de l'IA.");
   }
 
   return result;

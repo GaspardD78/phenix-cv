@@ -23,7 +23,7 @@ export function SuggestedEntriesReview({ suggestions, accepted, onToggle }: Sugg
       <div className="flex items-start gap-2">
         <Sparkles className="w-3.5 h-3.5 text-purple-500 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-purple-800 dark:text-purple-200 leading-relaxed">
-          <strong>Entrées suggérées hors profil maître.</strong> Coche celles à ajouter : elles seront enregistrées dans ton profil <em>et</em> incluses dans ce CV. Non cochées : ignorées (rien n'est écrit).
+          <strong>Entrées suggérées, absentes de votre profil.</strong> Cochez celles à ajouter : elles seront enregistrées dans « Mon profil » <em>et</em> incluses dans ce CV. Non cochées : ignorées (rien n'est écrit).
         </p>
       </div>
       <div className="space-y-1.5">
