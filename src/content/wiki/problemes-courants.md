@@ -7,7 +7,7 @@ order: 17
 
 ## L'export PDF ne fonctionne pas
 
-L'application essaie plusieurs moteurs dans cet ordre : WebView2 (inclus à Windows 10 et 11), puis Microsoft Edge, puis Google Chrome. Si aucun ne répond, elle ouvre l'impression de Windows : choisissez « Enregistrer au format PDF ».
+L'application essaie plusieurs moteurs dans cet ordre : WebView2 (un composant de Windows, généralement déjà installé avec Microsoft Edge), puis Microsoft Edge, puis Google Chrome. Si aucun ne répond, elle ouvre l'impression de Windows : choisissez « Enregistrer au format PDF ».
 
 Si le message d'erreur vous est proposé, copiez-le : vous le retrouverez dans **Paramètres**, rubrique **Options avancées**, avec le bouton **Copier les détails du dernier export**.
 
@@ -17,7 +17,7 @@ Windows peut afficher « Windows a protégé votre ordinateur » lors de l'insta
 
 ## WebView2 manque
 
-WebView2 est un composant de Windows utilisé pour l'affichage et l'export PDF. Il est présent sur la plupart des PC. S'il manque, l'application passe à Edge ou à Chrome. Pour l'installer, téléchargez « WebView2 Runtime » sur le site officiel de Microsoft.
+WebView2 est un composant de Windows utilisé pour l'affichage et l'export PDF. Il est en général déjà présent, surtout si Microsoft Edge est installé. S'il manque, l'application passe à Edge ou à Chrome. Pour l'installer, téléchargez « WebView2 Runtime » sur le site officiel de Microsoft.
 
 ## Mon CV dépasse une page
 
