@@ -185,12 +185,12 @@
 8d777ab16ec9	@layer utilities	.after\:w-10::after { content: var(--tw-content); width: calc(var(--spacing) * 10); }
 8dbca982735d	(racine)	@property --tw-inset-shadow { syntax: "*"; inherits: false; initial-value: 0 0 #0000; }
 8dc90567b382	@layer utilities	.px-12 { padding-inline-start: ; padding-inline-end: ; }
-8fd2a7f3163a	(racine)	:root { --font-body: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif; --pc-text: #ededf0; }
 900519acdf90	@layer utilities	.\[font-family\:Georgia\,serif\] { font-family: Georgia, serif; }
 904982a86d01	@layer utilities	.mt-2 { margin-top: calc(var(--spacing) * 2); }
 90ba656e3530	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-amber-900: oklch(41.4% .112 45.904); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-800: oklch(27.8% .033 256.848); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-normal: 400; --font-weight-semibold: 600; --font-weight-bold: 700; --tracking-wide: .025em; --default-font-family: var(--font-sans); }
 917f5baea8d7	@media print	body { print-color-adjust: exact; background-color: rgb(255, 255, 255) !important; }
 933b9d1a925c	@media print	#printable-cv, #printable-cv * { visibility: visible; }
+94242723f413	(racine)	:root { --pc-text: #1f2a30; }
 94ba57410084	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-indigo-700: oklch(45.7% .24 277.023); --color-indigo-800: oklch(39.8% .195 277.366); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-700: oklch(37.3% .034 259.733); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-normal: 400; --font-weight-semibold: 600; --tracking-wide: .025em; --leading-relaxed: 1.625; --default-font-family: var(--font-sans); }
 94ebf968aa00	@layer utilities	.py-11 { padding-block-start: ; padding-block-end: ; }
 95a2200ced2a	@layer utilities	.py-1\.5 { padding-block-start: ; padding-block-end: ; }

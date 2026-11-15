@@ -12,7 +12,7 @@ describe('TargetSheetsEditor', () => {
     expect(out).toContain(`placeholder="${DEFAULT_TARGET_SHEETS.services.attentes.join('\n')}"`);
     expect(out).toContain('placeholder="direct, orienté clients, missions et délais"');
     expect(out).toContain('Par défaut (Résultats chiffrés)');
-    expect(out).toContain('text-gray-400 italic');
+    expect(out).toContain('text-gray-400 dark:text-[var(--pc-muted)] italic');
     expect(out).not.toContain('(personnalisée)');
     expect(out).toMatch(/<button[^>]*disabled=""[^>]*>[\s\S]*Revenir aux valeurs par défaut/);
   });

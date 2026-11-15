@@ -47,17 +47,17 @@ export function BackupProfilePicker({ profiles, currentUserId, value, onChange }
   if (profiles.length < 2) return null;
   return (
     <div className="mb-4 p-4 border border-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-lg" data-testid="backup-profile-picker">
-      <label className="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-1" htmlFor="backup-profile">
+      <label className="block text-sm font-medium text-gray-800 dark:text-[var(--pc-text)] mb-1" htmlFor="backup-profile">
         Profil à restaurer
       </label>
-      <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+      <p className="text-xs text-gray-600 dark:text-[var(--pc-muted)] mb-2">
         La sauvegarde contient {profiles.length} profils. Seules les données du profil choisi sont importées, dans votre profil actif.
       </p>
       <select
         id="backup-profile"
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md"
+        className="w-full p-2 text-sm border border-gray-300 dark:border-[var(--pc-border-active)] dark:bg-[var(--pc-surface)] dark:text-[var(--pc-text)] rounded-md"
       >
         <option value="">(choisir un profil)</option>
         {profiles.map(p => (
@@ -118,15 +118,15 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/40" />
-        <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-8 text-center">
+        <div className="relative bg-white dark:bg-[var(--pc-card)] rounded-xl shadow-2xl w-full max-w-md mx-4 p-8 text-center">
           <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
           <h2 className="text-lg font-semibold mb-2">Import réussi</h2>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-6">
             Les données ont été importées avec succès.
           </p>
           <button
             onClick={onDone}
-            className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+            className="px-5 py-2 bg-lagon-600 text-white rounded-md hover:bg-lagon-700 transition-colors text-sm"
           >
             Fermer
           </button>
@@ -138,24 +138,24 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl mx-4 flex flex-col h-[90vh] sm:max-h-[85vh] overflow-hidden">
+      <div className="relative bg-white dark:bg-[var(--pc-card)] rounded-xl shadow-2xl w-full max-w-2xl mx-4 flex flex-col h-[90vh] sm:max-h-[85vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b dark:border-gray-700 flex-shrink-0">
+        <div className="flex items-start justify-between p-6 border-b dark:border-[var(--pc-border)] flex-shrink-0">
           <div>
-            <h2 className="text-lg font-semibold dark:text-gray-100">Résolution des conflits</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <h2 className="text-lg font-semibold dark:text-[var(--pc-text)]">Résolution des conflits</h2>
+            <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mt-0.5">
               Sauvegarde du {new Date(backup.exportDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
               {' · '}v{backup.version}
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4">
+          <button onClick={onClose} className="text-gray-400 dark:text-[var(--pc-muted)] hover:text-gray-600 ml-4">
             <X size={20} />
           </button>
         </div>
 
         {/* Module table */}
         <div className="overflow-y-auto flex-1 p-6 min-h-0">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+          <p className="text-sm text-gray-600 dark:text-[var(--pc-muted)] mb-4">
             Pour chaque module présent dans la sauvegarde, choisissez comment gérer les conflits avec vos données actuelles.
           </p>
 
@@ -173,12 +173,12 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
               const currentStrategy = plan[moduleId] ?? 'ignore';
 
               return (
-                <div key={moduleId} className="border border-gray-200 rounded-lg p-4">
+                <div key={moduleId} className="border border-gray-200 dark:border-[var(--pc-border)] rounded-lg p-4">
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
-                      <p className="font-medium text-sm dark:text-gray-100">{meta.label}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{meta.description}</p>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5 font-medium">
+                      <p className="font-medium text-sm dark:text-[var(--pc-text)]">{meta.label}</p>
+                      <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">{meta.description}</p>
+                      <p className="text-xs text-lagon-600 dark:text-lagon-400 mt-0.5 font-medium">
                         {rowCount} enregistrement{rowCount > 1 ? 's' : ''} dans la sauvegarde
                       </p>
                     </div>
@@ -193,16 +193,16 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
                             ? strategy === 'replace'
                               ? 'bg-red-600 text-white border-red-600'
                               : strategy === 'merge'
-                              ? 'bg-blue-600 text-white border-blue-600'
+                              ? 'bg-lagon-600 text-white border-lagon-600'
                               : 'bg-gray-500 text-white border-gray-500'
-                            : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                            : 'bg-white dark:bg-[var(--pc-surface)] text-gray-600 dark:text-[var(--pc-muted)] border-gray-300 dark:border-[var(--pc-border-active)] hover:border-gray-400 dark:hover:border-gray-500'
                         }`}
                       >
                         {STRATEGY_LABELS[strategy]}
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-400 mt-2 flex items-start gap-1">
+                  <p className="text-xs text-gray-400 dark:text-[var(--pc-muted)] mt-2 flex items-start gap-1">
                     <Info size={11} className="mt-0.5 flex-shrink-0" />
                     {STRATEGY_HINTS[currentStrategy]}
                   </p>
@@ -230,10 +230,10 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 pb-14 sm:pb-6 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 rounded-b-xl flex-shrink-0">
+        <div className="flex justify-end gap-3 p-6 pb-14 sm:pb-6 border-t dark:border-[var(--pc-border)] bg-gray-50 dark:bg-[var(--pc-bg)]/50 rounded-b-xl flex-shrink-0">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="px-4 py-2 text-sm text-gray-700 dark:text-[var(--pc-muted)] border border-gray-300 dark:border-[var(--pc-border-active)] rounded-md hover:bg-gray-100 dark:hover:bg-[var(--pc-hover)] transition-colors"
           >
             Annuler
           </button>
@@ -241,7 +241,7 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
             onClick={handleImport}
             disabled={isImporting || presentModules.length === 0 || needsProfileChoice}
             title={needsProfileChoice ? 'Choisissez d\'abord le profil à restaurer' : undefined}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm bg-lagon-600 text-white rounded-md hover:bg-lagon-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isImporting ? 'Import en cours…' : 'Importer'}
           </button>

@@ -25,9 +25,9 @@ interface CvAnglePanelProps {
 type Mode = 'none' | 'library' | 'propose';
 
 const chip = 'px-2.5 py-1 text-xs rounded-md border transition-colors';
-const chipOn = `${chip} bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300`;
-const chipOff = `${chip} bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50`;
-const small = 'px-2 py-1 text-[11px] rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50';
+const chipOn = `${chip} bg-lagon-50 dark:bg-lagon-900/30 border-lagon-300 dark:border-lagon-600 text-lagon-700 dark:text-lagon-300`;
+const chipOff = `${chip} bg-white dark:bg-[var(--pc-card)] border-gray-200 dark:border-[var(--pc-border-active)] text-gray-600 dark:text-[var(--pc-muted)] hover:bg-gray-50`;
+const small = 'px-2 py-1 text-[11px] rounded border border-gray-300 dark:border-[var(--pc-border-active)] text-gray-700 dark:text-[var(--pc-text)] hover:bg-gray-50 dark:hover:bg-[var(--pc-hover)] disabled:opacity-50';
 
 const fieldsOf = (p: AngleSpec): AngleFormValue => ({
   label: p.label, titleRule: p.titleRule, summaryStructure: p.summaryStructure,
@@ -118,10 +118,10 @@ export function CvAnglePanel({ profile, entries, offerText, company, personalRul
 
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-3">
+    <div className="rounded-lg border border-gray-200 dark:border-[var(--pc-border)] p-3 space-y-3">
       <div className="flex items-center gap-2">
-        <Compass className="w-4 h-4 text-indigo-500" />
-        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">Angle du CV</span>
+        <Compass className="w-4 h-4 text-lagon-500" />
+        <span className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)]">Angle du CV</span>
       </div>
       <div className="flex gap-2 flex-wrap" role="radiogroup" aria-label="Angle du CV">
         {([['none', 'Sans angle'], ['library', 'Ma bibliothèque'], ['propose', 'Proposer selon l\'annonce']] as const).map(([m, label]) => (
@@ -133,10 +133,10 @@ export function CvAnglePanel({ profile, entries, offerText, company, personalRul
 
       {mode === 'library' && (
         library.length === 0 ? (
-          <p className="text-xs text-gray-500">Aucun angle : créez-en dans Paramètres, « Angles de CV ».</p>
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">Aucun angle : créez-en dans Paramètres, « Angles de CV ».</p>
         ) : (
           <select
-            className="w-full p-2 text-xs border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md"
+            className="w-full p-2 text-xs border border-gray-300 dark:border-[var(--pc-border-active)] dark:bg-[var(--pc-card)] dark:text-[var(--pc-text)] rounded-md"
             value={selection.mode === 'library' ? selection.angleId : selection.mode === 'auto' ? '__auto' : ''}
             onChange={e => onSelectionChange(e.target.value === '__auto' ? { mode: 'auto' } : { mode: 'library', angleId: e.target.value })}
           >
@@ -148,7 +148,7 @@ export function CvAnglePanel({ profile, entries, offerText, company, personalRul
 
       {mode === 'propose' && (
         <div className="space-y-2">
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+          <p className="text-[11px] text-gray-500 dark:text-[var(--pc-muted)] leading-relaxed">
             1. Copiez le texte d'analyse et collez-le dans votre IA. 2. Collez sa réponse ci-dessous. 3. Choisissez une proposition : le prompt du CV l'utilisera.
           </p>
           <button type="button" className={small} onClick={copyAnglePrompt}>
@@ -158,7 +158,7 @@ export function CvAnglePanel({ profile, entries, offerText, company, personalRul
             value={jsonInput}
             onChange={e => setJsonInput(e.target.value)}
             placeholder="Réponse JSON de l'analyse (propositions d'angle)"
-            className="w-full h-20 p-2 text-xs font-mono border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-md resize-y"
+            className="w-full h-20 p-2 text-xs font-mono border border-gray-300 dark:border-[var(--pc-border-active)] dark:bg-[var(--pc-card)] dark:text-[var(--pc-text)] rounded-md resize-y"
           />
           {parsed && !parsed.ok && <p className="text-xs text-red-600">{parsed.error}</p>}
           {parsed?.ok && (
@@ -179,20 +179,20 @@ export function CvAnglePanel({ profile, entries, offerText, company, personalRul
                 const recommended = parsed.value.recommandation?.index === i;
                 const chosen = selection.mode === 'proposal' && chosenIdx === i;
                 return (
-                  <div key={i} className={`rounded-md border p-2.5 space-y-1.5 ${chosen ? 'border-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
+                  <div key={i} className={`rounded-md border p-2.5 space-y-1.5 ${chosen ? 'border-lagon-400 bg-lagon-50/50 dark:bg-lagon-900/20' : 'border-gray-200 dark:border-[var(--pc-border)]'}`}>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">{p.label}</span>
+                      <span className="text-xs font-semibold text-gray-800 dark:text-[var(--pc-text)]">{p.label}</span>
                       {recommended && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
                           <Star className="inline w-3 h-3" /> Recommandée{parsed.value.recommandation?.raison ? ` : ${parsed.value.recommandation.raison}` : ''}
                         </span>
                       )}
-                      {chosen && <span className="text-[10px] text-indigo-600 dark:text-indigo-300">Retenue pour ce CV</span>}
+                      {chosen && <span className="text-[10px] text-lagon-600 dark:text-lagon-300">Retenue pour ce CV</span>}
                     </div>
-                    {p.pourquoi && <p className="text-[11px] text-gray-600 dark:text-gray-300">{p.pourquoi}</p>}
-                    <p className="text-[11px] text-gray-600 dark:text-gray-300"><strong>En tête :</strong> {p.leadEntryIds.map(titleOf).join(' · ')}</p>
-                    {p.sacrifie && <p className="text-[11px] text-gray-600 dark:text-gray-300"><strong>Laissé de côté :</strong> {p.sacrifie}</p>}
-                    {p.ecarts.length > 0 && <p className="text-[11px] text-gray-600 dark:text-gray-300"><strong>Écarts :</strong> {p.ecarts.join(' ; ')}</p>}
+                    {p.pourquoi && <p className="text-[11px] text-gray-600 dark:text-[var(--pc-muted)]">{p.pourquoi}</p>}
+                    <p className="text-[11px] text-gray-600 dark:text-[var(--pc-muted)]"><strong>En tête :</strong> {p.leadEntryIds.map(titleOf).join(' · ')}</p>
+                    {p.sacrifie && <p className="text-[11px] text-gray-600 dark:text-[var(--pc-muted)]"><strong>Laissé de côté :</strong> {p.sacrifie}</p>}
+                    {p.ecarts.length > 0 && <p className="text-[11px] text-gray-600 dark:text-[var(--pc-muted)]"><strong>Écarts :</strong> {p.ecarts.join(' ; ')}</p>}
                     {editing === i && (
                       <div className="pt-1">
                         <AngleFieldsForm value={fieldsOf(p)} onChange={v => {
@@ -213,9 +213,9 @@ export function CvAnglePanel({ profile, entries, offerText, company, personalRul
                 );
               })}
               {full && (
-                <div className="text-[11px] text-gray-600 dark:text-gray-300 flex items-center gap-2 flex-wrap">
+                <div className="text-[11px] text-gray-600 dark:text-[var(--pc-muted)] flex items-center gap-2 flex-wrap">
                   Bibliothèque pleine ({MAX_ANGLES_PER_PROFILE} angles) : pour enregistrer, remplacer
-                  <select className="p-1 border border-gray-300 rounded text-[11px] dark:bg-gray-800" value={replaceId} onChange={e => setReplaceId(e.target.value)}>
+                  <select className="p-1 border border-gray-300 dark:border-[var(--pc-border)] rounded text-[11px] dark:bg-[var(--pc-card)]" value={replaceId} onChange={e => setReplaceId(e.target.value)}>
                     <option value="">(choisir)</option>
                     {library.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
                   </select>

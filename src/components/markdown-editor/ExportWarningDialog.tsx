@@ -46,7 +46,7 @@ export function ExportWarningDialog({ open, onConfirm, onCancel, reason }: Expor
         <DialogFooter className="gap-2 sm:flex-row flex-col mt-auto sm:mt-0">
           <button
             onClick={onCancel}
-            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg active:bg-gray-50 transition-colors min-h-[44px]"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] bg-white dark:bg-[var(--pc-card)] border border-gray-300 dark:border-[var(--pc-border)] rounded-lg active:bg-gray-50 transition-colors min-h-[44px]"
           >
             Annuler
           </button>

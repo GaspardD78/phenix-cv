@@ -36,7 +36,7 @@ function AxisBar({ label, axis }: { label: string; axis: AxisScore }) {
   return (
     <div>
       <div className="flex justify-between items-center mb-1">
-        <span className="text-xs text-gray-600">{label}</span>
+        <span className="text-xs text-gray-600 dark:text-[var(--pc-muted)]">{label}</span>
         <span className={`text-xs font-semibold ${scoreColor(axis.score)}`}>{axis.score}%</span>
       </div>
       <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -94,16 +94,16 @@ export function CompatibilityScorePanel({ application }: Props) {
   // ---------------------------------------------------------------------------
   return (
     <>
-      <div className="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+      <div className="space-y-4 bg-gray-50 dark:bg-[var(--pc-bg)] p-4 rounded-lg border border-gray-100">
         {/* Header */}
         <div className="flex items-center gap-2">
-          <Sparkles size={16} className="text-indigo-500" />
-          <h3 className="text-sm font-bold text-gray-800">Analyse IA</h3>
+          <Sparkles size={16} className="text-lagon-500" />
+          <h3 className="text-sm font-bold text-gray-800 dark:text-[var(--pc-text)]">Analyse IA</h3>
         </div>
 
         {/* No CV linked */}
         {!application.cvId && (
-          <p className="text-xs text-gray-500 italic">
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] italic">
             Aucun CV lié à cette candidature — associe un CV pour activer l'analyse.
           </p>
         )}
@@ -112,7 +112,7 @@ export function CompatibilityScorePanel({ application }: Props) {
           <>
             {/* Job description textarea */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-gray-500 dark:text-[var(--pc-muted)] mb-1">
                 Texte de l'annonce
               </label>
               <textarea
@@ -121,15 +121,15 @@ export function CompatibilityScorePanel({ application }: Props) {
                 onBlur={handleSaveDescription}
                 placeholder="Collez ici le texte complet de l'offre d'emploi…"
                 rows={4}
-                className="w-full px-3 py-2 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-400 outline-none resize-y"
+                className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-[var(--pc-border)] rounded focus:ring-1 focus:ring-lagon-400 outline-none resize-y"
               />
-              {savingDesc && <p className="text-[10px] text-gray-400 mt-0.5">Enregistrement…</p>}
+              {savingDesc && <p className="text-[10px] text-gray-400 dark:text-[var(--pc-muted)] mt-0.5">Enregistrement…</p>}
             </div>
 
             {/* Analyse IA button */}
             <button
               onClick={() => setShowModal(true)}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-lagon-600 text-white text-sm rounded hover:bg-lagon-700 transition-colors"
             >
               <Sparkles size={14} />
               {score ? 'Relancer l\'analyse IA' : 'Analyser avec l\'IA'}
@@ -143,9 +143,9 @@ export function CompatibilityScorePanel({ application }: Props) {
             {/* Global score */}
             <div className={`flex items-center justify-between px-4 py-3 rounded-lg border ${scoreBgColor(score.scoreGlobal)}`}>
               <div>
-                <p className="text-xs font-medium text-gray-500">Score global</p>
-                <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                  <Sparkles size={9} className="text-indigo-400" />
+                <p className="text-xs font-medium text-gray-500 dark:text-[var(--pc-muted)]">Score global</p>
+                <p className="text-[10px] text-gray-400 dark:text-[var(--pc-muted)] flex items-center gap-1">
+                  <Sparkles size={9} className="text-lagon-400" />
                   Analysé par IA le {new Date(score.computedAt).toLocaleDateString('fr-FR')}
                 </p>
               </div>
@@ -164,7 +164,7 @@ export function CompatibilityScorePanel({ application }: Props) {
 
             {/* AI synthesis */}
             {ai.summary && (
-              <p className="text-xs text-gray-600 italic border-l-2 border-indigo-200 pl-3">
+              <p className="text-xs text-gray-600 dark:text-[var(--pc-muted)] italic border-l-2 border-lagon-200 pl-3">
                 {ai.summary}
               </p>
             )}
@@ -172,7 +172,7 @@ export function CompatibilityScorePanel({ application }: Props) {
             {/* Expandable details */}
             <button
               onClick={() => setShowDetails(v => !v)}
-              className="w-full flex items-center justify-between text-xs font-semibold text-gray-700 hover:text-indigo-600 transition-colors"
+              className="w-full flex items-center justify-between text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] hover:text-lagon-600 transition-colors"
             >
               <span>Détails de l'analyse</span>
               {showDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -188,7 +188,7 @@ export function CompatibilityScorePanel({ application }: Props) {
                     </p>
                     <ul className="space-y-1">
                       {ai.strengths.map((s, i) => (
-                        <li key={i} className="text-[11px] text-gray-700 flex items-start gap-1.5">
+                        <li key={i} className="text-[11px] text-gray-700 dark:text-[var(--pc-text)] flex items-start gap-1.5">
                           <CheckCircle2 size={10} className="text-green-500 mt-0.5 flex-shrink-0" />
                           {s}
                         </li>
@@ -205,7 +205,7 @@ export function CompatibilityScorePanel({ application }: Props) {
                     </p>
                     <ul className="space-y-1">
                       {ai.frictionPoints.map((f, i) => (
-                        <li key={i} className="text-[11px] text-gray-700 flex items-start gap-1.5">
+                        <li key={i} className="text-[11px] text-gray-700 dark:text-[var(--pc-text)] flex items-start gap-1.5">
                           <AlertCircle size={10} className="text-amber-500 mt-0.5 flex-shrink-0" />
                           {f}
                         </li>
@@ -217,11 +217,11 @@ export function CompatibilityScorePanel({ application }: Props) {
                 {/* Recommandations */}
                 {ai.recommendations.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-semibold text-indigo-700 mb-1.5">Recommandations</p>
+                    <p className="text-[10px] font-semibold text-lagon-700 mb-1.5">Recommandations</p>
                     <ul className="space-y-1">
                       {ai.recommendations.map((r, i) => (
-                        <li key={i} className="text-[11px] text-gray-700 flex items-start gap-1.5">
-                          <span className="text-indigo-400 font-bold flex-shrink-0">{i + 1}.</span>
+                        <li key={i} className="text-[11px] text-gray-700 dark:text-[var(--pc-text)] flex items-start gap-1.5">
+                          <span className="text-lagon-400 font-bold flex-shrink-0">{i + 1}.</span>
                           {r}
                         </li>
                       ))}
@@ -269,7 +269,7 @@ export function CompatibilityScorePanel({ application }: Props) {
             {/* Reset */}
             <button
               onClick={handleDeleteScore}
-              className="w-full flex items-center justify-center gap-1.5 text-[11px] text-gray-400 hover:text-red-500 transition-colors"
+              className="w-full flex items-center justify-center gap-1.5 text-[11px] text-gray-400 dark:text-[var(--pc-muted)] hover:text-red-500 transition-colors"
             >
               <RefreshCw size={10} />
               Supprimer l'analyse
@@ -279,7 +279,7 @@ export function CompatibilityScorePanel({ application }: Props) {
 
         {/* Score exists but is from local algorithm (no aiAnalysis field) — upgrade notice */}
         {score && !ai && (
-          <div className="text-[11px] text-gray-500 bg-white border border-dashed border-gray-200 rounded px-3 py-2">
+          <div className="text-[11px] text-gray-500 dark:text-[var(--pc-muted)] bg-white dark:bg-[var(--pc-card)] border border-dashed border-gray-200 dark:border-[var(--pc-border)] rounded px-3 py-2">
             Un score local existe pour cette candidature. Relance une analyse IA pour le remplacer.
           </div>
         )}

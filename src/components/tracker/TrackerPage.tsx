@@ -143,8 +143,8 @@ export function TrackerPage() {
       }}>
         {[
           { label: 'Total', value: applications.length, color: 'var(--pc-text)' },
-          { label: 'Actives', value: active, color: '#6366f1' },
-          { label: 'Entretiens', value: interviews, color: '#a78bfa' },
+          { label: 'Actives', value: active, color: 'var(--pc-accent)' },
+          { label: 'Entretiens', value: interviews, color: 'var(--pc-accent-hover)' },
         ].map(s => (
           <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 16, fontWeight: 800, color: s.color, fontFamily: 'var(--font-display)' }}>{s.value}</span>
@@ -196,7 +196,7 @@ export function TrackerPage() {
                   padding: '5px 11px', borderRadius: 99, fontSize: 11.5,
                   background: active ? 'var(--pc-accent-subtle)' : 'transparent',
                   color: active ? 'var(--pc-accent)' : 'var(--pc-muted)',
-                  border: `1px solid ${active ? 'rgba(99,102,241,.2)' : 'var(--pc-border)'}`,
+                  border: `1px solid ${active ? 'var(--pc-accent-subtle)' : 'var(--pc-border)'}`,
                   cursor: 'pointer', fontFamily: 'var(--font-body)',
                   fontWeight: active ? 600 : 400, transition: 'all 0.12s',
                   minHeight: 44,

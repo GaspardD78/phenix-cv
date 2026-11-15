@@ -19,7 +19,7 @@ describe('interface des angles', () => {
     expect(html).toContain('Assistante commerciale : Mettre en tête');
     expect(html).toContain('Assistante commerciale : Masquer par défaut');
     expect(html).toContain('Assistante commerciale : Neutre'); // k2, sans tag
-    expect(html).toContain('>Assistante commerciale<span class="text-gray-400"> - Acme</span>'); // « (Acme) » retiré sous l'employeur Acme
+    expect(html).toContain('>Assistante commerciale<span class="text-gray-400 dark:text-[var(--pc-muted)]"> - Acme</span>'); // « (Acme) » retiré sous l'employeur Acme
   });
 
   it('récapitulatif d\'import avant écriture', () => {

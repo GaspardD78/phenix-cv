@@ -212,11 +212,11 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white">
+    <div className="flex flex-col h-full overflow-hidden bg-white dark:bg-[var(--pc-card)]">
       {/* Header */}
-      <div className="flex flex-col border-b border-gray-200 flex-shrink-0">
+      <div className="flex flex-col border-b border-gray-200 dark:border-[var(--pc-border)] flex-shrink-0">
         <div className="flex items-center justify-between p-4">
-          <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-gray-900 dark:text-[var(--pc-text)] flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-500" />
             Créer et adapter mon CV
           </h2>
@@ -233,7 +233,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               aria-selected={activeTab === id}
               onClick={() => setActiveTab(id)}
               className={`py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === id ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                activeTab === id ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 dark:text-[var(--pc-muted)] hover:text-gray-700'
               }`}
             >
               {label}
@@ -259,20 +259,20 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
           <>
             {/* 1. Job offer textarea */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
                 1. Texte de l'annonce
               </label>
               <textarea
                 value={jobOffer}
                 onChange={e => { setJobOffer(e.target.value); setError(''); }}
                 placeholder="Collez ici le texte de l'annonce..."
-                className="w-full p-2 border border-gray-300 rounded-md text-xs resize-y h-28 focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
+                className="w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-xs resize-y h-28 focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
               />
             </div>
 
             {/* 2. Template selection */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-2">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-2">
                 2. Objectif
               </label>
               <div className="space-y-1.5">
@@ -282,7 +282,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
                     className={`flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors ${
                       selectedTemplateId === t.id
                         ? 'border-amber-400 bg-amber-50'
-                        : 'border-gray-200 hover:bg-gray-50'
+                        : 'border-gray-200 dark:border-[var(--pc-border)] hover:bg-gray-50'
                     }`}
                   >
                     <input
@@ -294,8 +294,8 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
                       className="mt-0.5 accent-amber-500"
                     />
                     <div>
-                      <p className="text-xs font-medium text-gray-900">{t.name}</p>
-                      <p className="text-[10px] text-gray-500">{t.description}</p>
+                      <p className="text-xs font-medium text-gray-900 dark:text-[var(--pc-text)]">{t.name}</p>
+                      <p className="text-[10px] text-gray-500 dark:text-[var(--pc-muted)]">{t.description}</p>
                     </div>
                   </label>
                 ))}
@@ -305,13 +305,13 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
             {/* Conditional: block selector for "reformulate experience" */}
             {selectedTemplate?.requiresBlock && (
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
                   Bloc à reformuler
                 </label>
                 <select
                   value={selectedBlockId}
                   onChange={e => setSelectedBlockId(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-xs focus:ring-2 focus:ring-amber-200"
+                  className="w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-xs focus:ring-2 focus:ring-amber-200"
                 >
                   <option value="">Sélectionnez un bloc...</option>
                   {visibleEntryBlocks.map(block => (
@@ -326,7 +326,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
             {/* Conditional: contact name for "application message" */}
             {selectedTemplate?.requiresContactName && (
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
                   Nom du contact (optionnel)
                 </label>
                 <input
@@ -334,7 +334,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
                   value={contactName}
                   onChange={e => setContactName(e.target.value)}
                   placeholder="Ex: Marie Dupont"
-                  className="w-full p-2 border border-gray-300 rounded-md text-xs focus:ring-2 focus:ring-amber-200"
+                  className="w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-xs focus:ring-2 focus:ring-amber-200"
                 />
               </div>
             )}
@@ -357,13 +357,13 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
             {/* 3. Generated prompt */}
             {generatedPrompt && (
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
                   3. Prompt généré
                 </label>
                 <textarea
                   readOnly
                   value={generatedPrompt}
-                  className="w-full p-2 border border-gray-300 rounded-md text-xs bg-gray-50 resize-none h-64 focus:outline-none select-all cursor-text"
+                  className="w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-xs bg-gray-50 dark:bg-[var(--pc-bg)] resize-none h-64 focus:outline-none select-all cursor-text"
                   onFocus={e => e.target.select()}
                 />
                 <button
@@ -371,7 +371,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
                   className={`mt-2 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                     copied
                       ? 'bg-green-100 text-green-700 border border-green-300'
-                      : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+                      : 'bg-gray-100 text-gray-700 dark:text-[var(--pc-text)] border border-gray-300 dark:border-[var(--pc-border)] hover:bg-gray-200'
                   }`}
                 >
                   {copied ? (
@@ -398,14 +398,14 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
 
             {offerFieldShown && (
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
                   1. Coller l'annonce
                 </label>
                 <textarea
                   value={jobOffer}
                   onChange={e => { setJobOffer(e.target.value); setError(''); }}
                   placeholder="Collez ici le texte de l'annonce..."
-                  className="w-full p-2 border border-gray-300 rounded-md text-xs resize-y h-28 focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
+                  className="w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-xs resize-y h-28 focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
                 />
               </div>
             )}
@@ -416,15 +416,15 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               </p>
             )}
 
-            <label className="flex items-start gap-2 p-2.5 rounded-md border border-gray-200 bg-gray-50 cursor-pointer">
+            <label className="flex items-start gap-2 p-2.5 rounded-md border border-gray-200 dark:border-[var(--pc-border)] bg-gray-50 dark:bg-[var(--pc-bg)] cursor-pointer">
               <input
                 type="checkbox"
                 checked={clarify}
                 onChange={e => setClarify(e.target.checked)}
                 className="mt-0.5 accent-amber-500 flex-shrink-0"
               />
-              <span className="text-xs text-gray-600 leading-relaxed">
-                <span className="font-semibold text-gray-700">Affiner par questions</span> — l'IA pose 1 à 3 questions ciblées avant de générer (si besoin). Répondez-lui, puis collez sa réponse finale.
+              <span className="text-xs text-gray-600 dark:text-[var(--pc-muted)] leading-relaxed">
+                <span className="font-semibold text-gray-700 dark:text-[var(--pc-text)]">Affiner par questions</span> — l'IA pose 1 à 3 questions ciblées avant de générer (si besoin). Répondez-lui, puis collez sa réponse finale.
               </span>
             </label>
 
@@ -433,22 +433,22 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               className={`w-full py-2 flex items-center justify-center gap-2 text-sm font-semibold rounded-md transition-colors border ${
                 fullPromptCopied
                   ? 'bg-green-50 text-green-700 border-green-300'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  : 'bg-white dark:bg-[var(--pc-card)] text-gray-700 dark:text-[var(--pc-text)] border-gray-300 dark:border-[var(--pc-border)] hover:bg-gray-50'
               }`}
             >
               {fullPromptCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {fullPromptCopied ? 'Prompt copié !' : '1. Copier le prompt d\'analyse'}
             </button>
 
-            <div className="pt-4 border-t border-gray-200">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <div className="pt-4 border-t border-gray-200 dark:border-[var(--pc-border)]">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
                 2. Coller le JSON de l'IA ici
               </label>
               <textarea
                 value={jsonInput}
                 onChange={e => setJsonInput(e.target.value)}
                 placeholder='{"title": "...", "summary": "...", "experiences": [...]}'
-                className="w-full p-2 border border-gray-300 rounded-md text-xs resize-y h-48 font-mono bg-gray-50 focus:ring-2 focus:ring-amber-200 focus:bg-white"
+                className="w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-xs resize-y h-48 font-mono bg-gray-50 dark:bg-[var(--pc-bg)] focus:ring-2 focus:ring-amber-200 focus:bg-white"
               />
             </div>
 

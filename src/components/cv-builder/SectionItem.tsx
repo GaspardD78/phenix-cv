@@ -218,9 +218,9 @@ export function SectionItem({ block }: SectionItemProps) {
 
   if (isEditing) {
     return (
-      <div className="border rounded mb-2 bg-blue-50 flex flex-col p-3 shadow-md border-blue-200 text-gray-900">
+      <div className="border rounded mb-2 bg-lagon-50 flex flex-col p-3 shadow-md border-lagon-200 text-gray-900 dark:text-[var(--pc-text)]">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs font-semibold text-blue-800 uppercase">
+          <span className="text-xs font-semibold text-lagon-800 uppercase">
             {isSectionHeader ? 'Section' : 'Personnaliser pour ce CV'}
           </span>
           <div className="flex space-x-2">
@@ -241,9 +241,9 @@ export function SectionItem({ block }: SectionItemProps) {
               value={sectionName}
               onChange={(e) => setSectionName(e.target.value)}
               placeholder="Nom de la section"
-              className="mb-3 p-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+              className="mb-3 p-1 text-sm border border-gray-300 dark:border-[var(--pc-border)] rounded focus:ring-lagon-500 focus:border-lagon-500"
             />
-            <p className="text-xs font-medium text-blue-700 mb-1.5">Format d'affichage des éléments</p>
+            <p className="text-xs font-medium text-lagon-700 mb-1.5">Format d'affichage des éléments</p>
             <div className="grid grid-cols-3 gap-1.5">
               {(
                 [
@@ -260,8 +260,8 @@ export function SectionItem({ block }: SectionItemProps) {
                   onClick={() => setDisplayFormat(value)}
                   className={`flex items-center justify-center gap-1 text-xs py-1.5 rounded border transition ${
                     displayFormat === value
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                      ? 'bg-lagon-600 text-white border-lagon-600'
+                      : 'bg-white dark:bg-[var(--pc-card)] text-gray-600 dark:text-[var(--pc-muted)] border-gray-300 dark:border-[var(--pc-border)] hover:border-lagon-400'
                   }`}
                 >
                   {icon}
@@ -280,14 +280,14 @@ export function SectionItem({ block }: SectionItemProps) {
               value={overrideTitle}
               onChange={(e) => setOverrideTitle(e.target.value)}
               placeholder="Titre du poste/diplôme"
-              className="mb-2 p-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+              className="mb-2 p-1 text-sm border border-gray-300 dark:border-[var(--pc-border)] rounded focus:ring-lagon-500 focus:border-lagon-500"
             />
             <input
               type="text"
               value={overrideSubtitle}
               onChange={(e) => setOverrideSubtitle(e.target.value)}
               placeholder="Entreprise/École"
-              className="mb-2 p-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+              className="mb-2 p-1 text-sm border border-gray-300 dark:border-[var(--pc-border)] rounded focus:ring-lagon-500 focus:border-lagon-500"
             />
           </>
         )}
@@ -298,9 +298,9 @@ export function SectionItem({ block }: SectionItemProps) {
               value={overrideDescription}
               onChange={(e) => setOverrideDescription(e.target.value)}
               placeholder="Description des missions, réalisations..."
-              className="p-1 text-sm border border-gray-300 rounded h-24 resize-y focus:ring-blue-500 focus:border-blue-500"
+              className="p-1 text-sm border border-gray-300 dark:border-[var(--pc-border)] rounded h-24 resize-y focus:ring-lagon-500 focus:border-lagon-500"
             />
-            <p className="text-xs text-gray-500 mt-1">Astuce : <code className="bg-white px-1 rounded">- texte</code> liste à puces · <code className="bg-white px-1 rounded">**texte**</code> gras · <code className="bg-white px-1 rounded">*texte*</code> italique</p>
+            <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Astuce : <code className="bg-white dark:bg-[var(--pc-card)] px-1 rounded">- texte</code> liste à puces · <code className="bg-white px-1 rounded">**texte**</code> gras · <code className="bg-white px-1 rounded">*texte*</code> italique</p>
           </>
         )}
       </div>
@@ -315,31 +315,31 @@ export function SectionItem({ block }: SectionItemProps) {
       style={style}
       className={`group border rounded mb-1 flex items-center shadow-sm transition-colors ${
         isSectionHeader
-          ? 'bg-gray-100 border-gray-300 mt-2'
-          : 'bg-white border-gray-200 hover:border-gray-300'
-      } ${!block.isVisible ? 'opacity-60 bg-gray-50 dark:bg-gray-800/50' : 'dark:bg-gray-800 dark:border-gray-700'}`}
+          ? 'bg-gray-100 border-gray-300 dark:border-[var(--pc-border)] mt-2'
+          : 'bg-white dark:bg-[var(--pc-card)] border-gray-200 dark:border-[var(--pc-border)] hover:border-gray-300'
+      } ${!block.isVisible ? 'opacity-60 bg-gray-50 dark:bg-[var(--pc-card)]/50' : 'dark:bg-[var(--pc-card)] dark:border-[var(--pc-border)]'}`}
     >
-      <div {...attributes} {...listeners} className="p-2 cursor-grab hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 opacity-50 group-hover:opacity-100 transition-opacity">
+      <div {...attributes} {...listeners} className="p-2 cursor-grab hover:bg-gray-200 dark:hover:bg-[var(--pc-hover)] text-gray-400 dark:text-[var(--pc-muted)] opacity-50 group-hover:opacity-100 transition-opacity">
         <GripVertical className="w-4 h-4" />
       </div>
 
       <div className="flex-1 py-2 px-1 flex flex-col justify-center truncate">
         <div className="flex items-center gap-2">
-          <span className={`text-sm truncate ${isSectionHeader ? 'font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 text-xs' : 'font-medium text-gray-800 dark:text-gray-200'}`}>
+          <span className={`text-sm truncate ${isSectionHeader ? 'font-bold uppercase tracking-wide text-gray-600 dark:text-[var(--pc-muted)] text-xs' : 'font-medium text-gray-800 dark:text-[var(--pc-text)]'}`}>
             {title}
           </span>
           {!block.isVisible && !isMergedMember(block) && (
-            <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+            <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-gray-200 text-gray-500 dark:bg-[var(--pc-surface)] dark:text-[var(--pc-muted)]">
               Masqué
             </span>
           )}
           {isEntryRef && <MergeBadge block={block} onUnmerge={() => { void unmergeCarrierBlock(block.cvId, block.id); }} />}
         </div>
-        {subtitle && <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{subtitle}</span>}
+        {subtitle && <span className="text-xs text-gray-500 dark:text-[var(--pc-muted)] truncate">{subtitle}</span>}
       </div>
 
-      <div className="flex p-1.5 space-x-0.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
-        <button onClick={startEditing} className="flex items-center hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1.5 rounded transition-colors" title="Personnaliser">
+      <div className="flex p-1.5 space-x-0.5 text-gray-400 dark:text-[var(--pc-muted)] opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
+        <button onClick={startEditing} className="flex items-center hover:text-lagon-600 hover:bg-lagon-50 dark:hover:bg-lagon-900/30 p-1.5 rounded transition-colors" title="Personnaliser">
           <Edit2 className="w-4 h-4" />
         </button>
         <button onClick={toggleVisibility} className={`flex items-center p-1.5 rounded transition-colors ${block.isVisible ? 'hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30' : 'text-amber-600 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50'}`} title={block.isVisible ? "Masquer du CV" : "Réafficher dans le CV"}>

@@ -20,9 +20,9 @@ const AXIS_NAMES = { type: 'type de structure', intent: 'intention', firstReader
 export function TargetStatusLine({ retained, proposal, onEdit, onApplyProposal }: TargetStatusLineProps) {
   const canApply = (proposal?.filled.length ?? 0) > 0;
   return (
-    <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 text-xs space-y-1.5" data-testid="target-status">
+    <div className="rounded-md border border-gray-200 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] p-2.5 text-xs space-y-1.5" data-testid="target-status">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-gray-700 dark:text-gray-200">
+        <p className="text-gray-700 dark:text-[var(--pc-text)]">
           <span className="font-semibold">Ciblage retenu :</span> {describeTarget(retained)}
         </p>
         <button type="button" onClick={onEdit} className="flex items-center gap-1 font-medium text-amber-700 dark:text-amber-400 hover:underline">
@@ -43,7 +43,7 @@ export function TargetStatusLine({ retained, proposal, onEdit, onApplyProposal }
       )}
 
       {proposal?.contradictions.map(c => (
-        <p key={c.axis} className="text-[11px] text-gray-500 dark:text-gray-400">
+        <p key={c.axis} className="text-[11px] text-gray-500 dark:text-[var(--pc-muted)]">
           L'IA proposait « {c.proposed} » pour le {AXIS_NAMES[c.axis]}, mais « {c.kept} » est conservé ({c.keptSource === 'explicit' ? 'votre choix' : 'détecté'}).
         </p>
       ))}

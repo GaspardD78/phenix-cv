@@ -140,14 +140,14 @@ export function GoogleDriveSync() {
 
   if (configured !== true) {
     return (
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
         <div className={`p-6 ${configured === false ? 'opacity-70' : ''}`}>
           <div className="flex items-center gap-2 mb-1">
-            <CloudOff size={18} className="text-gray-400" />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Synchronisation Google Drive</h2>
+            <CloudOff size={18} className="text-gray-400 dark:text-[var(--pc-muted)]" />
+            <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Synchronisation Google Drive</h2>
           </div>
           {configured === false && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
               La synchronisation Google Drive n'est pas activée dans cette version. Vos données restent sur cet ordinateur.
               Vous pouvez toujours enregistrer un fichier de sauvegarde (.cvmaker) avec la section « Sauvegarde » ci-dessus.
             </p>
@@ -159,13 +159,13 @@ export function GoogleDriveSync() {
   }
 
   return (
-    <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-      <div className="p-6 border-b dark:border-gray-700">
+    <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
+      <div className="p-6 border-b dark:border-[var(--pc-border)]">
         <div className="flex items-center gap-2 mb-1">
-          <Cloud size={18} className="text-blue-500" />
-          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Synchronisation Google Drive</h2>
+          <Cloud size={18} className="text-lagon-500" />
+          <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Synchronisation Google Drive</h2>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
           Sauvegardez et synchronisez vos données entre PC et mobile via Google Drive.
         </p>
       </div>
@@ -189,7 +189,7 @@ export function GoogleDriveSync() {
             <button
               onClick={handleConnect}
               disabled={working === 'connect'}
-              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 bg-lagon-600 text-white text-sm rounded-md hover:bg-lagon-700 disabled:opacity-50 transition-colors"
             >
               {working === 'connect'
                 ? <><Loader2 size={15} className="animate-spin" /> Connexion en cours…</>
@@ -204,7 +204,7 @@ export function GoogleDriveSync() {
               </span>
               <button
                 onClick={handleDisconnect}
-                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors"
+                className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-[var(--pc-muted)] hover:text-red-500 transition-colors"
               >
                 <Unlink size={12} /> Déconnecter
               </button>
@@ -213,7 +213,7 @@ export function GoogleDriveSync() {
             <button
               onClick={handleUpload}
               disabled={!!working}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-lagon-600 text-white text-sm rounded-md hover:bg-lagon-700 disabled:opacity-50 transition-colors"
             >
               {working === 'upload'
                 ? <><Loader2 size={14} className="animate-spin" /> Envoi en cours…</>
@@ -223,23 +223,23 @@ export function GoogleDriveSync() {
             {/* Backup list */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <p className="text-sm font-medium text-gray-700 dark:text-[var(--pc-muted)]">
                   Sauvegardes dans Drive
                 </p>
                 <button
                   onClick={() => fetchFiles()}
-                  className="text-xs text-blue-600 hover:underline"
+                  className="text-xs text-lagon-600 hover:underline"
                 >
                   Actualiser
                 </button>
               </div>
 
               {loadingFiles ? (
-                <div className="flex items-center gap-2 text-sm text-gray-400 py-2">
+                <div className="flex items-center gap-2 text-sm text-gray-400 dark:text-[var(--pc-muted)] py-2">
                   <Loader2 size={14} className="animate-spin" /> Chargement…
                 </div>
               ) : files.length === 0 ? (
-                <div className="flex items-center gap-2 text-sm text-gray-400 py-4">
+                <div className="flex items-center gap-2 text-sm text-gray-400 dark:text-[var(--pc-muted)] py-4">
                   <CloudOff size={16} /> Aucune sauvegarde dans Drive.
                 </div>
               ) : (
@@ -247,11 +247,11 @@ export function GoogleDriveSync() {
                   {files.map(f => (
                     <li
                       key={f.id}
-                      className="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-700"
+                      className="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-[var(--pc-surface)]/50 rounded-lg border border-gray-100 dark:border-[var(--pc-border)]"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{f.name}</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-sm font-medium text-gray-800 dark:text-[var(--pc-text)] truncate">{f.name}</p>
+                        <p className="text-xs text-gray-400 dark:text-[var(--pc-muted)]">
                           {new Date(f.modifiedTime).toLocaleString('fr-FR')}
                           {f.size && ` · ${Math.round(Number(f.size) / 1024)} Ko`}
                         </p>
@@ -260,7 +260,7 @@ export function GoogleDriveSync() {
                         onClick={() => handleDownload(f)}
                         disabled={!!downloadingId}
                         title="Restaurer cette sauvegarde"
-                        className="ml-3 flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 font-medium px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 disabled:opacity-50 transition-colors shrink-0"
+                        className="ml-3 flex items-center gap-1 text-xs text-lagon-600 hover:text-lagon-800 dark:hover:text-lagon-400 font-medium px-2 py-1 rounded hover:bg-lagon-50 dark:hover:bg-lagon-900/30 disabled:opacity-50 transition-colors shrink-0"
                       >
                         {downloadingId === f.id
                           ? <Loader2 size={12} className="animate-spin" />
@@ -311,17 +311,17 @@ function DriveAdvancedOptions({ onSaved }: { onSaved: () => void | Promise<void>
     }
   };
 
-  const field = 'w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900';
+  const field = 'w-full px-3 py-2 text-sm border border-gray-300 dark:border-[var(--pc-border-active)] rounded-md bg-white dark:bg-[var(--pc-bg)]';
   return (
-    <details className="border-t dark:border-gray-700 px-6 py-4">
-      <summary className="text-sm font-medium cursor-pointer text-gray-600 dark:text-gray-300">Options avancées</summary>
+    <details className="border-t dark:border-[var(--pc-border)] px-6 py-4">
+      <summary className="text-sm font-medium cursor-pointer text-gray-600 dark:text-[var(--pc-muted)]">Options avancées</summary>
       <div className="mt-3 space-y-3">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">
           Vous avez créé votre propre client OAuth Google (type « Application de bureau ») ? Saisissez-le ici pour activer la synchronisation.
         </p>
         <input className={field} placeholder="Identifiant client (se termine par .apps.googleusercontent.com)" value={clientId} onChange={e => setClientId(e.target.value)} />
         <input className={field} placeholder="Secret client (facultatif)" type="password" value={clientSecret} onChange={e => setClientSecret(e.target.value)} />
-        <button onClick={save} disabled={saving} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50">
+        <button onClick={save} disabled={saving} className="px-4 py-2 bg-lagon-600 text-white text-sm rounded-md hover:bg-lagon-700 disabled:opacity-50">
           Enregistrer
         </button>
       </div>

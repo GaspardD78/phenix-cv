@@ -44,24 +44,24 @@ function StepBar({ current }: { current: StepId }) {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${
                   done
-                    ? 'bg-blue-600 border-blue-600 text-white'
+                    ? 'bg-lagon-600 border-lagon-600 text-white'
                     : active
-                    ? 'bg-white dark:bg-gray-900 border-blue-600 text-blue-600 dark:text-blue-400'
-                    : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-400'
+                    ? 'bg-white dark:bg-[var(--pc-bg)] border-lagon-600 text-lagon-600 dark:text-lagon-400'
+                    : 'bg-white dark:bg-[var(--pc-bg)] border-gray-300 dark:border-[var(--pc-border-active)] text-gray-400 dark:text-[var(--pc-muted)]'
                 }`}
               >
                 {done ? <Check className="w-4 h-4" /> : i + 1}
               </div>
               <span
                 className={`mt-1 text-xs font-medium whitespace-nowrap ${
-                  active ? 'text-blue-600 dark:text-blue-400' : done ? 'text-blue-500' : 'text-gray-400'
+                  active ? 'text-lagon-600 dark:text-lagon-400' : done ? 'text-lagon-500' : 'text-gray-400'
                 }`}
               >
                 {step.label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
-              <div className={`h-0.5 flex-1 mx-2 mb-4 transition-colors ${done ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`} />
+              <div className={`h-0.5 flex-1 mx-2 mb-4 transition-colors ${done ? 'bg-lagon-600' : 'bg-gray-200 dark:bg-[var(--pc-surface)]'}`} />
             )}
           </div>
         );
@@ -146,8 +146,8 @@ function StepSource({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Votre CV actuel</h2>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Votre CV actuel</h2>
+      <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
         Déposez votre CV : nous en récupérons les informations pour remplir votre profil. Vous vérifiez tout avant que ce soit enregistré.
       </p>
 
@@ -155,15 +155,15 @@ function StepSource({
         data-testid="import-dropzone"
         className={`flex flex-col items-center text-center gap-3 rounded-2xl border-2 border-dashed px-6 py-10 transition-colors ${
           dragging
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-            : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50'
+            ? 'border-lagon-500 bg-lagon-50 dark:bg-lagon-900/20'
+            : 'border-gray-300 dark:border-[var(--pc-border-active)] bg-gray-50 dark:bg-[var(--pc-card)]/50'
         }`}
       >
-        <FileUp className={`w-9 h-9 ${dragging ? 'text-blue-600' : 'text-gray-400'}`} />
-        <p className="text-base font-medium text-gray-800 dark:text-gray-100">
+        <FileUp className={`w-9 h-9 ${dragging ? 'text-lagon-600' : 'text-gray-400 dark:text-[var(--pc-muted)]'}`} />
+        <p className="text-base font-medium text-gray-800 dark:text-[var(--pc-text)]">
           {dragging ? 'Relâchez pour importer' : 'Glissez votre CV ici'}
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">PDF ou Word (.docx)</p>
+        <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">PDF ou Word (.docx)</p>
         <Button onClick={() => void pick('cv')} disabled={loading}>
           {loading ? 'Lecture du fichier…' : 'Choisir un fichier'}
         </Button>
@@ -177,13 +177,13 @@ function StepSource({
       )}
 
       <div className="mt-6 grid gap-2 text-sm">
-        <button onClick={() => void pick('linkedin')} disabled={loading} className="text-left text-blue-600 dark:text-blue-400 hover:underline">
+        <button onClick={() => void pick('linkedin')} disabled={loading} className="text-left text-lagon-600 dark:text-lagon-400 hover:underline">
           J'ai un export LinkedIn (fichier .zip)
         </button>
-        <button onClick={() => onNext('json', null)} disabled={loading} className="text-left text-blue-600 dark:text-blue-400 hover:underline">
+        <button onClick={() => onNext('json', null)} disabled={loading} className="text-left text-lagon-600 dark:text-lagon-400 hover:underline">
           J'ai déjà la réponse d'une IA à coller
         </button>
-        <button onClick={onManual} disabled={loading} className="text-left text-blue-600 dark:text-blue-400 hover:underline">
+        <button onClick={onManual} disabled={loading} className="text-left text-lagon-600 dark:text-lagon-400 hover:underline">
           Je préfère remplir moi-même
         </button>
       </div>
@@ -209,10 +209,10 @@ function HowItWorks() {
   return (
     <ol className="grid gap-3 sm:grid-cols-3" aria-label="Les trois étapes">
       {items.map(({ icon: Icon, title, text }) => (
-        <li key={title} className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800/50">
-          <Icon className="w-5 h-5 text-blue-600 mb-1.5" aria-hidden="true" />
-          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{title}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{text}</p>
+        <li key={title} className="rounded-xl border border-gray-200 dark:border-[var(--pc-border)] p-3 bg-gray-50 dark:bg-[var(--pc-card)]/50">
+          <Icon className="w-5 h-5 text-lagon-600 mb-1.5" aria-hidden="true" />
+          <p className="text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)]">{title}</p>
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">{text}</p>
         </li>
       ))}
     </ol>
@@ -271,13 +271,13 @@ function StepProcess({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">
         {isFromFile ? 'Faire lire votre CV par une IA' : 'Coller la réponse d\'une IA'}
       </h2>
 
       {isFromFile ? (
         <div className="space-y-5">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Une IA (ChatGPT, Claude…) range très bien les informations d'un CV : expériences, formations, compétences. Votre fichier reste sur
             votre ordinateur ; seul le texte que vous collez est envoyé, par vous, à l'IA de votre choix.{' '}
             <WikiLink page="utiliser-une-ia">Pourquoi passer par une IA ?</WikiLink>
@@ -299,25 +299,25 @@ function StepProcess({
 
           <button
             onClick={() => setShowPrompt(v => !v)}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[var(--pc-muted)] hover:text-gray-700 dark:hover:text-[var(--pc-text)]"
           >
             {showPrompt ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             {showPrompt ? 'Masquer le texte à copier' : 'Voir le texte à copier'}
           </button>
           {showPrompt && (
-            <pre className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap border border-gray-200 dark:border-gray-700">
+            <pre className="text-xs text-gray-600 dark:text-[var(--pc-muted)] bg-gray-50 dark:bg-[var(--pc-card)] rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap border border-gray-200 dark:border-[var(--pc-border)]">
               {prompt}
             </pre>
           )}
         </div>
       ) : (
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-3">
           Collez ici la réponse de l'IA, telle quelle. Les phrases autour et les balises éventuelles ne gênent pas.
         </p>
       )}
 
       <div className="mt-5">
-        <label htmlFor="ai-response" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+        <label htmlFor="ai-response" className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-muted)] mb-1.5">
           Réponse de l'IA
         </label>
         <textarea
@@ -326,7 +326,7 @@ function StepProcess({
           onChange={e => setResponse(e.target.value)}
           placeholder="Collez ici la réponse complète de l'IA"
           rows={8}
-          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+          className="w-full rounded-lg border border-gray-300 dark:border-[var(--pc-border-active)] bg-white dark:bg-[var(--pc-card)] text-sm text-gray-800 dark:text-[var(--pc-text)] p-3 focus:outline-none focus:ring-2 focus:ring-lagon-500 resize-y"
         />
       </div>
 
@@ -346,7 +346,7 @@ function StepProcess({
           Retour
         </Button>
         <div className="flex items-center gap-4">
-          <button onClick={onManual} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+          <button onClick={onManual} className="text-sm text-lagon-600 dark:text-lagon-400 hover:underline">
             Je préfère remplir moi-même
           </button>
           <Button onClick={submit} disabled={!response.trim()}>
@@ -474,8 +474,8 @@ function StepPreview({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Prévisualiser et choisir ce à importer</h2>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Prévisualiser et choisir ce à importer</h2>
+      <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
         {profileChanges > 0 && `${profileChanges} champ(s) de profil · `}
         {selectedCount} entrée(s) sélectionnée(s) sur {selectableEntries.length}
       </p>
@@ -483,26 +483,26 @@ function StepPreview({
       {/* Profile diffs */}
       {profileDiffs.length > 0 && (
         <section className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-[var(--pc-muted)] uppercase tracking-wide mb-3">
             Informations personnelles
           </h3>
-          <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
+          <div className="rounded-xl border border-gray-200 dark:border-[var(--pc-border)] overflow-hidden divide-y divide-gray-100 dark:divide-[var(--pc-border)]">
             {profileDiffs.map(diff => (
-              <div key={diff.key} className="flex items-start gap-3 px-4 py-3 bg-white dark:bg-gray-800">
+              <div key={diff.key} className="flex items-start gap-3 px-4 py-3 bg-white dark:bg-[var(--pc-card)]">
                 <input
                   type="checkbox"
                   id={`diff-${diff.key}`}
                   checked={diff.useImported}
                   onChange={() => toggleProfileField(diff.key)}
-                  className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 flex-shrink-0"
+                  className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-[var(--pc-border)] text-lagon-600 flex-shrink-0"
                 />
                 <label htmlFor={`diff-${diff.key}`} className="flex-1 cursor-pointer min-w-0">
-                  <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">{diff.label}</span>
+                  <span className="block text-xs font-medium text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">{diff.label}</span>
                   <div className="flex flex-col gap-1">
                     {diff.existing && (
-                      <span className="text-xs text-gray-400 line-through truncate">{diff.existing}</span>
+                      <span className="text-xs text-gray-400 dark:text-[var(--pc-muted)] line-through truncate">{diff.existing}</span>
                     )}
-                    <span className={`text-sm truncate ${diff.useImported ? 'text-green-700 dark:text-green-400 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
+                    <span className={`text-sm truncate ${diff.useImported ? 'text-green-700 dark:text-green-400 font-medium' : 'text-gray-600 dark:text-[var(--pc-muted)]'}`}>
                       {diff.imported}
                     </span>
                   </div>
@@ -520,28 +520,28 @@ function StepPreview({
         return (
           <section key={type} className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-[var(--pc-muted)] uppercase tracking-wide">
                 {ENTRY_TYPE_LABELS[type] ?? type} ({items.length})
               </h3>
               <div className="flex gap-2">
                 {!allSelected && (
-                  <button onClick={() => toggleAllEntries(type, true)} className="text-xs text-blue-600 hover:underline dark:text-blue-400">
+                  <button onClick={() => toggleAllEntries(type, true)} className="text-xs text-lagon-600 hover:underline dark:text-lagon-400">
                     Tout sélectionner
                   </button>
                 )}
                 {!noneSelected && (
-                  <button onClick={() => toggleAllEntries(type, false)} className="text-xs text-gray-500 hover:underline dark:text-gray-400">
+                  <button onClick={() => toggleAllEntries(type, false)} className="text-xs text-gray-500 hover:underline dark:text-[var(--pc-muted)]">
                     Tout désélectionner
                   </button>
                 )}
               </div>
             </div>
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
+            <div className="rounded-xl border border-gray-200 dark:border-[var(--pc-border)] overflow-hidden divide-y divide-gray-100 dark:divide-[var(--pc-border)]">
               {items.map(({ entry, idx }) => (
                 <div
                   key={idx}
                   className={`flex items-start gap-3 px-4 py-3 transition-colors ${
-                    entry.selected ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/50 opacity-60'
+                    entry.selected ? 'bg-white dark:bg-[var(--pc-card)]' : 'bg-gray-50 dark:bg-[var(--pc-card)]/50 opacity-60'
                   }`}
                 >
                   <input
@@ -549,13 +549,13 @@ function StepPreview({
                     id={`entry-${idx}`}
                     checked={entry.selected}
                     onChange={() => toggleEntry(idx)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 flex-shrink-0"
+                    className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-[var(--pc-border)] text-lagon-600 flex-shrink-0"
                   />
                   <label htmlFor={`entry-${idx}`} className="flex-1 cursor-pointer min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{entry.data.title}</span>
+                      <span className="text-sm font-medium text-gray-800 dark:text-[var(--pc-text)] truncate">{entry.data.title}</span>
                       {entry.data.subtitle && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{entry.data.subtitle}</span>
+                        <span className="text-xs text-gray-500 dark:text-[var(--pc-muted)] truncate">{entry.data.subtitle}</span>
                       )}
                       {entry.possibleDuplicate && (
                         <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
@@ -565,12 +565,12 @@ function StepPreview({
                       )}
                     </div>
                     {(entry.data.startDate || entry.data.location) && (
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                      <span className="text-xs text-gray-400 dark:text-[var(--pc-muted)]">
                         {[entry.data.startDate, entry.data.endDate ? `→ ${entry.data.endDate}` : entry.data.isCurrent ? '→ Aujourd\'hui' : '', entry.data.location].filter(Boolean).join(' · ')}
                       </span>
                     )}
                     {entry.data.description && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{entry.data.description}</p>
+                      <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-0.5 line-clamp-2">{entry.data.description}</p>
                     )}
                   </label>
                 </div>
@@ -581,7 +581,7 @@ function StepPreview({
       })}
 
       {profileDiffs.length === 0 && selectableEntries.length === 0 && (
-        <div className="text-center py-10 text-gray-400">
+        <div className="text-center py-10 text-gray-400 dark:text-[var(--pc-muted)]">
           <p className="text-sm">Aucune donnée à importer.</p>
         </div>
       )}
@@ -613,8 +613,8 @@ function StepDone({ profileCount, entryCount, onGoToProfile }: { profileCount: n
       <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
         <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
       </div>
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Import terminé !</h2>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-2">Import terminé !</h2>
+      <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-6">
         {profileCount > 0 && `${profileCount} champ(s) de profil mis à jour · `}
         {entryCount} entrée(s) ajoutée(s) à votre profil.
       </p>
@@ -719,18 +719,18 @@ export function ImportPage() {
       <div className="mb-6">
         <button
           onClick={() => navigate('/profile')}
-          className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors mb-4"
+          className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-[var(--pc-muted)] hover:text-gray-700 dark:hover:text-[var(--pc-text)] transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           Retour au profil
         </button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Importer mon CV</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--pc-text)]">Importer mon CV</h1>
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mt-1">
           Récupérez les informations de votre CV (PDF ou Word) ou de votre export LinkedIn.
         </p>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-[var(--pc-card)] rounded-2xl shadow-sm border border-gray-200 dark:border-[var(--pc-border)] p-6">
         <StepBar current={step} />
 
         {step === 'source' && <StepSource onNext={handleSourceNext} onManual={() => navigate('/profile')} />}
@@ -747,7 +747,7 @@ export function ImportPage() {
 
         {step === 'preview' && payload && (
           importing ? (
-            <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-10 text-gray-500 dark:text-[var(--pc-muted)]">
               <p className="text-sm">Import en cours...</p>
             </div>
           ) : (

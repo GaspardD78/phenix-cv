@@ -505,7 +505,7 @@ export function LeftPanel({
     <div className="p-4 h-full flex flex-col overflow-hidden">
       {activeTab === 'resume' && (
         <div className="flex-1 overflow-auto custom-scrollbar flex flex-col gap-4">
-          <h2 className="text-lg font-bold text-gray-900 mb-2">Résumé & Objectifs</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-[var(--pc-text)] mb-2">Résumé & Objectifs</h2>
           <SettingsPanel
             profile={masterProfile}
             cvSettings={currentCv?.settings}
@@ -533,7 +533,7 @@ export function LeftPanel({
 
       {activeTab === 'design' && (
         <div className="flex-1 overflow-auto custom-scrollbar flex flex-col">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Design du CV</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-[var(--pc-text)] mb-4">Design du CV</h2>
           <DesignPanel
             onFitToPage={handleFitToPage}
             fitting={isFitting}
@@ -581,21 +581,21 @@ export function LeftPanel({
       {activeTab === 'blocs' && (
         <div className="flex flex-col h-full overflow-hidden">
           <div className="flex justify-between items-center mb-4 shrink-0">
-            <h2 className="text-lg font-bold text-gray-900">Blocs du CV</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-[var(--pc-text)]">Blocs du CV</h2>
             {currentCvBlocks.some(b => !b.isVisible) && (
               <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-200">
                 {currentCvBlocks.filter(b => !b.isVisible).length} masqué(s)
               </span>
             )}
           </div>
-          <div className="flex-1 overflow-auto bg-gray-50 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-3 text-sm text-gray-500 shadow-inner custom-scrollbar min-h-0">
+          <div className="flex-1 overflow-auto bg-gray-50 border border-gray-200 dark:border-[var(--pc-border)] dark:bg-[var(--pc-bg)] rounded-lg p-3 text-sm text-gray-500 dark:text-[var(--pc-muted)] shadow-inner custom-scrollbar min-h-0">
             <BlockList cvId={cvId} blocks={currentCvBlocks} />
           </div>
 
           <div className="mt-4 shrink-0 relative" ref={addMenuRef}>
             <button
               onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
-              className="w-full flex items-center justify-between bg-white text-gray-700 py-2.5 px-4 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="w-full flex items-center justify-between bg-white text-gray-700 py-2.5 px-4 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm text-sm dark:bg-[var(--pc-card)] dark:border-[var(--pc-border-active)] dark:text-[var(--pc-text)] dark:hover:bg-[var(--pc-hover)]"
             >
               <span className="flex items-center gap-2">
                 <Plus className="w-4 h-4" />
@@ -605,14 +605,14 @@ export function LeftPanel({
             </button>
 
             {isAddMenuOpen && (
-              <div className="absolute bottom-full left-0 w-full mb-2 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 dark:bg-gray-800 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <div className="absolute bottom-full left-0 w-full mb-2 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 dark:bg-[var(--pc-card)] dark:border-[var(--pc-border)] animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-[var(--pc-muted)] uppercase tracking-wider">
                   Sections classiques
                 </div>
                 {['Expériences Professionnelles', 'Formations', 'Compétences', 'Projets Récents', 'Certifications', 'Langues', 'Centres d\'intérêt'].map(section => (
                   <button
                     key={section}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 dark:text-[var(--pc-muted)] dark:hover:bg-[var(--pc-hover)] transition-colors flex items-center gap-2"
                     onClick={() => {
                       handleAddSectionHeader(section);
                       setIsAddMenuOpen(false);
@@ -623,10 +623,10 @@ export function LeftPanel({
                   </button>
                 ))}
                 
-                <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                <div className="border-t border-gray-100 dark:border-[var(--pc-border)] my-1"></div>
                 
                 <button
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 dark:text-[var(--pc-muted)] dark:hover:bg-[var(--pc-hover)] transition-colors flex items-center gap-2"
                   onClick={() => {
                     handleAddSectionHeader('Nouvelle Section');
                     setIsAddMenuOpen(false);
@@ -636,7 +636,7 @@ export function LeftPanel({
                   Section personnalisée...
                 </button>
                 <button
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 dark:text-[var(--pc-muted)] dark:hover:bg-[var(--pc-hover)] transition-colors flex items-center gap-2"
                   onClick={() => {
                     handleAddCustomText();
                     setIsAddMenuOpen(false);
@@ -660,9 +660,9 @@ export function LeftPanel({
       {/* Modal de renommage de section (Remplacement window.prompt) */}
       {promptingSection && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Nouvelle section</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Saisissez le nom de la nouvelle section personnalisée :</p>
+          <div className="bg-white dark:bg-[var(--pc-card)] rounded-xl shadow-2xl w-full max-w-sm p-6 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-[var(--pc-text)] mb-2">Nouvelle section</h3>
+            <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-4">Saisissez le nom de la nouvelle section personnalisée :</p>
             <input
               autoFocus
               type="text"
@@ -676,12 +676,12 @@ export function LeftPanel({
                   setPromptingSection(false);
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-700 dark:text-white mb-6 min-h-[44px]"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--pc-border-active)] rounded-lg focus:ring-2 focus:ring-lagon-500 outline-none dark:bg-[var(--pc-surface)] dark:text-white mb-6 min-h-[44px]"
             />
             <div className="flex gap-3">
               <button
                 onClick={() => setPromptingSection(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors min-h-[44px]"
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors min-h-[44px]"
               >
                 Annuler
               </button>
@@ -690,7 +690,7 @@ export function LeftPanel({
                   handleAddSectionHeader(newSectionName);
                   setPromptingSection(false);
                 }}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-md min-h-[44px]"
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-lagon-600 rounded-lg hover:bg-lagon-700 transition-colors shadow-md min-h-[44px]"
               >
                 Ajouter
               </button>

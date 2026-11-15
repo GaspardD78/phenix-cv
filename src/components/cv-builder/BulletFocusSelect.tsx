@@ -20,13 +20,13 @@ export function BulletFocusSelect({ value, onChange, inheritFrom, id }: BulletFo
         id={id}
         value={value}
         onChange={e => onChange(normalizeBulletFocus(e.target.value) ?? '')}
-        className="w-full p-1.5 border rounded text-sm focus:ring focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+        className="w-full p-1.5 border rounded text-sm focus:ring focus:ring-lagon-200 dark:bg-[var(--pc-surface)] dark:text-[var(--pc-text)] dark:border-[var(--pc-border-active)]"
         aria-label="Orientation des puces"
       >
         {inheritFrom && <option value="">Réglage du profil ({inheritedLabel})</option>}
         {BULLET_FOCUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
-      {help && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{help}</p>}
+      {help && <p className="mt-1 text-xs text-gray-500 dark:text-[var(--pc-muted)]">{help}</p>}
     </div>
   );
 }

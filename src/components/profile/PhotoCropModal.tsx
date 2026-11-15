@@ -158,10 +158,10 @@ export function PhotoCropModal({ imageSrc, onConfirm, onCancel }: PhotoCropModal
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl p-6 w-[380px]">
+      <div className="bg-white dark:bg-[var(--pc-card)] rounded-xl shadow-2xl p-6 w-[380px]">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Recadrer la photo</h2>
-          <button onClick={onCancel} className="p-1 hover:bg-gray-100 rounded-full text-gray-500">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-[var(--pc-text)]">Recadrer la photo</h2>
+          <button onClick={onCancel} className="p-1 hover:bg-gray-100 rounded-full text-gray-500 dark:text-[var(--pc-muted)]">
             <X size={18} />
           </button>
         </div>
@@ -171,7 +171,7 @@ export function PhotoCropModal({ imageSrc, onConfirm, onCancel }: PhotoCropModal
           <div
             ref={previewRef}
             className="relative overflow-hidden cursor-grab active:cursor-grabbing bg-gray-200"
-            style={{ width: PREVIEW, height: PREVIEW, borderRadius: '50%', border: '3px solid #6366f1', userSelect: 'none' }}
+            style={{ width: PREVIEW, height: PREVIEW, borderRadius: '50%', border: '3px solid var(--pc-accent)', userSelect: 'none' }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -197,7 +197,7 @@ export function PhotoCropModal({ imageSrc, onConfirm, onCancel }: PhotoCropModal
 
         {/* Zoom controls */}
         <div className="flex items-center justify-center gap-3 mb-4">
-          <button onClick={handleZoomOut} className="p-2 hover:bg-gray-100 rounded-full text-gray-600" title="Dézoomer">
+          <button onClick={handleZoomOut} className="p-2 hover:bg-gray-100 rounded-full text-gray-600 dark:text-[var(--pc-muted)]" title="Dézoomer">
             <ZoomOut size={18} />
           </button>
           <input
@@ -212,26 +212,26 @@ export function PhotoCropModal({ imageSrc, onConfirm, onCancel }: PhotoCropModal
               const img = imageRef.current;
               if (img) setOffset(o => clampOffset(o.x, o.y, img, next));
             }}
-            className="w-32 accent-indigo-600"
+            className="w-32 accent-lagon-600"
           />
-          <button onClick={handleZoomIn} className="p-2 hover:bg-gray-100 rounded-full text-gray-600" title="Zoomer">
+          <button onClick={handleZoomIn} className="p-2 hover:bg-gray-100 rounded-full text-gray-600 dark:text-[var(--pc-muted)]" title="Zoomer">
             <ZoomIn size={18} />
           </button>
-          <button onClick={handleReset} className="p-2 hover:bg-gray-100 rounded-full text-gray-500" title="Réinitialiser">
+          <button onClick={handleReset} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 dark:text-[var(--pc-muted)]" title="Réinitialiser">
             <RotateCcw size={15} />
           </button>
         </div>
 
-        <p className="text-xs text-center text-gray-400 mb-4">Faites glisser pour recadrer · molette ou curseur pour zoomer</p>
+        <p className="text-xs text-center text-gray-400 dark:text-[var(--pc-muted)] mb-4">Faites glisser pour recadrer · molette ou curseur pour zoomer</p>
 
         {/* Hidden canvas for output */}
         <canvas ref={canvasRef} style={{ display: 'none' }} />
 
         <div className="flex justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg">
+          <button onClick={onCancel} className="px-4 py-2 text-sm text-gray-700 dark:text-[var(--pc-text)] bg-gray-100 hover:bg-gray-200 rounded-lg">
             Annuler
           </button>
-          <button onClick={handleConfirm} className="px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">
+          <button onClick={handleConfirm} className="px-4 py-2 text-sm text-white bg-lagon-600 hover:bg-lagon-700 rounded-lg">
             Appliquer
           </button>
         </div>

@@ -73,11 +73,11 @@ export function GlobalFileDropGuard() {
 
   if (!dragging || onImportPage) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-blue-600/10 backdrop-blur-[1px] pointer-events-none">
-      <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-blue-500 bg-white dark:bg-gray-900 px-10 py-8 shadow-xl">
-        <FileUp className="w-8 h-8 text-blue-600" />
-        <p className="text-base font-semibold text-gray-900 dark:text-gray-50">Relâchez pour importer votre CV</p>
-        <p className="text-sm text-gray-500">PDF, Word (.docx) ou export LinkedIn (.zip)</p>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-lagon-600/10 backdrop-blur-[1px] pointer-events-none">
+      <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-lagon-500 bg-white dark:bg-[var(--pc-bg)] px-10 py-8 shadow-xl">
+        <FileUp className="w-8 h-8 text-lagon-600" />
+        <p className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Relâchez pour importer votre CV</p>
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">PDF, Word (.docx) ou export LinkedIn (.zip)</p>
       </div>
     </div>
   );

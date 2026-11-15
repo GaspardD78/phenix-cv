@@ -182,7 +182,7 @@ export function Dashboard() {
 
     // Source breakdown
     const SOURCE_LABELS: Record<string, string> = { job_board: 'Job board', spontaneous: 'Spontanée', network: 'Réseau', recruiter: 'Recruteur', linkedin: 'LinkedIn', other: 'Autre' };
-    const SOURCE_COLORS: Record<string, string> = { linkedin: '#0077b5', job_board: 'var(--pc-accent)', network: '#34d399', recruiter: '#fbbf24', spontaneous: '#a78bfa', other: '#6b7280' };
+    const SOURCE_COLORS: Record<string, string> = { linkedin: '#0077b5', job_board: 'var(--pc-accent)', network: '#34d399', recruiter: '#fbbf24', spontaneous: 'var(--pc-accent-hover)', other: '#6b7280' };
     const sourceCounts: Record<string, number> = {};
     nonDraft.forEach(a => { const src = a.source || 'other'; sourceCounts[src] = (sourceCounts[src] || 0) + 1; });
     const total = nonDraft.length || 1;
@@ -274,13 +274,13 @@ export function Dashboard() {
         {/* KPIs */}
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <KpiCard label="Candidatures actives" value={stats.activeCount}
-            iconColor="#6366f1"
+            iconColor="var(--pc-accent)"
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg>}/>
           <KpiCard label="Ce mois-ci" value={stats.recentCount} sub="candidatures envoyées"
             iconColor="#34d399"
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>}/>
           <KpiCard label="Taux de réponse" value={`${stats.responseRate}%`}
-            iconColor="#a78bfa"
+            iconColor="var(--pc-accent-hover)"
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}/>
           <KpiCard label="Entretiens en cours" value={stats.interviewsCount} sub="interview / test / offre"
             iconColor="#f59e0b"
@@ -298,7 +298,7 @@ export function Dashboard() {
                   <h3 style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 700, color: 'var(--pc-text)', fontFamily: 'var(--font-display)' }}>Activité des 3 derniers mois</h3>
                   <p style={{ margin: 0, fontSize: 11, color: 'var(--pc-muted)', fontFamily: 'var(--font-body)' }}>Candidatures créées par semaine</p>
                 </div>
-                <span style={{ background: 'rgba(99,102,241,.15)', color: '#818cf8', borderRadius: 99, fontSize: 11, fontWeight: 600, padding: '3px 9px', fontFamily: 'var(--font-body)', flexShrink: 0 }}>12 semaines</span>
+                <span style={{ background: 'var(--pc-accent-subtle)', color: 'var(--pc-accent-hover)', borderRadius: 99, fontSize: 11, fontWeight: 600, padding: '3px 9px', fontFamily: 'var(--font-body)', flexShrink: 0 }}>12 semaines</span>
               </div>
               <div style={{ width: '100%' }}>
                 <BarChart data={stats.chartData} />

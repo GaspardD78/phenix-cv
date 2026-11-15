@@ -139,13 +139,13 @@ export function SettingsPage() {
   return (
     <div className="h-full overflow-y-auto">
      <div className="p-8 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-1 dark:text-gray-100">Paramètres</h1>
-      <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Choisissez une rubrique dans le sommaire.</p>
+      <h1 className="text-2xl font-bold mb-1 dark:text-[var(--pc-text)]">Paramètres</h1>
+      <p className="text-gray-500 dark:text-[var(--pc-muted)] text-sm mb-6">Choisissez une rubrique dans le sommaire.</p>
       <div className="flex flex-col md:flex-row gap-6 items-start">
       <nav aria-label="Sommaire des paramètres" className="md:w-56 md:flex-shrink-0 md:sticky md:top-0 w-full">
 {SETTINGS_TREE.map(group => (
           <div key={group.label} className="mb-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 px-2 mb-1">{group.label}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[var(--pc-muted)] px-2 mb-1">{group.label}</p>
             <ul>
               {group.pages.map(p => (
                 <li key={p.id}>
@@ -153,7 +153,7 @@ export function SettingsPage() {
                     onClick={() => choosePage(p.id)}
                     aria-current={page === p.id ? 'page' : undefined}
                     className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                      page === p.id ? 'bg-blue-50 text-blue-700 font-medium' : 'opacity-80 hover:opacity-100 hover:bg-white/10'
+                      page === p.id ? 'bg-lagon-50 text-lagon-700 font-medium dark:bg-[var(--pc-accent-subtle)] dark:text-[var(--pc-accent)]' : 'opacity-80 hover:opacity-100 hover:bg-white/10'
                     }`}
                   >
                     {p.label}
@@ -163,7 +163,7 @@ export function SettingsPage() {
             </ul>
             {(group.subgroups ?? []).map(sg => (
               <div key={sg.label} className="mt-2">
-                <p className="text-xs font-medium text-gray-500 px-2 mb-0.5 italic">{sg.label}</p>
+                <p className="text-xs font-medium text-gray-500 dark:text-[var(--pc-muted)] px-2 mb-0.5 italic">{sg.label}</p>
                 <ul>
                   {sg.pages.map(p => (
                     <li key={p.id}>
@@ -171,7 +171,7 @@ export function SettingsPage() {
                     onClick={() => choosePage(p.id)}
                     aria-current={page === p.id ? 'page' : undefined}
                     className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                      page === p.id ? 'bg-blue-50 text-blue-700 font-medium' : 'opacity-80 hover:opacity-100 hover:bg-white/10'
+                      page === p.id ? 'bg-lagon-50 text-lagon-700 font-medium dark:bg-[var(--pc-accent-subtle)] dark:text-[var(--pc-accent)]' : 'opacity-80 hover:opacity-100 hover:bg-white/10'
                     }`}
                   >
                     {p.label}
@@ -188,13 +188,13 @@ export function SettingsPage() {
 
       <SettingsPane id="apparence" active={page}>
       {/* ── Apparence ── */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-        <div className="p-6 border-b dark:border-gray-700">
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
+        <div className="p-6 border-b dark:border-[var(--pc-border)]">
           <div className="flex items-center gap-2 mb-1">
             <Sun size={18} className="text-yellow-500" />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Apparence</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Apparence</h2>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Choisissez le thème de l'application.
           </p>
         </div>
@@ -210,8 +210,8 @@ export function SettingsPage() {
                 onClick={() => setTheme(value)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                   theme === value
-                    ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300'
-                    : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                    ? 'bg-lagon-50 dark:bg-lagon-900/30 border-lagon-300 dark:border-lagon-600 text-lagon-700 dark:text-lagon-300'
+                    : 'bg-white dark:bg-[var(--pc-surface)] border-gray-200 dark:border-[var(--pc-border-active)] text-gray-700 dark:text-[var(--pc-muted)] hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
                 <Icon size={16} />
@@ -225,23 +225,23 @@ export function SettingsPage() {
 
       <SettingsPane id="ia-personnalisation" active={page}>
       {/* ── AI Prompt Personalization ── */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-        <div className="p-6 border-b dark:border-gray-700">
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
+        <div className="p-6 border-b dark:border-[var(--pc-border)]">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles size={18} className="text-amber-500" />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Personnalisation des prompts IA</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Personnalisation des prompts IA</h2>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Ces paramètres sont utilisés par le générateur de prompts dans le CV builder.
           </p>
         </div>
 
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">
               Votre atout différenciant
             </label>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-2">
               Décrivez en une phrase ce qui vous distingue des autres personnes qui postulent.
               Ce texte sera injecté dans les prompts d'entretien et de message de candidature.
             </p>
@@ -249,7 +249,7 @@ export function SettingsPage() {
               value={localDifferentiator}
               onChange={e => setLocalDifferentiator(e.target.value)}
               placeholder={"Ex. : Une certification, une réalisation ou une spécialité qui vous distingue"}
-              className="w-full p-2.5 border border-gray-300 rounded-md text-sm resize-y h-20 focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
+              className="w-full p-2.5 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-sm resize-y h-20 focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
             />
           </div>
 
@@ -273,13 +273,13 @@ export function SettingsPage() {
 
       <SettingsPane id="ia-longueur" active={page}>
       {/* ── Pages cibles du CV généré par IA ── */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-        <div className="p-6 border-b dark:border-gray-700">
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
+        <div className="p-6 border-b dark:border-[var(--pc-border)]">
           <div className="flex items-center gap-2 mb-1">
-            <FileText size={18} className="text-indigo-500" />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Pages cibles</h2>
+            <FileText size={18} className="text-lagon-500" />
+            <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Pages cibles</h2>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Nombre de pages visé par le CV généré par IA. À 1 page (défaut), le prompt impose une accroche de 3 lignes,
             3 puces pour les expériences des 5 dernières années, 2 de 5 à 10 ans, une ligne au-delà, 3 à 5 catégories
             et 12 à 15 éléments de compétences, et le contrôle signale tout dépassement probable.
@@ -294,8 +294,8 @@ export function SettingsPage() {
               onClick={() => saveTargetPages(n)}
               className={`px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                 targetPages === n
-                  ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300'
-                  : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  ? 'bg-lagon-50 dark:bg-lagon-900/30 border-lagon-300 dark:border-lagon-600 text-lagon-700 dark:text-lagon-300'
+                  : 'bg-white dark:bg-[var(--pc-surface)] border-gray-200 dark:border-[var(--pc-border-active)] text-gray-700 dark:text-[var(--pc-muted)] hover:bg-gray-50 dark:hover:bg-gray-600'
               }`}
             >
               {n} page{n > 1 ? 's' : ''}
@@ -307,13 +307,13 @@ export function SettingsPage() {
 
       <SettingsPane id="ia-regles" active={page}>
       {/* ── Règles personnelles du candidat (prompt « CV ciblé ») ── */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-        <div className="p-6 border-b dark:border-gray-700">
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
+        <div className="p-6 border-b dark:border-[var(--pc-border)]">
           <div className="flex items-center gap-2 mb-1">
-            <ClipboardList size={18} className="text-indigo-500" />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Règles personnelles</h2>
+            <ClipboardList size={18} className="text-lagon-500" />
+            <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Règles personnelles</h2>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Propres au profil {profile ? `« ${profile.firstName} ${profile.lastName} »` : 'actif'}. Injectées dans le prompt du CV ciblé
             avant les règles de rédaction, en priorité absolue sur l'annonce : faits à respecter, style, critères de recherche.
             Laisser vide pour ne rien ajouter.
@@ -326,14 +326,14 @@ export function SettingsPage() {
             disabled={!profile}
             aria-label="Règles personnelles"
             placeholder="Faits à respecter, style, critères de recherche…"
-            className="w-full p-2.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm font-mono resize-y h-56 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+            className="w-full p-2.5 border border-gray-300 dark:border-[var(--pc-border-active)] dark:bg-[var(--pc-surface)] dark:text-[var(--pc-text)] rounded-md text-sm font-mono resize-y h-56 focus:ring-2 focus:ring-lagon-200 focus:border-lagon-400"
           />
           <div className="flex gap-2">
             <button
               onClick={handleSaveRules}
               disabled={!profile}
               className={`flex items-center gap-2 px-4 py-2 text-sm rounded-md transition-colors disabled:opacity-50 ${
-                rulesSaved ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                rulesSaved ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-lagon-600 text-white hover:bg-lagon-700'
               }`}
             >
               {rulesSaved ? <><CheckCircle2 size={15} /> Enregistré</> : 'Enregistrer'}
@@ -342,7 +342,7 @@ export function SettingsPage() {
               <button
                 onClick={() => setLocalRules(PERSONAL_RULES_TEMPLATE)}
                 disabled={!profile}
-                className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-[var(--pc-border-active)] text-gray-700 dark:text-[var(--pc-muted)] hover:bg-gray-50 dark:hover:bg-[var(--pc-hover)] disabled:opacity-50"
               >
                 Insérer un modèle
               </button>
@@ -354,10 +354,10 @@ export function SettingsPage() {
 
       <SettingsPane id="ia-style" active={page}>
       {/* ── Orientation des puces (par profil) ── */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Orientation du CV</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
+        <div className="p-6 border-b dark:border-[var(--pc-border)]">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Orientation du CV</h2>
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Ce que les puces mettent en avant par défaut. Modifiable pour chaque CV dans « Paramètres de ce CV ».
           </p>
         </div>
@@ -368,7 +368,7 @@ export function SettingsPage() {
             onChange={v => { if (profile && v) void saveBulletFocus(profile.id, v); }}
           />
           <div className="mt-4">
-            <label htmlFor="verb-tense" className="block text-sm font-medium dark:text-gray-200 mb-1">Début des puces</label>
+            <label htmlFor="verb-tense" className="block text-sm font-medium dark:text-[var(--pc-text)] mb-1">Début des puces</label>
             <VerbTenseSelect
               id="verb-tense"
               value={profile && verbTenseProfileId === profile.id ? resolveVerbTense(verbTense) : resolveVerbTense(undefined)}
@@ -396,13 +396,13 @@ export function SettingsPage() {
 
       <SettingsPane id="sauvegarde" active={page}>
       {/* ── Backup section ── */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-        <div className="p-6 border-b dark:border-gray-700">
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
+        <div className="p-6 border-b dark:border-[var(--pc-border)]">
           <div className="flex items-center gap-2 mb-1">
-            <Download size={18} className="text-blue-600" />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Sauvegarde des données</h2>
+            <Download size={18} className="text-lagon-600" />
+            <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Sauvegarde des données</h2>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Exporte vos données dans un fichier <code className="bg-gray-100 px-1 rounded text-xs">.cvmaker</code> que vous pouvez stocker ou transférer sur une autre installation.
           </p>
         </div>
@@ -411,10 +411,10 @@ export function SettingsPage() {
           {/* Module checkboxes */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium text-gray-700">Modules à inclure</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-[var(--pc-text)]">Modules à inclure</p>
               <button
                 onClick={toggleAll}
-                className="text-xs text-blue-600 hover:underline"
+                className="text-xs text-lagon-600 hover:underline"
               >
                 {selectedModules.size === MODULES.length ? 'Tout désélectionner' : 'Tout sélectionner'}
               </button>
@@ -423,17 +423,17 @@ export function SettingsPage() {
               {MODULES.map(m => (
                 <label
                   key={m.id}
-                  className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-[var(--pc-border)] cursor-pointer hover:bg-gray-50 transition-colors"
                 >
                   <input
                     type="checkbox"
                     checked={selectedModules.has(m.id)}
                     onChange={() => toggleModule(m.id)}
-                    className="mt-0.5 w-4 h-4 rounded accent-blue-600"
+                    className="mt-0.5 w-4 h-4 rounded accent-lagon-600"
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{m.label}</p>
-                    <p className="text-xs text-gray-500">{m.description}</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-[var(--pc-text)]">{m.label}</p>
+                    <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">{m.description}</p>
                   </div>
                 </label>
               ))}
@@ -455,7 +455,7 @@ export function SettingsPage() {
           <button
             onClick={handleExport}
             disabled={isExporting || selectedModules.size === 0}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-lagon-600 text-white text-sm rounded-md hover:bg-lagon-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isExporting
               ? <><Loader2 size={15} className="animate-spin" /> Export en cours…</>
@@ -467,13 +467,13 @@ export function SettingsPage() {
 
       <SettingsPane id="restauration" active={page}>
       {/* ── Restore section ── */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="p-6 border-b dark:border-gray-700">
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm">
+        <div className="p-6 border-b dark:border-[var(--pc-border)]">
           <div className="flex items-center gap-2 mb-1">
             <Upload size={18} className="text-orange-500" />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Restauration des données</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Restauration des données</h2>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
             Importez un fichier <code className="bg-gray-100 px-1 rounded text-xs">.cvmaker</code> pour restaurer ou fusionner des données.
             Vous pourrez choisir la stratégie module par module.
           </p>
@@ -498,7 +498,7 @@ export function SettingsPage() {
           <button
             onClick={handlePickFile}
             disabled={isParsing}
-            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-[var(--pc-border)] text-gray-700 dark:text-[var(--pc-text)] text-sm rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isParsing
               ? <><Loader2 size={15} className="animate-spin" /> Lecture du fichier…</>
@@ -514,12 +514,12 @@ export function SettingsPage() {
 
       <SettingsPane id="a-propos" active={page}>
       {/* ── À propos ── */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mt-6 mb-12">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">À propos</h2>
-          <p className="text-sm text-gray-500">Phénix CV vous aide à créer un CV clair, de votre profil jusqu'à l'export.</p>
+      <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mt-6 mb-12">
+        <div className="p-6 border-b dark:border-[var(--pc-border)]">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">À propos</h2>
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">Phénix CV vous aide à créer un CV clair, de votre profil jusqu'à l'export.</p>
         </div>
-        <div className="p-6 text-sm text-gray-600 dark:text-gray-300 space-y-2">
+        <div className="p-6 text-sm text-gray-600 dark:text-[var(--pc-muted)] space-y-2">
           <p>Vos données restent sur votre ordinateur.</p>
           <p>
             Copyright © 2026 Gaspard Douté. Phénix CV est un logiciel libre, distribué sous licence{' '}

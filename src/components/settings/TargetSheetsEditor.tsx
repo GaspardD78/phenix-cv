@@ -12,8 +12,8 @@ interface TargetSheetsEditorProps {
   onChange: (next: SheetOverrides) => void;
 }
 
-const fieldCls = 'w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 placeholder:italic focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400';
-const labelCls = 'block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1';
+const fieldCls = 'w-full p-2 border border-gray-300 dark:border-[var(--pc-border-active)] dark:bg-[var(--pc-surface)] dark:text-[var(--pc-text)] rounded-md text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 placeholder:italic focus:ring-2 focus:ring-lagon-200 focus:border-lagon-400';
+const labelCls = 'block text-xs font-semibold text-gray-600 dark:text-[var(--pc-muted)] mb-1';
 
 const PHOTO_LABELS = { oui: 'Photo conseillée', non: 'Photo déconseillée', indifferent: 'Photo indifférente' } as const;
 
@@ -51,12 +51,12 @@ function DefaultableSelect({ label, value, defaultLabel, options, onCommit }: {
     <div>
       <label className={labelCls}>{label}</label>
       <select
-        className={`${fieldCls} ${value === '' ? 'text-gray-400 italic' : ''}`}
+        className={`${fieldCls} ${value === '' ? 'text-gray-400 dark:text-[var(--pc-muted)] italic' : ''}`}
         value={value}
         onChange={e => onCommit(e.target.value)}
       >
         <option value="">{`Par défaut (${defaultLabel})`}</option>
-        {options.map(o => <option key={o.value} value={o.value} className="text-gray-900">{o.label}</option>)}
+        {options.map(o => <option key={o.value} value={o.value} className="text-gray-900 dark:text-[var(--pc-text)]">{o.label}</option>)}
       </select>
     </div>
   );
@@ -100,11 +100,11 @@ export function TargetSheetsEditor({ overrides, onChange }: TargetSheetsEditorPr
           type="button"
           disabled={!customized}
           onClick={() => onChange(resetSheet(overrides, type))}
-          className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+          className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-[var(--pc-border-active)] text-gray-700 dark:text-[var(--pc-muted)] hover:bg-gray-50 dark:hover:bg-[var(--pc-hover)] disabled:opacity-40"
         >
           <RotateCcw size={14} /> Revenir aux valeurs par défaut
         </button>
-        <p className="text-xs text-gray-500 dark:text-gray-400 basis-full">
+        <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] basis-full">
           {base.label}. Les valeurs par défaut sont affichées en grisé ; seul ce que vous modifiez est enregistré. Un champ vidé revient au défaut.
         </p>
       </div>

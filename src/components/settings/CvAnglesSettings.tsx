@@ -13,8 +13,8 @@ import { AngleFieldsForm, type AngleFormValue } from '@/components/angles/AngleF
 import { AffinityMatrix } from '@/components/angles/AffinityMatrix';
 
 const btn = 'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
-const btnPrimary = `${btn} bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700`;
-const btnGhost = `${btn} border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`;
+const btnPrimary = `${btn} bg-lagon-600 border-lagon-600 text-white hover:bg-lagon-700`;
+const btnGhost = `${btn} border-gray-300 dark:border-[var(--pc-border-active)] text-gray-700 dark:text-[var(--pc-muted)] hover:bg-gray-50 dark:hover:bg-[var(--pc-hover)]`;
 
 const toForm = (a: Pick<CvAngle, keyof AngleFormValue>): AngleFormValue => ({
   label: a.label, titleRule: a.titleRule, summaryStructure: a.summaryStructure,
@@ -43,24 +43,24 @@ export function AffinityImportSummary({ plan, onConfirm, onCancel, busy }: {
 }) {
   return (
     <div className="border border-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 space-y-2 text-sm">
-      <p className="font-medium dark:text-gray-100">Récapitulatif avant écriture</p>
-      <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300">
+      <p className="font-medium dark:text-[var(--pc-text)]">Récapitulatif avant écriture</p>
+      <ul className="list-disc pl-5 text-gray-700 dark:text-[var(--pc-muted)]">
         <li>{plan.matched} entrée(s) du fichier retrouvée(s) dans le profil.</li>
         <li>{plan.addedTagCount} tag(s) ajouté(s) sur {plan.updates.length} entrée(s). Aucun tag existant n'est retiré.</li>
         <li>{plan.unmatched.length} entrée(s) du fichier sans correspondance.</li>
       </ul>
       {plan.updates.length > 0 && (
         <details>
-          <summary className="cursor-pointer text-gray-600 dark:text-gray-400">Détail des ajouts</summary>
-          <ul className="mt-1 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+          <summary className="cursor-pointer text-gray-600 dark:text-[var(--pc-muted)]">Détail des ajouts</summary>
+          <ul className="mt-1 text-xs text-gray-600 dark:text-[var(--pc-muted)] space-y-0.5">
             {plan.updates.map(u => <li key={u.entryId}>{u.title} : {u.added.join(', ')}</li>)}
           </ul>
         </details>
       )}
       {plan.unmatched.length > 0 && (
         <details>
-          <summary className="cursor-pointer text-gray-600 dark:text-gray-400">Sans correspondance</summary>
-          <ul className="mt-1 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+          <summary className="cursor-pointer text-gray-600 dark:text-[var(--pc-muted)]">Sans correspondance</summary>
+          <ul className="mt-1 text-xs text-gray-600 dark:text-[var(--pc-muted)] space-y-0.5">
             {plan.unmatched.map((r, i) => <li key={i}>{r.entryType} : {r.title}</li>)}
           </ul>
         </details>
@@ -132,13 +132,13 @@ export function CvAnglesSettings() {
   }, 'Affinités importées');
 
   return (
-    <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-      <div className="p-6 border-b dark:border-gray-700">
+    <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
+      <div className="p-6 border-b dark:border-[var(--pc-border)]">
         <div className="flex items-center gap-2 mb-1">
-          <Compass size={18} className="text-indigo-500" />
-          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Angles de CV</h2>
+          <Compass size={18} className="text-lagon-500" />
+          <h2 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Angles de CV</h2>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
           Un angle oriente la sélection et l'ordre du CV pour un type de poste ({MAX_ANGLES_PER_PROFILE} au maximum par profil).
           Il ne contient aucun fait : la mise en tête et le masquage se règlent dans la matrice, par entrée.
         </p>
@@ -146,12 +146,12 @@ export function CvAnglesSettings() {
 
       <div className="p-6 space-y-4">
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+        <ul className="divide-y divide-gray-100 dark:divide-[var(--pc-border)]">
           {ownAngles.map(a => (
             <li key={a.id} className="py-2 flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium dark:text-gray-100">{a.label} <span className="text-xs text-gray-400">({a.slug})</span></p>
-                <p className="text-xs text-gray-500">{a.summaryStructure || 'Accroche libre'}</p>
+                <p className="text-sm font-medium dark:text-[var(--pc-text)]">{a.label} <span className="text-xs text-gray-400">({a.slug})</span></p>
+                <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">{a.summaryStructure || 'Accroche libre'}</p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <button type="button" className={btnGhost} disabled={busy} onClick={() => setEditing({ id: a.id, value: toForm(a) })}><Pencil size={14} /> Modifier</button>
@@ -162,8 +162,8 @@ export function CvAnglesSettings() {
         </ul>
 
         {editing ? (
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
-            <p className="text-sm font-medium dark:text-gray-100">{editing.id ? 'Modifier l\'angle' : 'Nouvel angle'}</p>
+          <div className="border border-gray-200 dark:border-[var(--pc-border)] rounded-lg p-4 space-y-3">
+            <p className="text-sm font-medium dark:text-[var(--pc-text)]">{editing.id ? 'Modifier l\'angle' : 'Nouvel angle'}</p>
             <AngleFieldsForm value={editing.value} onChange={value => setEditing({ ...editing, value })} categoryHints={categoryHints} />
             <div className="flex gap-2">
               <button type="button" className={btnPrimary} disabled={busy} onClick={saveEditing}>Enregistrer</button>
@@ -179,12 +179,12 @@ export function CvAnglesSettings() {
 
         <div className="pt-2">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold dark:text-gray-100">Affinités des entrées</h3>
+            <h3 className="text-sm font-semibold dark:text-[var(--pc-text)]">Affinités des entrées</h3>
             <button type="button" className={btnGhost} disabled={busy || !profile} onClick={pickAffinityFile}>
               <FileUp size={14} /> Importer des affinités
             </button>
           </div>
-          <p className="text-xs text-gray-500 mb-2">
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-2">
             Cliquer une cellule fait passer l'entrée de neutre à « en tête », puis « masquée ». Le fichier importé est un JSON local,
             jamais versionné : ses tags sont ajoutés aux entrées après confirmation, sans rien retirer.
           </p>

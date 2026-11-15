@@ -5,9 +5,9 @@ import { KanbanCard } from './KanbanCard';
 
 const COL_COLORS: Record<string, string> = {
   draft:       '#6b7280',
-  applied:     '#6366f1',
+  applied:     'var(--pc-accent)',
   in_progress: '#fbbf24',
-  interview:   '#a78bfa',
+  interview:   'var(--pc-accent-hover)',
   offer:       '#34d399',
   done:        '#f87171',
 };

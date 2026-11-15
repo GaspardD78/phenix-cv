@@ -67,7 +67,7 @@ export function OverflowBanner({ state }: { state: PreviewOverflowState }) {
       style={{ ...TONE[tone], fontSize: 13, lineHeight: 1.375 }}
     >
       <span className={stale ? 'opacity-50' : undefined}>{message}</span>
-      {stale && <span className="ml-2 text-xs italic text-gray-500">mise à jour…</span>}
+      {stale && <span className="ml-2 text-xs italic text-gray-500 dark:text-[var(--pc-muted)]">mise à jour…</span>}
     </div>
   );
 }
@@ -118,7 +118,7 @@ export function OverflowCutLine({ state, cvElement, container }: OverflowCutLine
       className="absolute left-0 w-full print:hidden z-50 pointer-events-none"
       style={{ top: Math.max(0, top - 3), borderTop: '2px solid #ef4444' }}
     >
-      <span className="absolute right-2 -top-5 text-xs text-red-600 font-semibold bg-white px-1">
+      <span className="absolute right-2 -top-5 text-xs text-red-600 font-semibold bg-white dark:bg-[var(--pc-card)] px-1">
         Coupure à l'export PDF
       </span>
     </div>

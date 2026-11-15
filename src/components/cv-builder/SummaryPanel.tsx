@@ -27,7 +27,7 @@ export function SummaryPanel({
   summaryLineHeight, setSummaryLineHeight,
 }: SummaryPanelProps) {
   return (
-    <div className="mb-4 bg-green-50 border border-green-200 rounded-lg shadow-sm text-sm flex flex-col min-h-0 flex-shrink-0 max-h-[65vh] text-gray-900">
+    <div className="mb-4 bg-green-50 border border-green-200 rounded-lg shadow-sm text-sm flex flex-col min-h-0 flex-shrink-0 max-h-[65vh] text-gray-900 dark:text-[var(--pc-text)]">
       <div className="p-3 pb-2 border-b border-green-200 flex-shrink-0">
         <h3 className="font-semibold text-green-900 flex items-center gap-1.5">
           <FileText className="w-4 h-4" /> Résumé / Accroche
@@ -35,7 +35,7 @@ export function SummaryPanel({
       </div>
       <div className="p-3 overflow-y-auto flex-1 space-y-3">
         <div>
-          <p className="text-[10px] text-gray-500 mb-1.5 leading-tight">
+          <p className="text-[10px] text-gray-500 dark:text-[var(--pc-muted)] mb-1.5 leading-tight">
             Si renseigné, remplace le résumé du Profil Maître sur ce CV uniquement.
           </p>
           <textarea
@@ -59,7 +59,7 @@ export function SummaryPanel({
         <p className="text-xs font-semibold text-green-800 border-t border-green-200 pt-2">Mise en forme</p>
         <div className="grid grid-cols-2 gap-1">
           <div className="col-span-2">
-            <label className="block text-xs text-gray-600 mb-0.5">Police</label>
+            <label className="block text-xs text-gray-600 dark:text-[var(--pc-muted)] mb-0.5">Police</label>
             <select value={summaryFontFamily} onChange={e => setSummaryFontFamily(e.target.value)}
               className="w-full p-1 border rounded text-xs focus:ring focus:ring-green-200">
               <option value="">Auto (globale)</option>
@@ -71,7 +71,7 @@ export function SummaryPanel({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-0.5">Taille</label>
+            <label className="block text-xs text-gray-600 dark:text-[var(--pc-muted)] mb-0.5">Taille</label>
             <select value={summaryFontSize} onChange={e => setSummaryFontSize(e.target.value)}
               className="w-full p-1 border rounded text-xs focus:ring focus:ring-green-200">
               <option value="">Auto</option>
@@ -82,7 +82,7 @@ export function SummaryPanel({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-0.5">Graisse</label>
+            <label className="block text-xs text-gray-600 dark:text-[var(--pc-muted)] mb-0.5">Graisse</label>
             <select value={summaryFontWeight} onChange={e => setSummaryFontWeight(e.target.value)}
               className="w-full p-1 border rounded text-xs focus:ring focus:ring-green-200">
               <option value="">Auto</option>
@@ -92,7 +92,7 @@ export function SummaryPanel({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-0.5">Style</label>
+            <label className="block text-xs text-gray-600 dark:text-[var(--pc-muted)] mb-0.5">Style</label>
             <select value={summaryFontStyle} onChange={e => setSummaryFontStyle(e.target.value)}
               className="w-full p-1 border rounded text-xs focus:ring focus:ring-green-200">
               <option value="">Auto</option>
@@ -101,7 +101,7 @@ export function SummaryPanel({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-0.5">Alignement</label>
+            <label className="block text-xs text-gray-600 dark:text-[var(--pc-muted)] mb-0.5">Alignement</label>
             <select value={summaryTextAlign} onChange={e => setSummaryTextAlign(e.target.value)}
               className="w-full p-1 border rounded text-xs focus:ring focus:ring-green-200">
               <option value="">Auto</option>
@@ -111,7 +111,7 @@ export function SummaryPanel({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-0.5">Interligne</label>
+            <label className="block text-xs text-gray-600 dark:text-[var(--pc-muted)] mb-0.5">Interligne</label>
             <select value={summaryLineHeight} onChange={e => setSummaryLineHeight(e.target.value)}
               className="w-full p-1 border rounded text-xs focus:ring focus:ring-green-200">
               <option value="">Auto</option>

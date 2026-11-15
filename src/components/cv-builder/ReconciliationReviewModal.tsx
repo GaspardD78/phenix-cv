@@ -29,17 +29,17 @@ export function ReconciliationReviewModal({ cvId, cvName, onClose }: Reconciliat
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-[var(--pc-card)] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">Synchroniser vers le profil maître</h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-[var(--pc-text)]">Synchroniser vers le profil maître</h1>
+            <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-0.5">
               Expériences adaptées dans « {cvName} » qui diffèrent de leur version dans le profil maître.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg text-gray-400 dark:text-[var(--pc-muted)] hover:text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -47,11 +47,11 @@ export function ReconciliationReviewModal({ cvId, cvName, onClose }: Reconciliat
 
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {isLoading ? (
-            <p className="text-sm text-gray-500 text-center py-10">Analyse des expériences…</p>
+            <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] text-center py-10">Analyse des expériences…</p>
           ) : candidates.length === 0 ? (
             <div className="text-center py-10">
               <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-3" />
-              <p className="text-sm text-gray-600">Rien à synchroniser — le profil maître est déjà à jour avec ce CV.</p>
+              <p className="text-sm text-gray-600 dark:text-[var(--pc-muted)]">Rien à synchroniser — le profil maître est déjà à jour avec ce CV.</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -128,11 +128,11 @@ function CandidateCard({ candidate, cvId, cvName, onMerge, onCreateNew, onIgnore
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+    <div className="border border-gray-200 dark:border-[var(--pc-border)] rounded-xl overflow-hidden">
+      <div className="px-4 py-3 bg-gray-50 dark:bg-[var(--pc-bg)] border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
         <div>
-          <p className="text-sm font-semibold text-gray-900">{targetEntry.title}</p>
-          <p className="text-xs text-gray-500">{targetEntry.subtitle}</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-[var(--pc-text)]">{targetEntry.title}</p>
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">{targetEntry.subtitle}</p>
         </div>
         <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs font-medium ${badge.className}`}>
           <badge.Icon className="w-3.5 h-3.5" />
@@ -143,18 +143,18 @@ function CandidateCard({ candidate, cvId, cvName, onMerge, onCreateNew, onIgnore
 
       <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Profil maître (actuel)</h4>
+          <h4 className="text-[11px] font-semibold text-gray-500 dark:text-[var(--pc-muted)] uppercase tracking-wide mb-1.5">Profil maître (actuel)</h4>
           <ExperiencePreview snapshot={masterEntryToSnapshot(targetEntry)} />
         </div>
         <div>
-          <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Version dans « {cvName} »</h4>
+          <h4 className="text-[11px] font-semibold text-gray-500 dark:text-[var(--pc-muted)] uppercase tracking-wide mb-1.5">Version dans « {cvName} »</h4>
           <ExperiencePreview snapshot={candidate.adapted} />
         </div>
       </div>
 
       {criteria && (
         <div className="px-4 pb-3 flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] text-gray-400 mr-1">Critères correspondants :</span>
+          <span className="text-[11px] text-gray-400 dark:text-[var(--pc-muted)] mr-1">Critères correspondants :</span>
           <CriterionTag label="Entreprise" ok={criteria.company} />
           <CriterionTag label="Dates" ok={criteria.dates} />
           <CriterionTag label="Poste (indicatif)" ok={criteria.title} />
@@ -163,11 +163,11 @@ function CandidateCard({ candidate, cvId, cvName, onMerge, onCreateNew, onIgnore
 
       <div className="p-4 border-t border-gray-100 bg-gray-50/60 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Proposition de fusion (éditable)</p>
+          <p className="text-[11px] font-semibold text-gray-500 dark:text-[var(--pc-muted)] uppercase tracking-wide">Proposition de fusion (éditable)</p>
           <button
             type="button"
             onClick={() => setProposal(buildNewEntryProposal(candidate))}
-            className="text-[11px] text-blue-600 hover:underline"
+            className="text-[11px] text-lagon-600 hover:underline"
           >
             Repartir de la version du CV
           </button>

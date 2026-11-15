@@ -17,6 +17,16 @@ function applyTheme(preference: ThemePreference) {
   }
 }
 
+/** Applique le thème enregistré avant le premier rendu (évite un flash et les écrans toujours sombres). */
+export function initTheme(): void {
+  let saved: ThemePreference = 'light';
+  try {
+    const v = localStorage.getItem(STORAGE_KEY) as ThemePreference | null;
+    if (v && ['light', 'dark', 'system'].includes(v)) saved = v;
+  } catch { /* ignore */ }
+  applyTheme(saved);
+}
+
 export function useTheme() {
   const [theme, setThemeState] = useState<ThemePreference>(() => {
     try {

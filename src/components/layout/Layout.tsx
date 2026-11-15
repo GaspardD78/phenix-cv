@@ -94,8 +94,8 @@ function NavBtn({
         padding: collapsed ? '9px 0' : '9px 12px',
         justifyContent: collapsed ? 'center' : 'flex-start',
         borderRadius: 8,
-        background: active ? 'var(--pc-accent-subtle)' : 'transparent',
-        color: active ? 'var(--pc-accent)' : 'var(--pc-muted)',
+        background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+        color: active ? 'var(--pc-sidebar-text)' : 'var(--pc-sidebar-muted)',
         fontFamily: 'var(--font-body)',
         fontSize: 14,
         fontWeight: active ? 600 : 400,
@@ -111,7 +111,7 @@ function NavBtn({
         {badge != null && badge > 0 && collapsed && (
           <span style={{
             position: 'absolute', top: -5, right: -5,
-            background: 'var(--pc-accent)', color: '#fff',
+            background: 'var(--pc-coral)', color: '#0A1415',
             borderRadius: 99, fontSize: 10, fontWeight: 700,
             padding: '1px 4px', lineHeight: 1.4, fontFamily: 'var(--font-body)',
           }}>{badge > 9 ? '9+' : badge}</span>
@@ -120,8 +120,8 @@ function NavBtn({
       {!collapsed && <span style={{ flex: 1 }}>{label}</span>}
       {!collapsed && badge != null && badge > 0 && (
         <span style={{
-          background: active ? 'var(--pc-accent)' : 'var(--pc-border)',
-          color: active ? '#fff' : 'var(--pc-muted)',
+          background: active ? 'var(--pc-coral)' : 'rgba(255,255,255,0.14)',
+          color: active ? '#0A1415' : 'var(--pc-sidebar-text)',
           borderRadius: 99, fontSize: 11, fontWeight: 600,
           padding: '1px 7px', lineHeight: 1.5, fontFamily: 'var(--font-body)',
         }}>{badge}</span>
@@ -162,8 +162,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         style={{
           width: collapsed ? 60 : 220,
           minWidth: collapsed ? 60 : 220,
-          background: 'var(--pc-surface)',
-          borderRight: '1px solid var(--pc-border)',
+          background: 'var(--pc-sidebar)',
+          borderRight: '1px solid var(--pc-sidebar)',
           flexDirection: 'column',
           transition: 'width 0.2s cubic-bezier(0.4,0,0.2,1), min-width 0.2s cubic-bezier(0.4,0,0.2,1)',
           overflowX: 'clip',
@@ -178,13 +178,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          borderBottom: '1px solid var(--pc-border)',
+          borderBottom: '1px solid rgba(255,255,255,0.10)',
           justifyContent: collapsed ? 'center' : 'flex-start',
         }}>
           <img src={logo} alt="Phénix CV" width={32} height={32} style={{ borderRadius: 8, flexShrink: 0 }} />
           {!collapsed && (
             <span style={{
-              fontSize: 15, fontWeight: 700, color: 'var(--pc-text)',
+              fontSize: 15, fontWeight: 700, color: 'var(--pc-sidebar-text)',
               fontFamily: 'var(--font-display)',
               whiteSpace: 'nowrap', letterSpacing: '-0.3px',
             }}>Phénix CV</span>
@@ -196,31 +196,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div style={{ 
             margin: '12px 8px 4px', 
             padding: '8px 10px', 
-            background: 'var(--pc-accent-subtle)', 
+            background: 'rgba(255,255,255,0.08)', 
             borderRadius: 10,
             display: 'flex',
             alignItems: 'center',
             gap: 10,
-            border: '1px solid rgba(99, 102, 241, 0.1)'
+            border: '1px solid var(--pc-accent-subtle)'
           }}>
             <div style={{ 
               width: 28, height: 28, 
               borderRadius: 99, 
-              background: 'var(--pc-accent)', 
+              background: 'var(--pc-coral)', color: '#0A1415', 
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700, color: '#fff',
+              fontSize: 11, fontWeight: 700,
               flexShrink: 0
             }}>
               {profile.firstName?.[0]}{profile.lastName?.[0]}
             </div>
             <div style={{ minWidth: 0 }}>
               <div style={{ 
-                fontSize: 13, fontWeight: 600, color: 'var(--pc-accent)', 
+                fontSize: 13, fontWeight: 600, color: 'var(--pc-sidebar-text)', 
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' 
               }}>
                 {`${profile.firstName} ${profile.lastName}`.trim() || "Mon profil"}
               </div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--pc-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--pc-sidebar-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Mon profil
               </div>
             </div>
@@ -236,7 +236,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           ))}
 
           {/* Accès secondaires */}
-          <div style={{ marginTop: 'auto', paddingTop: 8, borderTop: '1px solid var(--pc-border)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div style={{ marginTop: 'auto', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.10)', display: 'flex', flexDirection: 'column', gap: 2 }}>
             {SECONDARY_NAV.map((item) => (
               <Link key={item.to} to={item.to} title={collapsed ? item.label : undefined} style={{ textDecoration: 'none' }}>
                 <NavBtn collapsed={collapsed} active={isActive(item.to)} label={item.label}>{item.icon}</NavBtn>

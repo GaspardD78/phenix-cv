@@ -40,9 +40,9 @@ const getEventIcon = (type: EventType) => {
 
 const getEventColor = (type: EventType) => {
   switch (type) {
-    case 'status_change': return 'bg-blue-100 text-blue-600';
-    case 'interview': return 'bg-purple-100 text-purple-600';
-    default: return 'bg-gray-100 text-gray-600';
+    case 'status_change': return 'bg-lagon-100 text-lagon-600';
+    case 'interview': return 'bg-lagon-100 text-lagon-600';
+    default: return 'bg-gray-100 text-gray-600 dark:text-[var(--pc-muted)]';
   }
 };
 
@@ -90,10 +90,10 @@ export function ApplicationTimeline({ applicationId, applicationContext }: Appli
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-sm font-bold text-gray-800">Historique</h3>
+        <h3 className="text-sm font-bold text-gray-800 dark:text-[var(--pc-text)]">Historique</h3>
         <button
           onClick={() => setIsEventModalOpen(true)}
-          className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium bg-blue-50 px-3 py-1.5 rounded-full transition-colors"
+          className="flex items-center gap-1 text-sm text-lagon-600 hover:text-lagon-800 font-medium bg-lagon-50 px-3 py-1.5 rounded-full transition-colors"
         >
           <Plus size={14} /> Ajouter un événement
         </button>
@@ -106,25 +106,25 @@ export function ApplicationTimeline({ applicationId, applicationContext }: Appli
               {getEventIcon(event.eventType)}
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+            <div className="bg-gray-50 dark:bg-[var(--pc-bg)] rounded-lg p-3 border border-gray-100">
               <div className="flex justify-between items-start mb-1">
                 <div className="flex items-center gap-2 min-w-0">
-                  <h4 className="text-sm font-bold text-gray-900 truncate">{event.title}</h4>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-[var(--pc-text)] truncate">{event.title}</h4>
                   {event.calendarId === 'google' && (
-                    <span title="Ajouté à Google Calendar" className="shrink-0 w-4 h-4 text-blue-500">
+                    <span title="Ajouté à Google Calendar" className="shrink-0 w-4 h-4 text-lagon-500">
                       <CalendarPlus size={14} />
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1 ml-3 shrink-0">
-                  <span className="text-xs text-gray-500 whitespace-nowrap">
+                  <span className="text-xs text-gray-500 dark:text-[var(--pc-muted)] whitespace-nowrap">
                     {format(new Date(event.eventDate), 'dd MMM yyyy HH:mm', { locale: fr })}
                   </span>
                   {event.eventType !== 'status_change' && (
                     <button
                       onClick={() => handleOpenInCalendar(event)}
                       title="Ouvrir dans Google Calendar"
-                      className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+                      className="p-1 text-gray-400 dark:text-[var(--pc-muted)] hover:text-lagon-500 hover:bg-lagon-50 rounded transition-colors"
                     >
                       <CalendarPlus size={14} />
                     </button>
@@ -133,7 +133,7 @@ export function ApplicationTimeline({ applicationId, applicationContext }: Appli
                     <button
                       onClick={() => handleDeleteEvent(event.id)}
                       title="Supprimer"
-                      className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                      className="p-1 text-gray-400 dark:text-[var(--pc-muted)] hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -142,14 +142,14 @@ export function ApplicationTimeline({ applicationId, applicationContext }: Appli
               </div>
 
               {event.description && (
-                <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                <p className="text-sm text-gray-600 dark:text-[var(--pc-muted)] mt-1">{event.description}</p>
               )}
             </div>
           </div>
         ))}
 
         {events.length === 0 && (
-          <div className="pl-6 text-sm text-gray-500 italic">
+          <div className="pl-6 text-sm text-gray-500 dark:text-[var(--pc-muted)] italic">
             Aucun événement enregistré pour cette candidature.
           </div>
         )}

@@ -41,49 +41,49 @@ export function ExportApplicationsModal({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/40" onClick={handleClose} />
-      <div className="relative bg-white sm:rounded-xl shadow-2xl w-full max-w-md h-full sm:h-auto p-6 flex flex-col">
+      <div className="relative bg-white dark:bg-[var(--pc-card)] sm:rounded-xl shadow-2xl w-full max-w-md h-full sm:h-auto p-6 flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between mb-5">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Exporter les candidatures</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--pc-text)]">Exporter les candidatures</h2>
+            <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mt-0.5">
               Génère un dossier ZIP avec un récap HTML et les pièces jointes.
             </p>
           </div>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 ml-4 mt-0.5">
+          <button onClick={handleClose} className="text-gray-400 dark:text-[var(--pc-muted)] hover:text-gray-600 ml-4 mt-0.5">
             <X size={20} />
           </button>
         </div>
 
         {/* Date range */}
         <div className="space-y-4">
-          <p className="text-sm font-medium text-gray-700">
-            Période <span className="font-normal text-gray-400">(optionnel — basé sur la date de candidature)</span>
+          <p className="text-sm font-medium text-gray-700 dark:text-[var(--pc-text)]">
+            Période <span className="font-normal text-gray-400 dark:text-[var(--pc-muted)]">(optionnel — basé sur la date de candidature)</span>
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Du</label>
+              <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-1">Du</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lagon-500"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Au</label>
+              <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-1">Au</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
                 min={startDate || undefined}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lagon-500"
               />
             </div>
           </div>
           {!startDate && !endDate && (
-            <p className="text-xs text-gray-400 flex items-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400" />
+            <p className="text-xs text-gray-400 dark:text-[var(--pc-muted)] flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-lagon-400" />
               Sans sélection, toutes les candidatures seront exportées.
             </p>
           )}
@@ -105,14 +105,14 @@ export function ExportApplicationsModal({ isOpen, onClose }: Props) {
         <div className="mt-auto pt-6 flex justify-end gap-3">
           <button
             onClick={handleClose}
-            className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-sm text-gray-700 dark:text-[var(--pc-text)] border border-gray-300 dark:border-[var(--pc-border)] rounded-md hover:bg-gray-50 transition-colors"
           >
             Fermer
           </button>
           <button
             onClick={handleExport}
             disabled={isExporting}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-lagon-600 text-white rounded-md hover:bg-lagon-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isExporting
               ? <><Loader2 size={15} className="animate-spin" /> Export en cours…</>

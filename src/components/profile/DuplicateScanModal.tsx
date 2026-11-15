@@ -50,17 +50,17 @@ export function DuplicateScanModal({ onClose }: DuplicateScanModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-[var(--pc-card)] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">Doublons du profil maître</h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-[var(--pc-text)]">Doublons du profil maître</h1>
+            <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-0.5">
               Entrées du profil qui semblent décrire la même chose, section par section (expériences, formations, compétences…). Aucune fusion sans votre validation.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg text-gray-400 dark:text-[var(--pc-muted)] hover:text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -68,11 +68,11 @@ export function DuplicateScanModal({ onClose }: DuplicateScanModalProps) {
 
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {isScanning ? (
-            <p className="text-sm text-gray-500 text-center py-10">Analyse de toutes les sections du profil…</p>
+            <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] text-center py-10">Analyse de toutes les sections du profil…</p>
           ) : groups.length === 0 ? (
             <div className="text-center py-10">
               <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-3" />
-              <p className="text-sm text-gray-600">Aucun doublon détecté dans le profil maître.</p>
+              <p className="text-sm text-gray-600 dark:text-[var(--pc-muted)]">Aucun doublon détecté dans le profil maître.</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -151,14 +151,14 @@ function DuplicateGroupCard({ group, onMerge, onDismiss, onRemoveEntry }: Duplic
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+    <div className="border border-gray-200 dark:border-[var(--pc-border)] rounded-xl overflow-hidden">
+      <div className="px-4 py-3 bg-gray-50 dark:bg-[var(--pc-bg)] border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-gray-400" />
+          <Users className="w-4 h-4 text-gray-400 dark:text-[var(--pc-muted)]" />
           <div>
-            <p className="text-sm font-semibold text-gray-900">{group.entries[0].title}</p>
-            <p className="text-xs text-gray-500">
-              <span className="inline-block px-1.5 py-0.5 mr-1.5 rounded bg-gray-200/70 text-gray-600 font-medium">{config.sectionLabel}</span>
+            <p className="text-sm font-semibold text-gray-900 dark:text-[var(--pc-text)]">{group.entries[0].title}</p>
+            <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">
+              <span className="inline-block px-1.5 py-0.5 mr-1.5 rounded bg-gray-200/70 text-gray-600 dark:text-[var(--pc-muted)] font-medium">{config.sectionLabel}</span>
               {group.entries[0].subtitle ? `${group.entries[0].subtitle} · ` : ''}{group.entries.length} {config.noun} similaires
             </p>
           </div>
@@ -174,14 +174,14 @@ function DuplicateGroupCard({ group, onMerge, onDismiss, onRemoveEntry }: Duplic
         {group.entries.map((entry, index) => (
           <div key={entry.id}>
             <div className="flex items-center justify-between mb-1.5">
-              <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              <h4 className="text-[11px] font-semibold text-gray-500 dark:text-[var(--pc-muted)] uppercase tracking-wide">
                 {index === 0 ? 'Entrée conservée (référence)' : `Doublon ${index}`}
               </h4>
               <button
                 type="button"
                 onClick={() => handleRemoveEntry(entry.id)}
                 disabled={!!busy}
-                className="text-[11px] text-gray-400 hover:text-red-500 hover:underline disabled:opacity-50"
+                className="text-[11px] text-gray-400 dark:text-[var(--pc-muted)] hover:text-red-500 hover:underline disabled:opacity-50"
               >
                 Retirer (pas un doublon)
               </button>
@@ -192,7 +192,7 @@ function DuplicateGroupCard({ group, onMerge, onDismiss, onRemoveEntry }: Duplic
       </div>
 
       <div className="px-4 pb-3 flex flex-wrap items-center gap-1.5">
-        <span className="text-[11px] text-gray-400 mr-1">Critères correspondants :</span>
+        <span className="text-[11px] text-gray-400 dark:text-[var(--pc-muted)] mr-1">Critères correspondants :</span>
         {titleDriven ? (
           <>
             <CriterionTag label="Intitulé" ok={criteria.title} />
@@ -209,11 +209,11 @@ function DuplicateGroupCard({ group, onMerge, onDismiss, onRemoveEntry }: Duplic
 
       <div className="p-4 border-t border-gray-100 bg-gray-50/60 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Version consolidée (éditable)</p>
+          <p className="text-[11px] font-semibold text-gray-500 dark:text-[var(--pc-muted)] uppercase tracking-wide">Version consolidée (éditable)</p>
           <button
             type="button"
             onClick={() => setProposal(buildGroupProposal(group.entries))}
-            className="text-[11px] text-blue-600 hover:underline"
+            className="text-[11px] text-lagon-600 hover:underline"
           >
             Réinitialiser la proposition
           </button>

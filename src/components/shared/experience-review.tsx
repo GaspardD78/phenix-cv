@@ -11,7 +11,7 @@ import type { ConsolidatedProposal, ExperienceSnapshot, MatchClassification } fr
 export const CLASSIFICATION_BADGE: Record<MatchClassification, { label: string; className: string; Icon: typeof CheckCircle2 }> = {
   confident: { label: 'Correspondance probable', className: 'bg-green-50 text-green-700 border-green-200', Icon: CheckCircle2 },
   ambiguous: { label: 'À confirmer', className: 'bg-amber-50 text-amber-700 border-amber-200', Icon: ShieldQuestion },
-  none: { label: 'Aucune correspondance nette', className: 'bg-gray-100 text-gray-600 border-gray-200', Icon: HelpCircle },
+  none: { label: 'Aucune correspondance nette', className: 'bg-gray-100 text-gray-600 dark:text-[var(--pc-muted)] border-gray-200 dark:border-[var(--pc-border)]', Icon: HelpCircle },
 };
 
 export function ExperiencePreview({ snapshot }: { snapshot: ExperienceSnapshot }) {
@@ -21,11 +21,11 @@ export function ExperiencePreview({ snapshot }: { snapshot: ExperienceSnapshot }
     : `${snapshot.startDate ?? '?'} — ${snapshot.isCurrent ? "aujourd'hui" : (snapshot.endDate ?? '?')}`;
   const subLine = [snapshot.subtitle, hasDates ? datesText : null].filter(Boolean).join(' · ');
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-3 text-sm h-full">
-      <p className="font-semibold text-gray-900">{snapshot.title}</p>
-      {subLine && <p className="text-xs text-gray-500 mt-0.5">{subLine}</p>}
+    <div className="rounded-lg border border-gray-200 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] p-3 text-sm h-full">
+      <p className="font-semibold text-gray-900 dark:text-[var(--pc-text)]">{snapshot.title}</p>
+      {subLine && <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-0.5">{subLine}</p>}
       {snapshot.description && (
-        <p className="text-xs text-gray-600 mt-2 whitespace-pre-line line-clamp-6">{snapshot.description}</p>
+        <p className="text-xs text-gray-600 dark:text-[var(--pc-muted)] mt-2 whitespace-pre-line line-clamp-6">{snapshot.description}</p>
       )}
     </div>
   );
@@ -34,7 +34,7 @@ export function ExperiencePreview({ snapshot }: { snapshot: ExperienceSnapshot }
 export function CriterionTag({ label, ok }: { label: string; ok: boolean }) {
   return (
     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[11px] ${
-      ok ? 'border-green-200 bg-green-50 text-green-700' : 'border-gray-200 bg-gray-50 text-gray-400'
+      ok ? 'border-green-200 bg-green-50 text-green-700' : 'border-gray-200 dark:border-[var(--pc-border)] bg-gray-50 dark:bg-[var(--pc-bg)] text-gray-400 dark:text-[var(--pc-muted)]'
     }`}>
       {label}
     </span>
@@ -69,13 +69,13 @@ export function ProposalForm({
           value={proposal.title}
           onChange={e => setField('title', e.target.value)}
           placeholder={titlePlaceholder}
-          className="w-full text-sm rounded-md border border-gray-300 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full text-sm rounded-md border border-gray-300 dark:border-[var(--pc-border)] px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-lagon-500"
         />
         <input
           value={proposal.subtitle ?? ''}
           onChange={e => setField('subtitle', e.target.value)}
           placeholder={subtitlePlaceholder}
-          className="w-full text-sm rounded-md border border-gray-300 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full text-sm rounded-md border border-gray-300 dark:border-[var(--pc-border)] px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-lagon-500"
         />
         {showDates && (
           <>
@@ -83,20 +83,20 @@ export function ProposalForm({
               value={proposal.startDate ?? ''}
               onChange={e => setField('startDate', e.target.value)}
               placeholder="Début (YYYY-MM)"
-              className="w-full text-sm rounded-md border border-gray-300 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full text-sm rounded-md border border-gray-300 dark:border-[var(--pc-border)] px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-lagon-500"
             />
             <input
               value={proposal.endDate ?? ''}
               onChange={e => setField('endDate', e.target.value)}
               placeholder="Fin (YYYY-MM)"
               disabled={proposal.isCurrent}
-              className="w-full text-sm rounded-md border border-gray-300 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400"
+              className="w-full text-sm rounded-md border border-gray-300 dark:border-[var(--pc-border)] px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-lagon-500 disabled:bg-gray-100 disabled:text-gray-400"
             />
           </>
         )}
       </div>
       {showDates && (
-        <label className="flex items-center gap-2 text-xs text-gray-600">
+        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-[var(--pc-muted)]">
           <input type="checkbox" checked={proposal.isCurrent} onChange={e => setField('isCurrent', e.target.checked)} />
           En cours
         </label>
@@ -106,7 +106,7 @@ export function ProposalForm({
         onChange={e => setField('description', e.target.value)}
         rows={5}
         placeholder="Description consolidée"
-        className="w-full text-sm rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y"
+        className="w-full text-sm rounded-md border border-gray-300 dark:border-[var(--pc-border)] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-lagon-500 resize-y"
       />
     </>
   );

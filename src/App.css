@@ -7,27 +7,100 @@
 
 @plugin "tailwindcss-animate";
 
+/* Palette Lagon pour les classes Tailwind (lagon-50 … lagon-950) : mêmes valeurs que src/theme/lagon.ts. */
+@theme {
+  --color-lagon-50: #EEF7F6;
+  --color-lagon-100: #D5EDEB;
+  --color-lagon-200: #AEDCD9;
+  --color-lagon-300: #7EC7C2;
+  --color-lagon-400: #3FB8B0;
+  --color-lagon-500: #17807F;
+  --color-lagon-600: #0F6E6E;
+  --color-lagon-700: #0B5A5A;
+  --color-lagon-800: #0F3D3E;
+  --color-lagon-900: #0A2A2B;
+  --color-lagon-950: #0E1A1B;
+  --color-coral: #F2994A;
+  --color-coral-text: #B5581A;
+}
+
+
 /* ── Phénix CV Design System — Dark Premium ──────────────────────────────── */
 
 /* Fonts */
+/* ── Thème Lagon : jetons de couleur (source : src/theme/lagon.ts) ─────────── */
 :root {
-  --font-display: 'Space Grotesk Variable', 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-body:    'DM Sans Variable', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-
-  /* Indigo / Slate palette (default) */
-  --pc-bg:            #09090e;
-  --pc-surface:       #111116;
-  --pc-card:          #18181f;
-  --pc-border:        #25252f;
-  --pc-border-active: #3d3d52;
-  --pc-hover:         rgba(255,255,255,.04);
-  --pc-accent:        #6366f1;
-  --pc-accent-hover:  #818cf8;
-  --pc-accent-subtle: rgba(99,102,241,.12);
-  --pc-text:          #ededf0;
-  --pc-muted:         #71717a;
-  --pc-radius:        10px;
+  --pc-bg: #F5F8F8;
+  --pc-surface: #EAF3F2;
+  --pc-card: #FFFFFF;
+  --pc-border: #DCEBEA;
+  --pc-border-active: #9CC4C1;
+  --pc-hover: rgba(15,110,110,0.06);
+  --pc-accent: #0F6E6E;
+  --pc-accent-hover: #0B5A5A;
+  --pc-accent-subtle: rgba(15,110,110,0.10);
+  --pc-on-accent: #FFFFFF;
+  --pc-text: #1F2A30;
+  --pc-muted: #55656B;
+  --pc-sidebar: #0F3D3E;
+  --pc-sidebar-text: #E6EFEF;
+  --pc-sidebar-muted: #A9C4C2;
+  --pc-coral: #F2994A;
+  --pc-coral-text: #B5581A;
+  --pc-success: #1E7B4F;
+  --pc-warning: #8A5A00;
+  --pc-danger: #B42318;
 }
+
+/* Mode sombre : même jeu de jetons, valeurs sombres. */
+.dark {
+  --background: var(--pc-bg);
+  --foreground: var(--pc-text);
+  --card: var(--pc-card);
+  --card-foreground: var(--pc-text);
+  --popover: var(--pc-surface);
+  --popover-foreground: var(--pc-text);
+  --primary: var(--pc-accent);
+  --primary-foreground: var(--pc-on-accent);
+  --secondary: var(--pc-surface);
+  --secondary-foreground: var(--pc-text);
+  --muted: var(--pc-surface);
+  --muted-foreground: var(--pc-muted);
+  --accent: var(--pc-accent);
+  --accent-foreground: var(--pc-on-accent);
+  --destructive: var(--pc-danger);
+  --border: var(--pc-border);
+  --input: var(--pc-card);
+  --ring: var(--pc-accent);
+  --sidebar: var(--pc-surface);
+  --sidebar-foreground: var(--pc-text);
+  --sidebar-primary: var(--pc-accent);
+  --sidebar-primary-foreground: var(--pc-on-accent);
+  --sidebar-accent: var(--pc-accent-subtle);
+  --sidebar-accent-foreground: var(--pc-accent);
+  --sidebar-border: var(--pc-border);
+  --pc-bg: #0E1A1B;
+  --pc-surface: #112123;
+  --pc-card: #142526;
+  --pc-border: #1F3B3C;
+  --pc-border-active: #2E5657;
+  --pc-hover: rgba(63,184,176,0.08);
+  --pc-accent: #3FB8B0;
+  --pc-accent-hover: #63CBC4;
+  --pc-accent-subtle: rgba(63,184,176,0.16);
+  --pc-on-accent: #0E1A1B;
+  --pc-text: #E6EFEF;
+  --pc-muted: #9AB6B4;
+  --pc-sidebar: #0A1415;
+  --pc-sidebar-text: #E6EFEF;
+  --pc-sidebar-muted: #8FB0AE;
+  --pc-coral: #F2994A;
+  --pc-coral-text: #F2994A;
+  --pc-success: #5BD19A;
+  --pc-warning: #F2C46B;
+  --pc-danger: #FF8A80;
+}
+
 
 /* ── Utilities — Mobile & Hover Optimization ──────────────────────────────── */
 
@@ -91,7 +164,7 @@
 
 @media (hover: hover) {
   .pc-hoverable-danger:hover {
-    background-color: rgba(248, 113, 113, 0.1) !important;
+    background-color: color-mix(in srgb, var(--pc-danger) 10%, transparent) !important;
   }
 }
 
@@ -151,21 +224,21 @@
   --popover: var(--pc-surface);
   --popover-foreground: var(--pc-text);
   --primary: var(--pc-accent);
-  --primary-foreground: #fff;
+  --primary-foreground: var(--pc-on-accent);
   --secondary: var(--pc-surface);
   --secondary-foreground: var(--pc-text);
   --muted: var(--pc-surface);
   --muted-foreground: var(--pc-muted);
   --accent: var(--pc-accent);
-  --accent-foreground: #fff;
-  --destructive: #f87171;
+  --accent-foreground: var(--pc-on-accent);
+  --destructive: var(--pc-danger);
   --border: var(--pc-border);
   --input: var(--pc-card);
   --ring: var(--pc-accent);
   --sidebar: var(--pc-surface);
   --sidebar-foreground: var(--pc-text);
   --sidebar-primary: var(--pc-accent);
-  --sidebar-primary-foreground: #fff;
+  --sidebar-primary-foreground: var(--pc-on-accent);
   --sidebar-accent: var(--pc-accent-subtle);
   --sidebar-accent-foreground: var(--pc-accent);
   --sidebar-border: var(--pc-border);
@@ -174,31 +247,6 @@
 
 /* .dark mirrors :root since we're always dark */
 .dark {
-  --background: var(--pc-bg);
-  --foreground: var(--pc-text);
-  --card: var(--pc-card);
-  --card-foreground: var(--pc-text);
-  --popover: var(--pc-surface);
-  --popover-foreground: var(--pc-text);
-  --primary: var(--pc-accent);
-  --primary-foreground: #fff;
-  --secondary: var(--pc-surface);
-  --secondary-foreground: var(--pc-text);
-  --muted: var(--pc-surface);
-  --muted-foreground: var(--pc-muted);
-  --accent: var(--pc-accent);
-  --accent-foreground: #fff;
-  --destructive: #f87171;
-  --border: var(--pc-border);
-  --input: var(--pc-card);
-  --ring: var(--pc-accent);
-  --sidebar: var(--pc-surface);
-  --sidebar-foreground: var(--pc-text);
-  --sidebar-primary: var(--pc-accent);
-  --sidebar-primary-foreground: #fff;
-  --sidebar-accent: var(--pc-accent-subtle);
-  --sidebar-accent-foreground: var(--pc-accent);
-  --sidebar-border: var(--pc-border);
 }
 
 /* ── Global base ────────────────────────────────────────────────────────────── */
@@ -298,7 +346,7 @@ body {
   transition: background 0.12s ease;
   border: none;
   background: var(--pc-accent);
-  color: #fff;
+  color: var(--pc-on-accent);
 }
 @media (hover: hover) {
   .pc-btn-primary:hover  { background: var(--pc-accent-hover); }

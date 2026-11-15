@@ -15,8 +15,8 @@ const TABS: Array<{
   activeColor: string;
   activeBg: string;
 }> = [
-  { id: 'blocs',  icon: Layers,   label: 'Blocs',  activeColor: 'text-blue-600',   activeBg: 'bg-blue-50 dark:bg-blue-900/30'   },
-  { id: 'design', icon: Palette,  label: 'Design', activeColor: 'text-purple-600', activeBg: 'bg-purple-50 dark:bg-purple-900/30' },
+  { id: 'blocs',  icon: Layers,   label: 'Blocs',  activeColor: 'text-lagon-600',   activeBg: 'bg-lagon-50 dark:bg-lagon-900/30'   },
+  { id: 'design', icon: Palette,  label: 'Design', activeColor: 'text-lagon-600', activeBg: 'bg-lagon-50 dark:bg-lagon-900/30' },
   { id: 'resume', icon: FileText, label: 'Résumé', activeColor: 'text-green-600',  activeBg: 'bg-green-50 dark:bg-green-900/30'  },
   { id: 'ia',     icon: Sparkles, label: 'IA',     activeColor: 'text-amber-500',  activeBg: 'bg-amber-50 dark:bg-amber-900/30'  },
 ];
@@ -34,7 +34,7 @@ export function SidebarNav({ activeTab, onTabChange, layout = 'vertical' }: Side
   const isHorizontal = layout === 'horizontal';
 
   return (
-    <div className={`flex bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex-shrink-0 print:hidden ${
+    <div className={`flex bg-white dark:bg-[var(--pc-card)] border-gray-200 dark:border-[var(--pc-border)] flex-shrink-0 print:hidden ${
       isHorizontal
         ? 'flex-row items-center justify-around py-1 border-t w-full h-[60px]'
         : 'flex-col items-center py-2 gap-0.5 border-r w-14 h-full'
@@ -52,7 +52,7 @@ export function SidebarNav({ activeTab, onTabChange, layout = 'vertical' }: Side
               ${isHorizontal ? 'flex-1 max-w-[80px]' : 'w-full'}
               ${isActive
                 ? `${activeBg} ${activeColor}`
-                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                : 'text-gray-400 dark:text-[var(--pc-muted)] hover:text-gray-600 dark:hover:text-[var(--pc-text)] hover:bg-gray-50 dark:hover:bg-[var(--pc-hover)]/50'
               }
             `}
           >

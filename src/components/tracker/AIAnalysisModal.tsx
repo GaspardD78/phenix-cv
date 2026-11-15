@@ -145,20 +145,20 @@ export function AIAnalysisModal({ application, onClose }: Props) {
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative z-10 w-[680px] max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="relative z-10 w-[680px] max-h-[90vh] bg-white dark:bg-[var(--pc-card)] rounded-xl shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-2">
-            <Sparkles size={18} className="text-indigo-500" />
-            <h2 className="text-base font-bold text-gray-900">Analyse IA — {application.jobTitle}</h2>
+            <Sparkles size={18} className="text-lagon-500" />
+            <h2 className="text-base font-bold text-gray-900 dark:text-[var(--pc-text)]">Analyse IA — {application.jobTitle}</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 dark:text-[var(--pc-muted)] transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {/* Step tabs */}
-        <div className="flex border-b bg-gray-50">
+        <div className="flex border-b bg-gray-50 dark:bg-[var(--pc-bg)]">
           <StepTab
             number={1}
             label="Générer le prompt"
@@ -178,7 +178,7 @@ export function AIAnalysisModal({ application, onClose }: Props) {
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {step === 'generate' && (
             <>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-[var(--pc-muted)]">
                 Ce texte contient votre CV et le texte de l'offre.
                 Copiez-le et collez-le dans l'IA de votre choix (Claude, ChatGPT, Gemini…).
               </p>
@@ -194,7 +194,7 @@ export function AIAnalysisModal({ application, onClose }: Props) {
               )}
 
               {!prompt && (
-                <p className="text-xs text-gray-400 italic">Chargement du prompt…</p>
+                <p className="text-xs text-gray-400 dark:text-[var(--pc-muted)] italic">Chargement du prompt…</p>
               )}
 
               {prompt && (
@@ -203,11 +203,11 @@ export function AIAnalysisModal({ application, onClose }: Props) {
                     readOnly
                     value={prompt}
                     rows={18}
-                    className="w-full text-xs font-mono px-3 py-3 border border-gray-200 rounded-lg bg-gray-50 resize-none focus:outline-none"
+                    className="w-full text-xs font-mono px-3 py-3 border border-gray-200 dark:border-[var(--pc-border)] rounded-lg bg-gray-50 dark:bg-[var(--pc-bg)] resize-none focus:outline-none"
                   />
                   <button
                     onClick={handleCopy}
-                    className="absolute top-2 right-2 flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 transition-colors"
+                    className="absolute top-2 right-2 flex items-center gap-1.5 px-3 py-1.5 bg-lagon-600 text-white text-xs rounded hover:bg-lagon-700 transition-colors"
                   >
                     {copied
                       ? <><Check size={12} /> Copié !</>
@@ -219,7 +219,7 @@ export function AIAnalysisModal({ application, onClose }: Props) {
               <button
                 onClick={() => setStep('paste')}
                 disabled={!prompt}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-lagon-600 text-white text-sm rounded-lg hover:bg-lagon-700 disabled:opacity-40 transition-colors"
               >
                 Suivant — coller la réponse de l'IA
                 <ChevronRight size={16} />
@@ -229,7 +229,7 @@ export function AIAnalysisModal({ application, onClose }: Props) {
 
           {step === 'paste' && (
             <>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-[var(--pc-muted)]">
                 Collez ici la réponse de l'IA. Il doit commencer par <code className="text-xs bg-gray-100 px-1 rounded">{`{`}</code> et contenir les champs <code className="text-xs bg-gray-100 px-1 rounded">score_global</code>, <code className="text-xs bg-gray-100 px-1 rounded">scores</code>, etc.
               </p>
 
@@ -238,7 +238,7 @@ export function AIAnalysisModal({ application, onClose }: Props) {
                 onChange={e => { setJsonInput(e.target.value); setParseError(null); }}
                 placeholder={'{\n  "score_global": 78,\n  "scores": { "competences": 82, ... },\n  ...\n}'}
                 rows={16}
-                className="w-full text-xs font-mono px-3 py-3 border border-gray-200 rounded-lg bg-gray-50 resize-none focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                className="w-full text-xs font-mono px-3 py-3 border border-gray-200 dark:border-[var(--pc-border)] rounded-lg bg-gray-50 dark:bg-[var(--pc-bg)] resize-none focus:outline-none focus:ring-1 focus:ring-lagon-400"
               />
 
               {parseError && (
@@ -251,14 +251,14 @@ export function AIAnalysisModal({ application, onClose }: Props) {
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep('generate')}
-                  className="px-4 py-2.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2.5 text-sm text-gray-600 dark:text-[var(--pc-muted)] border border-gray-200 dark:border-[var(--pc-border)] rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Retour
                 </button>
                 <button
                   onClick={handleImport}
                   disabled={!jsonInput.trim() || isSaving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-lagon-600 text-white text-sm rounded-lg hover:bg-lagon-700 disabled:opacity-40 transition-colors"
                 >
                   {isSaving
                     ? <><Loader2 size={14} className="animate-spin" /> Enregistrement…</>
@@ -290,12 +290,12 @@ function StepTab({
       onClick={onClick}
       className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors ${
         active
-          ? 'text-indigo-700 border-b-2 border-indigo-600 bg-white -mb-px'
-          : 'text-gray-500 hover:text-gray-700'
+          ? 'text-lagon-700 border-b-2 border-lagon-600 bg-white dark:bg-[var(--pc-card)] -mb-px'
+          : 'text-gray-500 dark:text-[var(--pc-muted)] hover:text-gray-700'
       }`}
     >
       <span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold ${
-        active ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
+        active ? 'bg-lagon-600 text-white' : 'bg-gray-200 text-gray-500 dark:text-[var(--pc-muted)]'
       }`}>
         {number}
       </span>

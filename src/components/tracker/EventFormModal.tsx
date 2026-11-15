@@ -113,22 +113,22 @@ export function EventFormModal({ isOpen, onClose, applicationId, applicationCont
     }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto max-w-md p-6 z-50 max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto flex flex-col">
+        <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-[var(--pc-card)] rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto max-w-md p-6 z-50 max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto flex flex-col">
           <div className="flex justify-between items-center mb-4 border-b pb-2">
             <Dialog.Title className="text-lg font-bold">Ajouter un événement</Dialog.Title>
-            <Dialog.Close className="text-gray-500 hover:bg-gray-100 p-1 rounded-full">
+            <Dialog.Close className="text-gray-500 dark:text-[var(--pc-muted)] hover:bg-gray-100 p-1 rounded-full">
               <X size={20} />
             </Dialog.Close>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type d'événement *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Type d'événement *</label>
               <select
                 required
                 value={eventType}
                 onChange={(e) => handleTypeChange(e.target.value as EventType)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
               >
                 <option value="note">Note libre</option>
                 <option value="email_sent">Email envoyé</option>
@@ -142,23 +142,23 @@ export function EventFormModal({ isOpen, onClose, applicationId, applicationCont
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date et heure *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Date et heure *</label>
               <input
                 type="datetime-local"
                 required
                 value={eventDate}
                 onChange={(e) => setEventDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
               />
             </div>
 
             {isCalendarWorthy(eventType) && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Durée</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Durée</label>
                 <select
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 >
                   <option value={15}>15 minutes</option>
                   <option value={30}>30 minutes</option>
@@ -171,36 +171,36 @@ export function EventFormModal({ isOpen, onClose, applicationId, applicationCont
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Titre *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Titre *</label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 placeholder={getDefaultTitle(eventType)}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full h-24 border border-gray-300 rounded-md px-3 py-2"
+                className="w-full h-24 border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 placeholder="Détails supplémentaires..."
               />
             </div>
 
             {isCalendarWorthy(eventType) && (
-              <label className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors">
+              <label className="flex items-center gap-3 p-3 bg-lagon-50 rounded-lg border border-lagon-100 cursor-pointer hover:bg-lagon-100 transition-colors">
                 <input
                   type="checkbox"
                   checked={addToCalendar}
                   onChange={(e) => setAddToCalendar(e.target.checked)}
-                  className="w-4 h-4 accent-blue-600"
+                  className="w-4 h-4 accent-lagon-600"
                 />
-                <span className="flex items-center gap-2 text-sm font-medium text-blue-700">
+                <span className="flex items-center gap-2 text-sm font-medium text-lagon-700">
                   <CalendarPlus size={16} />
                   Créer dans Google Calendar
                 </span>
@@ -208,12 +208,12 @@ export function EventFormModal({ isOpen, onClose, applicationId, applicationCont
             )}
 
             <div className="mt-auto pt-4 flex justify-end gap-3 border-t">
-              <Dialog.Close className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
+              <Dialog.Close className="px-4 py-2 text-gray-700 dark:text-[var(--pc-text)] bg-gray-100 hover:bg-gray-200 rounded-md">
                 Annuler
               </Dialog.Close>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md"
+                className="px-4 py-2 bg-lagon-600 text-white hover:bg-lagon-700 rounded-md"
               >
                 Ajouter
               </button>

@@ -135,7 +135,7 @@ export function BlockList({ cvId, blocks }: BlockListProps) {
 
   if (blocks.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 p-4">
+      <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 dark:text-[var(--pc-muted)] p-4">
         <p>Ce CV est vide.</p>
         <p className="mt-2">Cliquez sur "Ajouter une entrée" pour commencer à construire votre CV.</p>
       </div>

@@ -59,15 +59,15 @@ export function OverflowConfirmDialog({ overflow, onConfirm, onCancel }: Overflo
           </DialogDescription>
         </DialogHeader>
         {!tight && cut && (
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-600 dark:text-[var(--pc-muted)]">
             Première ligne coupée{cut.section ? <> (section « {cut.section} »)</> : null} : « {excerpt(cut.text)} »
           </p>
         )}
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Exporter quand même ?</p>
+        <p className="text-sm font-medium text-gray-800 dark:text-[var(--pc-text)]">Exporter quand même ?</p>
         <DialogFooter className="gap-2 sm:flex-row flex-col mt-auto sm:mt-0">
           <button
             onClick={onCancel}
-            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg active:bg-gray-50 transition-colors min-h-[44px]"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] bg-white dark:bg-[var(--pc-card)] border border-gray-300 dark:border-[var(--pc-border)] rounded-lg active:bg-gray-50 transition-colors min-h-[44px]"
           >
             Annuler
           </button>

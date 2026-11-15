@@ -10,8 +10,8 @@ interface AngleFieldsFormProps {
   categoryHints?: string[];
 }
 
-const fieldClass = 'w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md text-sm';
-const labelClass = 'block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1';
+const fieldClass = 'w-full p-2 border border-gray-300 dark:border-[var(--pc-border-active)] dark:bg-[var(--pc-surface)] dark:text-[var(--pc-text)] rounded-md text-sm';
+const labelClass = 'block text-xs font-medium text-gray-700 dark:text-[var(--pc-muted)] mb-1';
 
 /** Formulaire des champs d'un angle. Un angle choisit et ordonne : aucun fait de CV ici. */
 export function AngleFieldsForm({ value, onChange, categoryHints = [] }: AngleFieldsFormProps) {
@@ -55,7 +55,7 @@ export function AngleFieldsForm({ value, onChange, categoryHints = [] }: AngleFi
           onChange={e => set('skillCategoryOrder', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
         />
         {categoryHints.length > 0 && (
-          <p className="text-xs text-gray-500 mt-1">Catégories existantes : {categoryHints.join(' · ')}</p>
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Catégories existantes : {categoryHints.join(' · ')}</p>
         )}
       </div>
       <div>

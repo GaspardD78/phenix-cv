@@ -20,8 +20,8 @@ interface TargetPanelProps {
   expandSignal?: number;
 }
 
-const inputCls = 'w-full p-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md text-xs focus:ring-2 focus:ring-amber-200 focus:border-amber-400';
-const labelCls = 'block text-[11px] font-semibold text-gray-600 dark:text-gray-300 mb-0.5';
+const inputCls = 'w-full p-1.5 border border-gray-300 dark:border-[var(--pc-border-active)] dark:bg-[var(--pc-surface)] dark:text-[var(--pc-text)] rounded-md text-xs focus:ring-2 focus:ring-amber-200 focus:border-amber-400';
+const labelCls = 'block text-[11px] font-semibold text-gray-600 dark:text-[var(--pc-muted)] mb-0.5';
 
 const TIPS = {
   type: 'Le type de structure adapte le vocabulaire, les priorités et l\'orientation par défaut.',
@@ -106,10 +106,10 @@ export function TargetPanel({ choice, onChange, detected, effectiveType, effecti
       </button>
 
       {open && (
-        <div className="space-y-3 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-3">
+        <div className="space-y-3 rounded-md border border-gray-200 dark:border-[var(--pc-border)] bg-gray-50 dark:bg-[var(--pc-card)]/60 p-3">
           {needsBrief && (
             <fieldset className="space-y-2">
-              <legend className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">Cible</legend>
+              <legend className="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-[var(--pc-muted)] mb-1">Cible</legend>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label htmlFor="brief-company" className={labelCls}>Entreprise</label>
@@ -155,12 +155,12 @@ export function TargetPanel({ choice, onChange, detected, effectiveType, effecti
               {TARGET_TITLE_RULES.map(r => <option key={r} value={r}>{TITLE_RULE_LABELS[r]}</option>)}
             </select>
             {choice.titleRule === 'free' && (
-              <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Le titre proposé par l'IA est conservé tel quel, même avec un angle actif.</p>
+              <p className="mt-1 text-[11px] text-gray-500 dark:text-[var(--pc-muted)]">Le titre proposé par l'IA est conservé tel quel, même avec un angle actif.</p>
             )}
           </div>
 
           <fieldset className="space-y-2">
-            <legend className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">Premier lecteur</legend>
+            <legend className="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-[var(--pc-muted)] mb-1">Premier lecteur</legend>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label htmlFor="reader-name" className={labelCls}>Premier lecteur : nom</label>
@@ -185,14 +185,14 @@ export function TargetPanel({ choice, onChange, detected, effectiveType, effecti
                 onChange={e => set({ readerNote: e.target.value })}
               />
             </div>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-[11px] text-gray-500 dark:text-[var(--pc-muted)]">
               Les noms restent sur cet appareil : ni dans le prompt, ni dans l'export, ni dans la sauvegarde Google Drive. Le prompt reçoit la fonction et la note.
             </p>
           </fieldset>
 
           {effectiveType === 'public' && (
             <fieldset className="grid grid-cols-2 gap-2">
-              <legend className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">Fonction publique (repris du texte, jamais déduit)</legend>
+              <legend className="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-[var(--pc-muted)] mb-1">Fonction publique (repris du texte, jamais déduit)</legend>
               <div>
                 <label htmlFor="public-categorie" className={labelCls}>Catégorie visée</label>
                 <select

@@ -62,21 +62,21 @@ function StepBar({ current }: { current: WizardStep }) {
             <div className="flex flex-col items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${
                 done
-                  ? 'bg-blue-600 border-blue-600 text-white'
+                  ? 'bg-lagon-600 border-lagon-600 text-white'
                   : active
-                  ? 'bg-white border-blue-600 text-blue-600'
-                  : 'bg-white border-gray-300 text-gray-400'
+                  ? 'bg-white dark:bg-[var(--pc-card)] border-lagon-600 text-lagon-600'
+                  : 'bg-white dark:bg-[var(--pc-card)] border-gray-300 dark:border-[var(--pc-border)] text-gray-400 dark:text-[var(--pc-muted)]'
               }`}>
                 {done ? <Check className="w-4 h-4" /> : i + 1}
               </div>
               <span className={`mt-1 text-xs font-medium whitespace-nowrap ${
-                active ? 'text-blue-600' : done ? 'text-blue-500' : 'text-gray-400'
+                active ? 'text-lagon-600' : done ? 'text-lagon-500' : 'text-gray-400 dark:text-[var(--pc-muted)]'
               }`}>
                 {step.label}
               </span>
             </div>
             {i < WIZARD_STEPS.length - 1 && (
-              <div className={`h-0.5 flex-1 mx-2 mb-4 transition-colors ${done ? 'bg-blue-600' : 'bg-gray-200'}`} />
+              <div className={`h-0.5 flex-1 mx-2 mb-4 transition-colors ${done ? 'bg-lagon-600' : 'bg-gray-200'}`} />
             )}
           </div>
         );
@@ -126,13 +126,13 @@ function Step1Context({ onNext }: { onNext: (jobPosting: string) => void }) {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 mb-1">Contexte (optionnel)</h2>
-      <p className="text-sm text-gray-500 mb-5">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Contexte (optionnel)</h2>
+      <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
         Si vous avez une offre d'emploi en tête, collez-la ici. Le prompt généré orientera les questions du coach vers ce poste. Laissez vide pour un audit complet du profil (nettoyage, cohérence, consolidation et enrichissement de toutes les sections).
       </p>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1.5">
           Annonce ciblée (optionnel)
         </label>
         <textarea
@@ -140,7 +140,7 @@ function Step1Context({ onNext }: { onNext: (jobPosting: string) => void }) {
           onChange={e => setJobPosting(e.target.value)}
           placeholder="Collez ici le texte de l'offre d'emploi..."
           rows={8}
-          className="w-full rounded-lg border border-gray-300 bg-white text-sm text-gray-800 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+          className="w-full rounded-lg border border-gray-300 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] text-sm text-gray-800 dark:text-[var(--pc-text)] p-3 focus:outline-none focus:ring-2 focus:ring-lagon-500 resize-y"
         />
       </div>
 
@@ -182,14 +182,14 @@ function Step2Prompt({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 mb-1">Prompt à copier dans un LLM</h2>
-      <p className="text-sm text-gray-500 mb-5">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Prompt à copier dans un LLM</h2>
+      <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
         Copiez ce prompt et collez-le dans Claude, ChatGPT ou tout autre LLM. Répondez aux questions posées une par une, puis collez le JSON final à l'étape suivante.
       </p>
 
-      <div className="rounded-xl border border-gray-200 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-          <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Prompt Coach CV</span>
+      <div className="rounded-xl border border-gray-200 dark:border-[var(--pc-border)] overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-[var(--pc-bg)] border-b border-gray-200 dark:border-[var(--pc-border)]">
+          <span className="text-xs font-semibold text-gray-600 dark:text-[var(--pc-muted)] uppercase tracking-wide">Prompt Coach CV</span>
           <Button variant="ghost" size="sm" onClick={handleCopy} className="h-7 px-2 text-xs gap-1.5">
             <Copy className="w-3.5 h-3.5" />
             {copied ? 'Copié !' : 'Copier'}
@@ -199,7 +199,7 @@ function Step2Prompt({
           readOnly
           value={prompt}
           rows={16}
-          className="w-full p-4 text-xs text-gray-700 bg-white font-mono resize-none focus:outline-none leading-relaxed"
+          className="w-full p-4 text-xs text-gray-700 dark:text-[var(--pc-text)] bg-white dark:bg-[var(--pc-card)] font-mono resize-none focus:outline-none leading-relaxed"
         />
       </div>
 
@@ -284,8 +284,8 @@ function Step3Review({
   if (phase === 'paste') {
     return (
       <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-1">Coller le JSON retourné par le LLM</h2>
-        <p className="text-sm text-gray-500 mb-5">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Coller le JSON retourné par le LLM</h2>
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
           Une fois la conversation terminée avec le LLM, collez ici le JSON qu'il a produit.
         </p>
 
@@ -294,7 +294,7 @@ function Step3Review({
           onChange={e => setJsonInput(e.target.value)}
           placeholder={'{ "profile": { ... }, "entries": [ ... ] }'}
           rows={12}
-          className="w-full rounded-lg border border-gray-300 bg-white text-sm font-mono text-gray-800 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+          className="w-full rounded-lg border border-gray-300 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] text-sm font-mono text-gray-800 dark:text-[var(--pc-text)] p-3 focus:outline-none focus:ring-2 focus:ring-lagon-500 resize-y"
         />
 
         {error && (
@@ -321,8 +321,8 @@ function Step3Review({
   // phase === 'preview'
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-800 mb-1">Prévisualiser et appliquer</h2>
-      <p className="text-sm text-gray-500 mb-5">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Prévisualiser et appliquer</h2>
+      <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-5">
         {profileChanges > 0 && `${profileChanges} champ(s) de profil · `}
         {selectedCount} entrée(s) sélectionnée(s) sur {selectableEntries.length}
       </p>
@@ -330,26 +330,26 @@ function Step3Review({
       {/* Profile diffs */}
       {profileDiffs.length > 0 && (
         <section className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-[var(--pc-text)] uppercase tracking-wide mb-3">
             Informations personnelles
           </h3>
-          <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+          <div className="rounded-xl border border-gray-200 dark:border-[var(--pc-border)] overflow-hidden divide-y divide-gray-100">
             {profileDiffs.map(diff => (
-              <div key={diff.key} className="flex items-start gap-3 px-4 py-3 bg-white">
+              <div key={diff.key} className="flex items-start gap-3 px-4 py-3 bg-white dark:bg-[var(--pc-card)]">
                 <input
                   type="checkbox"
                   id={`enrich-diff-${diff.key}`}
                   checked={diff.useImported}
                   onChange={() => toggleProfileField(diff.key)}
-                  className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 flex-shrink-0"
+                  className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-[var(--pc-border)] text-lagon-600 flex-shrink-0"
                 />
                 <label htmlFor={`enrich-diff-${diff.key}`} className="flex-1 cursor-pointer min-w-0">
-                  <span className="block text-xs font-medium text-gray-500 mb-0.5">{diff.label}</span>
+                  <span className="block text-xs font-medium text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">{diff.label}</span>
                   <div className="flex flex-col gap-1">
                     {diff.existing && (
-                      <span className="text-xs text-gray-400 line-through truncate">{diff.existing}</span>
+                      <span className="text-xs text-gray-400 dark:text-[var(--pc-muted)] line-through truncate">{diff.existing}</span>
                     )}
-                    <span className={`text-sm ${diff.useImported ? 'text-green-700 font-medium' : 'text-gray-600'}`}>
+                    <span className={`text-sm ${diff.useImported ? 'text-green-700 font-medium' : 'text-gray-600 dark:text-[var(--pc-muted)]'}`}>
                       {diff.imported}
                     </span>
                   </div>
@@ -367,28 +367,28 @@ function Step3Review({
         return (
           <section key={type} className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-[var(--pc-text)] uppercase tracking-wide">
                 {ENTRY_TYPE_LABELS[type] ?? type} ({items.length})
               </h3>
               <div className="flex gap-2">
                 {!allSelected && (
-                  <button onClick={() => toggleAllEntries(type, true)} className="text-xs text-blue-600 hover:underline">
+                  <button onClick={() => toggleAllEntries(type, true)} className="text-xs text-lagon-600 hover:underline">
                     Tout sélectionner
                   </button>
                 )}
                 {!noneSelected && (
-                  <button onClick={() => toggleAllEntries(type, false)} className="text-xs text-gray-500 hover:underline">
+                  <button onClick={() => toggleAllEntries(type, false)} className="text-xs text-gray-500 dark:text-[var(--pc-muted)] hover:underline">
                     Tout désélectionner
                   </button>
                 )}
               </div>
             </div>
-            <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+            <div className="rounded-xl border border-gray-200 dark:border-[var(--pc-border)] overflow-hidden divide-y divide-gray-100">
               {items.map(({ entry, idx }) => (
                 <div
                   key={idx}
                   className={`flex items-start gap-3 px-4 py-3 transition-colors ${
-                    entry.selected ? 'bg-white' : 'bg-gray-50 opacity-60'
+                    entry.selected ? 'bg-white dark:bg-[var(--pc-card)]' : 'bg-gray-50 opacity-60'
                   }`}
                 >
                   <input
@@ -396,23 +396,23 @@ function Step3Review({
                     id={`enrich-entry-${idx}`}
                     checked={entry.selected}
                     onChange={() => toggleEntry(idx)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 flex-shrink-0"
+                    className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-[var(--pc-border)] text-lagon-600 flex-shrink-0"
                   />
                   <label htmlFor={`enrich-entry-${idx}`} className="flex-1 cursor-pointer min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-gray-800 truncate">{entry.data.title}</span>
+                      <span className="text-sm font-medium text-gray-800 dark:text-[var(--pc-text)] truncate">{entry.data.title}</span>
                       {entry.data.subtitle && (
-                        <span className="text-xs text-gray-500 truncate">{entry.data.subtitle}</span>
+                        <span className="text-xs text-gray-500 dark:text-[var(--pc-muted)] truncate">{entry.data.subtitle}</span>
                       )}
                       {entry.possibleDuplicate && (
-                        <span className="text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
+                        <span className="text-xs bg-lagon-50 text-lagon-700 px-1.5 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
                           <Check className="w-3 h-3" />
                           Mise à jour
                         </span>
                       )}
                     </div>
                     {(entry.data.startDate || entry.data.location) && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 dark:text-[var(--pc-muted)]">
                         {[
                           entry.data.startDate,
                           entry.data.endDate
@@ -427,7 +427,7 @@ function Step3Review({
                       </span>
                     )}
                     {entry.data.description && (
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{entry.data.description}</p>
+                      <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-0.5 line-clamp-2">{entry.data.description}</p>
                     )}
                   </label>
                 </div>
@@ -438,7 +438,7 @@ function Step3Review({
       })}
 
       {profileDiffs.length === 0 && selectableEntries.length === 0 && (
-        <div className="text-center py-10 text-gray-400">
+        <div className="text-center py-10 text-gray-400 dark:text-[var(--pc-muted)]">
           <p className="text-sm">Aucune donnée à appliquer.</p>
         </div>
       )}
@@ -468,8 +468,8 @@ function StepDone({ profileCount, entryCount, onClose }: { profileCount: number;
       <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
         <Check className="w-8 h-8 text-green-600" />
       </div>
-      <h2 className="text-xl font-semibold text-gray-800 mb-2">Profil enrichi !</h2>
-      <p className="text-sm text-gray-500 mb-6">
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-2">Profil enrichi !</h2>
+      <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-6">
         {profileCount > 0 && `${profileCount} champ(s) de profil mis à jour · `}
         {entryCount} entrée{entryCount > 1 ? 's' : ''} {entryCount > 1 ? 'traitées' : 'traitée'} (mise à jour ou ajout).
       </p>
@@ -574,16 +574,16 @@ export function AiEnrichModal({ onClose }: AiEnrichModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-[var(--pc-card)] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-blue-600" />
-            <h1 className="text-lg font-semibold text-gray-900">Enrichir avec l'IA</h1>
+            <Sparkles className="w-5 h-5 text-lagon-600" />
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-[var(--pc-text)]">Enrichir avec l'IA</h1>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg text-gray-400 dark:text-[var(--pc-muted)] hover:text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -609,7 +609,7 @@ export function AiEnrichModal({ onClose }: AiEnrichModalProps) {
 
           {step === 'review' && (
             applying ? (
-              <div className="text-center py-10 text-gray-500">
+              <div className="text-center py-10 text-gray-500 dark:text-[var(--pc-muted)]">
                 <p className="text-sm">Application en cours...</p>
               </div>
             ) : (

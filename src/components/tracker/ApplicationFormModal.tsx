@@ -172,46 +172,46 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Entreprise *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Entreprise *</label>
               <input
                 type="text"
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 placeholder="Ex: Acme Corp"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Poste visé *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Poste visé *</label>
               <input
                 type="text"
                 required
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 placeholder="Ex. : Assistante commerciale"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL de l'offre</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">URL de l'offre</label>
               <input
                 type="url"
                 value={jobUrl}
                 onChange={(e) => setJobUrl(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 placeholder="https://..."
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">CV utilisé</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">CV utilisé</label>
               <select
                 value={cvId || ''}
                 onChange={(e) => setCvId(e.target.value || null)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
               >
                 <option value="">-- Aucun CV sélectionné --</option>
                 {cvs.map(cv => (
@@ -222,11 +222,11 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Statut</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 >
                   <option value="draft">Brouillon</option>
                   <option value="applied">Postulé</option>
@@ -243,11 +243,11 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Priorité</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Priorité</label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(Number(e.target.value) as 1 | 2 | 3)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 >
                   <option value={1}>Haute</option>
                   <option value={2}>Moyenne</option>
@@ -258,11 +258,11 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Source</label>
                 <select
                   value={source}
                   onChange={(e) => setSource(e.target.value as ApplicationSource)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 >
                   <option value="job_board">Job Board</option>
                   <option value="spontaneous">Candidature spontanée</option>
@@ -274,12 +274,12 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Détail source</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Détail source</label>
                 <input
                   type="text"
                   value={sourceDetail}
                   onChange={(e) => setSourceDetail(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                   placeholder="Ex: Indeed, Recommandation"
                 />
               </div>
@@ -287,22 +287,22 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Localisation</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Localisation</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                   placeholder="Ex: Paris"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Politique Télétravail</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Politique Télétravail</label>
                 <select
                   value={remotePolicy}
                   onChange={(e) => setRemotePolicy(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                 >
                   <option value="">Non spécifié</option>
                   <option value="full_remote">100% Télétravail</option>
@@ -314,61 +314,61 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Salaire Min (€)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Salaire Min (€)</label>
                 <input
                   type="number"
                   value={salaryMin}
                   onChange={(e) => setSalaryMin(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                   placeholder="Ex: 40000"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Salaire Max (€)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Salaire Max (€)</label>
                 <input
                   type="number"
                   value={salaryMax}
                   onChange={(e) => setSalaryMax(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                   placeholder="Ex: 50000"
                 />
               </div>
             </div>
 
             <div className="space-y-4 pt-4 border-t">
-              <h4 className="font-medium text-sm text-gray-900">Contact</h4>
+              <h4 className="font-medium text-sm text-gray-900 dark:text-[var(--pc-text)]">Contact</h4>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom du contact</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Nom du contact</label>
                 <input
                   type="text"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                   placeholder="Nom du recruteur..."
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Email</label>
                   <input
                     type="email"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                     placeholder="email@..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Téléphone</label>
                   <input
                     type="tel"
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                     placeholder="06..."
                   />
                 </div>
@@ -377,25 +377,25 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
 
             {status === 'rejected' && (
               <div className="space-y-4 pt-4 border-t">
-                <h4 className="font-medium text-sm text-gray-900">Détails du refus</h4>
+                <h4 className="font-medium text-sm text-gray-900 dark:text-[var(--pc-text)]">Détails du refus</h4>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Raison du refus</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Raison du refus</label>
                   <textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 resize-none"
+                    className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2 h-24 resize-none"
                     placeholder="Ex: Profil ne correspondant pas, poste pourvue..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email du refus</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] mb-1">Email du refus</label>
                   <input
                     type="email"
                     value={rejectionEmail}
                     onChange={(e) => setRejectionEmail(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border border-gray-300 dark:border-[var(--pc-border)] rounded-md px-3 py-2"
                     placeholder="email@exemple.com"
                   />
                 </div>
@@ -403,13 +403,13 @@ export function ApplicationFormModal({ isOpen, onClose, application }: Applicati
             )}
 
             <div className="mt-auto pt-4 flex sm:flex-row flex-col gap-3 border-t p-4 sm:p-6 bg-gray-50/50">
-              <DialogClose className="flex-1 sm:flex-none px-4 py-2 text-gray-700 bg-white border border-gray-300 active:bg-gray-100 rounded-md min-h-[44px] font-medium transition-colors">
+              <DialogClose className="flex-1 sm:flex-none px-4 py-2 text-gray-700 dark:text-[var(--pc-text)] bg-white dark:bg-[var(--pc-card)] border border-gray-300 dark:border-[var(--pc-border)] active:bg-gray-100 rounded-md min-h-[44px] font-medium transition-colors">
                 Annuler
               </DialogClose>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none px-6 py-2 bg-blue-600 text-white active:bg-blue-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] font-medium shadow-sm transition-colors"
+                className="flex-1 sm:flex-none px-6 py-2 bg-lagon-600 text-white active:bg-lagon-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] font-medium shadow-sm transition-colors"
               >
                 {isSubmitting ? 'Enregistrement...' : (application ? 'Modifier' : 'Ajouter')}
               </button>

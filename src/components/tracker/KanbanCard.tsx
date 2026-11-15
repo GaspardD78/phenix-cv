@@ -12,10 +12,10 @@ interface KanbanCardProps {
 const TERMINAL_STATUSES = ['accepted', 'rejected', 'withdrawn', 'ghosted'];
 
 const SOURCE_COLORS: Record<string, string> = {
-  linkedin:    '#818cf8',
+  linkedin:    'var(--pc-accent-hover)',
   job_board:   '#38bdf8',
   network:     '#34d399',
-  recruiter:   '#a78bfa',
+  recruiter:   'var(--pc-accent-hover)',
   spontaneous: '#fbbf24',
   other:       '#6b7280',
 };
@@ -31,7 +31,7 @@ function getUrgencyColor(nextActionDate: string | null): string {
   const diff = Math.floor((target.getTime() - now.getTime()) / 86400000);
   if (diff <= 0) return '#f87171';
   if (diff <= 3) return '#fbbf24';
-  return '#6366f1';
+  return 'var(--pc-accent)';
 }
 
 function ScoreRing({ score }: { score: number }) {

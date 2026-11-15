@@ -184,7 +184,7 @@ export function CVBuilderPage() {
   };
 
   if (!currentCv || !profile) {
-    return <div className="p-8 text-center text-gray-500">Chargement du CV...</div>;
+    return <div className="p-8 text-center text-gray-500 dark:text-[var(--pc-muted)]">Chargement du CV...</div>;
   }
 
   // Mobile : onglets Éditer/Aperçu
@@ -194,21 +194,21 @@ export function CVBuilderPage() {
   const showContentPanel  = !isMobile && activeSidebarTab !== null;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-gray-100 dark:bg-gray-900 print:h-auto print:overflow-visible print:bg-white print:block">
+    <div className="flex flex-col h-full overflow-hidden bg-gray-100 dark:bg-[var(--pc-bg)] print:h-auto print:overflow-visible print:bg-white print:block">
       {/* Top Bar */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 py-2 sm:py-3 flex items-center gap-2 shadow-sm print:hidden shrink-0">
+      <div className="bg-white dark:bg-[var(--pc-card)] border-b border-gray-200 dark:border-[var(--pc-border)] px-2 sm:px-4 py-2 sm:py-3 flex items-center gap-2 shadow-sm print:hidden shrink-0">
         <button
           onClick={() => navigate('/cv')}
-          className="text-gray-500 hover:text-gray-900 transition flex items-center shrink-0 min-h-[44px] px-1"
+          className="text-gray-500 dark:text-[var(--pc-muted)] hover:text-gray-900 transition flex items-center shrink-0 min-h-[44px] px-1"
         >
           <ArrowLeft className="w-5 h-5 mr-1" />
           <span className="hidden sm:inline">Retour</span>
         </button>
-        <h1 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate min-w-0 flex-1">
+        <h1 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-[var(--pc-text)] truncate min-w-0 flex-1">
           CV: {currentCv.name}
         </h1>
         {saveStatus === 'saving' && (
-          <span className="flex items-center text-sm text-gray-400 shrink-0">
+          <span className="flex items-center text-sm text-gray-400 dark:text-[var(--pc-muted)] shrink-0">
             <Loader2 className="w-4 h-4 mr-1 animate-spin" />
             <span className="hidden sm:inline">Enregistrement...</span>
           </span>
@@ -225,8 +225,8 @@ export function CVBuilderPage() {
             title={currentCv.markdownMode === 1 ? 'Passer au constructeur visuel' : 'Passer à l\'éditeur Markdown'}
             className={`flex items-center px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-sm font-medium transition min-h-[44px] border ${
               currentCv.markdownMode === 1
-                ? 'bg-indigo-100 text-indigo-700 border-indigo-300 hover:bg-indigo-200'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                ? 'bg-lagon-100 text-lagon-700 border-lagon-300 hover:bg-lagon-200'
+                : 'bg-white dark:bg-[var(--pc-card)] text-gray-600 dark:text-[var(--pc-muted)] border-gray-300 dark:border-[var(--pc-border)] hover:bg-gray-50'
             }`}
           >
             <Code2 className="w-4 h-4 sm:mr-1.5" />
@@ -243,7 +243,7 @@ export function CVBuilderPage() {
             <button
               onClick={() => setIsReconciliationOpen(true)}
               title="Synchroniser les expériences adaptées vers le profil maître"
-              className="hidden sm:flex items-center px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-sm font-medium transition min-h-[44px] border bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+              className="hidden sm:flex items-center px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-sm font-medium transition min-h-[44px] border bg-white dark:bg-[var(--pc-card)] text-gray-600 dark:text-[var(--pc-muted)] border-gray-300 dark:border-[var(--pc-border)] hover:bg-gray-50"
             >
               <RefreshCw className="w-4 h-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Synchroniser vers le profil</span>
@@ -255,7 +255,7 @@ export function CVBuilderPage() {
             <button
               onClick={handleExportDocx}
               disabled={isExporting}
-              className="bg-blue-600 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-md font-medium hover:bg-blue-700 transition flex items-center shadow-sm disabled:opacity-50 text-sm min-h-[44px]"
+              className="bg-lagon-600 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-md font-medium hover:bg-lagon-700 transition flex items-center shadow-sm disabled:opacity-50 text-sm min-h-[44px]"
             >
               <FileText className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">{isExporting ? 'Export...' : 'Exporter DOCX'}</span>
@@ -275,7 +275,7 @@ export function CVBuilderPage() {
             <button
               onClick={() => setMobileExportOpen(o => !o)}
               disabled={isExporting}
-              className="flex items-center justify-center w-11 h-11 rounded-md border border-gray-300 bg-white text-gray-600 disabled:opacity-50"
+              className="flex items-center justify-center w-11 h-11 rounded-md border border-gray-300 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] text-gray-600 dark:text-[var(--pc-muted)] disabled:opacity-50"
               title="Options d'export"
               aria-label="Options d'export"
             >
@@ -291,19 +291,19 @@ export function CVBuilderPage() {
                   className="fixed inset-0 z-40"
                   onClick={() => setMobileExportOpen(false)}
                 />
-                <div className="absolute right-0 top-12 z-50 flex flex-col gap-1 bg-white border border-gray-200 rounded-lg shadow-xl p-2 min-w-[160px]">
+                <div className="absolute right-0 top-12 z-50 flex flex-col gap-1 bg-white dark:bg-[var(--pc-card)] border border-gray-200 dark:border-[var(--pc-border)] rounded-lg shadow-xl p-2 min-w-[160px]">
                   <button
                     onClick={() => { setMobileExportOpen(false); handleExportDocx(); }}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 w-full text-left min-h-[44px]"
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] hover:bg-gray-50 active:bg-gray-100 w-full text-left min-h-[44px]"
                   >
-                    <FileText className="w-4 h-4 text-blue-600" />
+                    <FileText className="w-4 h-4 text-lagon-600" />
                     Exporter DOCX
                   </button>
                   <button
                     onClick={() => { setMobileExportOpen(false); handleExportPdf(); }}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 w-full text-left min-h-[44px]"
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 dark:text-[var(--pc-text)] hover:bg-gray-50 active:bg-gray-100 w-full text-left min-h-[44px]"
                   >
-                    <Download className="w-4 h-4 text-gray-800" />
+                    <Download className="w-4 h-4 text-gray-800 dark:text-[var(--pc-text)]" />
                     Exporter PDF
                   </button>
                 </div>
@@ -321,13 +321,13 @@ export function CVBuilderPage() {
       ) : (
         <>
           {/* ── Onglets mobile (Éditer / Aperçu) — masqués sur desktop ── */}
-          <div className="sm:hidden flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 print:hidden shrink-0">
+          <div className="sm:hidden flex border-b border-gray-200 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] print:hidden shrink-0">
             <button
               onClick={() => setActiveTab('edit')}
               className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 ${
                 activeTab === 'edit'
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
+                  ? 'text-lagon-600 border-lagon-600'
+                  : 'text-gray-500 dark:text-[var(--pc-muted)] border-transparent hover:text-gray-700'
               }`}
             >
               Éditer
@@ -336,8 +336,8 @@ export function CVBuilderPage() {
               onClick={() => setActiveTab('preview')}
               className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 ${
                 activeTab === 'preview'
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
+                  ? 'text-lagon-600 border-lagon-600'
+                  : 'text-gray-500 dark:text-[var(--pc-muted)] border-transparent hover:text-gray-700'
               }`}
             >
               Aperçu
@@ -360,7 +360,7 @@ export function CVBuilderPage() {
               <>
                 <div
                   style={{ width: panelWidth }}
-                  className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-hidden print:hidden flex-shrink-0"
+                  className="bg-white dark:bg-[var(--pc-card)] border-r border-gray-200 dark:border-[var(--pc-border)] flex flex-col h-full overflow-hidden print:hidden flex-shrink-0"
                 >
                   <LeftPanel
                     cvId={id!}
@@ -372,14 +372,14 @@ export function CVBuilderPage() {
                 {/* Splitter draggable */}
                 <div
                   onMouseDown={handleSplitterMouseDown}
-                  className="w-1 hover:w-1.5 bg-gray-200 dark:bg-gray-600 hover:bg-blue-400 cursor-col-resize flex-shrink-0 transition-colors print:hidden"
+                  className="w-1 hover:w-1.5 bg-gray-200 dark:bg-gray-600 hover:bg-lagon-400 cursor-col-resize flex-shrink-0 transition-colors print:hidden"
                 />
               </>
             )}
 
             {/* ── Panel de contenu mobile (onglet Éditer) ── */}
             {showMobileEdit && (
-              <div className="w-full bg-white dark:bg-gray-800 flex flex-col h-full overflow-hidden print:hidden">
+              <div className="w-full bg-white dark:bg-[var(--pc-card)] flex flex-col h-full overflow-hidden print:hidden">
                 <div className="flex-1 overflow-hidden">
                   <LeftPanel
                     cvId={id!}
@@ -398,7 +398,7 @@ export function CVBuilderPage() {
 
             {/* ── Preview (toujours visible sur desktop, ou onglet Aperçu mobile) ── */}
             {(!isMobile || showMobilePreview) && (
-              <div className={`flex-1 h-full bg-gray-50 dark:bg-gray-900 ${isMobile ? 'p-0 overflow-hidden' : 'p-8 overflow-auto flex justify-center'} print:p-0 print:bg-white print:overflow-visible print:block print:h-auto`}>
+              <div className={`flex-1 h-full bg-gray-50 dark:bg-[var(--pc-bg)] ${isMobile ? 'p-0 overflow-hidden' : 'p-8 overflow-auto flex justify-center'} print:p-0 print:bg-white print:overflow-visible print:block print:h-auto`}>
                 <div className={`${isMobile ? 'w-full h-full' : ''} print:w-full print:max-w-none print:shadow-none print:m-0 print:border-none print:overflow-visible`}>
                   <RightPanel />
                 </div>

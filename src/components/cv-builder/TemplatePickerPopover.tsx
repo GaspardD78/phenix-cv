@@ -316,11 +316,11 @@ export function TemplatePickerPopover({ currentTemplateId, onSelect }: TemplateP
       <button
         ref={buttonRef}
         onClick={handleToggle}
-        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 px-3 py-2 flex items-center gap-1.5 hover:bg-gray-100 transition-colors min-h-[44px]"
+        className="bg-gray-50 dark:bg-[var(--pc-bg)] border border-gray-300 dark:border-[var(--pc-border)] text-gray-900 dark:text-[var(--pc-text)] text-sm rounded-md focus:ring-lagon-500 focus:border-lagon-500 px-3 py-2 flex items-center gap-1.5 hover:bg-gray-100 transition-colors min-h-[44px]"
       >
-        <span className="text-gray-500 text-xs hidden sm:inline">Template :</span>
+        <span className="text-gray-500 dark:text-[var(--pc-muted)] text-xs hidden sm:inline">Template :</span>
         <span className="font-medium">{current.name}</span>
-        <ChevronDown className="w-4 h-4 text-gray-400" />
+        <ChevronDown className="w-4 h-4 text-gray-400 dark:text-[var(--pc-muted)]" />
       </button>
 
       {isOpen && (
@@ -335,7 +335,7 @@ export function TemplatePickerPopover({ currentTemplateId, onSelect }: TemplateP
             ref={dropdownRef}
             style={isMobile ? {} : dropdownStyle}
             className={`
-              bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl z-[100] flex flex-col
+              bg-white dark:bg-[var(--pc-card)] border border-gray-200 dark:border-[var(--pc-border)] shadow-2xl z-[100] flex flex-col
               ${isMobile 
                 ? 'fixed inset-x-0 bottom-0 rounded-t-2xl max-h-[85vh] animate-in slide-in-from-bottom duration-300' 
                 : 'rounded-xl w-[620px] max-w-[720px] max-h-[85vh]'
@@ -345,7 +345,7 @@ export function TemplatePickerPopover({ currentTemplateId, onSelect }: TemplateP
             {isMobile && (
               <div className="flex flex-col items-center py-3 shrink-0">
                 <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mb-2" />
-                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Choisir un modèle</h3>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-[var(--pc-text)]">Choisir un modèle</h3>
               </div>
             )}
 
@@ -356,10 +356,10 @@ export function TemplatePickerPopover({ currentTemplateId, onSelect }: TemplateP
                 return (
                   <div key={cat} className="mb-4 last:mb-0">
                     <div className="flex items-center gap-2 mb-1 px-1">
-                      <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500 dark:text-gray-400">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500 dark:text-[var(--pc-muted)]">
                         {CATEGORY_LABELS[cat]}
                       </span>
-                      <span className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                      <span className="flex-1 h-px bg-gray-200 dark:bg-[var(--pc-surface)]" />
                     </div>
                     {CATEGORY_HINTS[cat] && (
                       <p className="text-[10.5px] text-amber-700 dark:text-amber-400 px-1 mb-2 leading-snug">
@@ -379,13 +379,13 @@ export function TemplatePickerPopover({ currentTemplateId, onSelect }: TemplateP
                               onSelect(template.id);
                               setIsOpen(false);
                             }}
-                            className="flex flex-col items-center gap-1.5 group rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                            className="flex flex-col items-center gap-1.5 group rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-[var(--pc-hover)]/50 transition-colors"
                           >
                             <div
                               className={`relative w-full aspect-[80/110] rounded-md border-2 overflow-hidden transition-colors ${
                                 isActive
-                                  ? 'border-blue-500 ring-2 ring-blue-200'
-                                  : 'border-gray-200 dark:border-gray-700 group-hover:border-blue-300 bg-white'
+                                  ? 'border-lagon-500 ring-2 ring-lagon-200'
+                                  : 'border-gray-200 dark:border-[var(--pc-border)] group-hover:border-lagon-300 bg-white dark:bg-[var(--pc-card)]'
                               }`}
                               style={isActive ? {} : { background: 'white' }}
                             >
@@ -401,8 +401,8 @@ export function TemplatePickerPopover({ currentTemplateId, onSelect }: TemplateP
                             </div>
                             <span className={`text-[11px] font-medium text-center leading-tight ${
                               isActive
-                                ? 'text-blue-600 dark:text-blue-400'
-                                : 'text-gray-700 dark:text-gray-300'
+                                ? 'text-lagon-600 dark:text-lagon-400'
+                                : 'text-gray-700 dark:text-[var(--pc-muted)]'
                             }`}>
                               {template.name}
                             </span>

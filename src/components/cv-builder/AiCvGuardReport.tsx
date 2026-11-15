@@ -14,7 +14,7 @@ function Block({ icon, title, tone, children, testId }: {
     red: 'border-red-200 bg-red-50 text-red-900',
     amber: 'border-amber-200 bg-amber-50 text-amber-900',
     sky: 'border-sky-200 bg-sky-50 text-sky-900',
-    gray: 'border-gray-200 bg-white text-gray-800',
+    gray: 'border-gray-200 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] text-gray-800 dark:text-[var(--pc-text)]',
   } as const;
   return (
     <section className={`rounded-lg border p-3 ${tones[tone]}`} data-testid={testId}>
@@ -85,12 +85,12 @@ export function AiCvGuardReport({ report }: AiCvGuardReportProps) {
         <Block icon={<Lightbulb className="w-4 h-4" />} title="Ce que l'annonce demande et que votre profil ne montre pas" tone="gray">
           {cov.missing.length > 0 && <p><span className="font-medium">Mots importants absents du CV :</span> {cov.missing.join(', ')}.</p>}
           {ecarts.length > 0 && <p><span className="font-medium">Exigences non couvertes :</span> {ecarts.join(', ')}.</p>}
-          <p className="text-xs text-gray-500">Si c'est vrai pour vous, ajoutez-le dans « Mon profil » : rien n'est ajouté sans votre accord.</p>
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)]">Si c'est vrai pour vous, ajoutez-le dans « Mon profil » : rien n'est ajouté sans votre accord.</p>
         </Block>
       )}
 
       {report.angle && (
-        <p className="text-sm text-gray-700" data-testid="ai-cv-angle">
+        <p className="text-sm text-gray-700 dark:text-[var(--pc-text)]" data-testid="ai-cv-angle">
           <span className="font-medium">Mise en avant choisie :</span> {report.angle.label}
         </p>
       )}

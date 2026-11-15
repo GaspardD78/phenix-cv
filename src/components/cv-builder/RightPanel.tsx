@@ -43,7 +43,7 @@ export function RightPanel() {
   const template = getTemplate(currentCv.templateId);
 
   const content = (
-    <div ref={setPageElement} className="w-[210mm] min-h-[297mm] shrink-0 bg-white relative print:w-full print:min-h-0 print:m-0 print:p-0 shadow-lg print:shadow-none mx-auto origin-top">
+    <div ref={setPageElement} className="w-[210mm] min-h-[297mm] shrink-0 bg-white dark:bg-[var(--pc-card)] relative print:w-full print:min-h-0 print:m-0 print:p-0 shadow-lg print:shadow-none mx-auto origin-top">
       {MEASURE_OVERFLOW ? (
         /* Trait de coupure mesuré (mise en page d'impression), hors de #printable-cv */
         <OverflowCutLine state={overflow} cvElement={cvElement} container={pageElement} />
@@ -52,7 +52,7 @@ export function RightPanel() {
         <div
           className="absolute top-[295mm] left-0 w-full border-t-2 border-dashed border-red-400 opacity-50 print:hidden z-50 pointer-events-none"
         >
-          <span className="absolute right-2 -top-5 text-xs text-red-500 font-semibold bg-white px-1">Limite Page 1</span>
+          <span className="absolute right-2 -top-5 text-xs text-red-500 font-semibold bg-white dark:bg-[var(--pc-card)] px-1">Limite Page 1</span>
         </div>
       )}
 

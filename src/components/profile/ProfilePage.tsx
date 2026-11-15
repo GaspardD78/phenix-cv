@@ -431,7 +431,7 @@ export function ProfilePage() {
                   {profile?.photoPath ? (
                     <img src={profile.photoPath} alt="Photo de profil" style={{ width: 72, height: 72, borderRadius: 99, objectFit: 'cover', border: '2px solid var(--pc-border)' }} />
                   ) : (
-                    <div style={{ width: 72, height: 72, borderRadius: 99, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', flexShrink: 0 }}>
+                    <div style={{ width: 72, height: 72, borderRadius: 99, background: 'linear-gradient(135deg, var(--pc-accent), var(--pc-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', flexShrink: 0 }}>
                       {initials}
                     </div>
                   )}

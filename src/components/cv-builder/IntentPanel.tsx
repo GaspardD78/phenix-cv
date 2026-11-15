@@ -14,7 +14,7 @@ const TYPE_LABELS: Record<string, string> = {
   language: 'Langues', project: 'Projets', volunteer: 'Bénévolat', interest: "Centres d'intérêt",
 };
 
-const field = 'w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-amber-200 focus:border-amber-400 bg-white';
+const field = 'w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-sm focus:ring-2 focus:ring-amber-200 focus:border-amber-400 bg-white dark:bg-[var(--pc-card)]';
 
 /**
  * « CV standard » : quelques questions, puis une proposition calculée sur votre ordinateur (sans IA).
@@ -70,22 +70,22 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
       .filter(g => g.items.length > 0);
     return (
       <div className="space-y-4" data-testid="intent-proposal">
-        <button onClick={() => setProposal(null)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800">
+        <button onClick={() => setProposal(null)} className="flex items-center gap-1 text-sm text-gray-500 dark:text-[var(--pc-muted)] hover:text-gray-800">
           <ArrowLeft className="w-4 h-4" /> Modifier mes réponses
         </button>
         <div>
-          <h3 className="text-base font-semibold text-gray-900">Voici ce que nous vous proposons</h3>
-          <p className="text-sm text-gray-500">Calculé sur votre ordinateur, sans IA. Relisez, cochez ou décochez : rien n'est modifié tant que vous n'avez pas appliqué.</p>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Voici ce que nous vous proposons</h3>
+          <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">Calculé sur votre ordinateur, sans IA. Relisez, cochez ou décochez : rien n'est modifié tant que vous n'avez pas appliqué.</p>
         </div>
 
         <div>
-          <label htmlFor="intent-title" className="block text-sm font-semibold text-gray-800 mb-1">Titre du CV</label>
+          <label htmlFor="intent-title" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Titre du CV</label>
           <input id="intent-title" className={field} value={proposal.title} onChange={e => setProposal({ ...proposal, title: e.target.value })} />
         </div>
         <div>
-          <label htmlFor="intent-summary" className="block text-sm font-semibold text-gray-800 mb-1">Accroche</label>
+          <label htmlFor="intent-summary" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Accroche</label>
           <textarea id="intent-summary" rows={3} className={`${field} resize-y`} value={proposal.summary} onChange={e => setProposal({ ...proposal, summary: e.target.value })} />
-          <p className="text-xs text-gray-500 mt-1">Deux ou trois lignes tournées vers le poste visé. Vérifiez les chiffres avant d'appliquer.</p>
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Deux ou trois lignes tournées vers le poste visé. Vérifiez les chiffres avant d'appliquer.</p>
         </div>
 
         <div className="rounded-lg border border-[var(--pc-border)] bg-[var(--pc-accent-subtle)] p-3 text-sm" data-testid="intent-years">
@@ -99,7 +99,7 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
               <> Dans le métier « {proposal.experience.roleLabel} » : <strong>{proposal.experience.roleYears} an{proposal.experience.roleYears > 1 ? 's' : ''}</strong>.</>
             )}
           </p>
-          <p className="text-xs text-gray-600 mt-1">Les périodes qui se chevauchent comptent une fois, et les trous ne sont pas comptés. Si ce n'est pas exact, modifiez l'accroche ci-dessus.</p>
+          <p className="text-xs text-gray-600 dark:text-[var(--pc-muted)] mt-1">Les périodes qui se chevauchent comptent une fois, et les trous ne sont pas comptés. Si ce n'est pas exact, modifiez l'accroche ci-dessus.</p>
         </div>
 
         {proposal.notes.length > 0 && (
@@ -110,15 +110,15 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
 
         {groups.map(g => (
           <section key={g.type}>
-            <h4 className="text-sm font-semibold text-gray-800 mb-1">{TYPE_LABELS[g.type]}</h4>
-            <ul className="rounded-lg border border-gray-200 divide-y divide-gray-100">
+            <h4 className="text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">{TYPE_LABELS[g.type]}</h4>
+            <ul className="rounded-lg border border-gray-200 dark:border-[var(--pc-border)] divide-y divide-gray-100">
               {g.items.map(i => (
                 <li key={i.id}>
-                  <label className={`flex items-start gap-2 px-3 py-2 cursor-pointer ${i.include ? 'bg-white' : 'bg-gray-50 opacity-70'}`}>
+                  <label className={`flex items-start gap-2 px-3 py-2 cursor-pointer ${i.include ? 'bg-white dark:bg-[var(--pc-card)]' : 'bg-gray-50 opacity-70'}`}>
                     <input type="checkbox" checked={i.include} onChange={() => toggleItem(i.id)} className="mt-1 accent-amber-500" />
                     <span className="min-w-0">
-                      <span className="block text-sm text-gray-900">{i.label}</span>
-                      <span className="block text-xs text-gray-500">{i.reason}</span>
+                      <span className="block text-sm text-gray-900 dark:text-[var(--pc-text)]">{i.label}</span>
+                      <span className="block text-xs text-gray-500 dark:text-[var(--pc-muted)]">{i.reason}</span>
                     </span>
                   </label>
                 </li>
@@ -137,7 +137,7 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
           </button>
           <button
             onClick={() => onUseAi(intent)}
-            className="w-full py-2 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 flex items-center justify-center gap-2"
+            className="w-full py-2 border border-gray-300 dark:border-[var(--pc-border)] text-gray-700 dark:text-[var(--pc-text)] text-sm rounded-md hover:bg-gray-50 flex items-center justify-center gap-2"
           >
             <Wand2 className="w-4 h-4" /> Faire affiner par une IA (facultatif)
           </button>
@@ -150,30 +150,30 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
   return (
     <div className="space-y-5" data-testid="intent-form">
       <div>
-        <h3 className="text-base font-semibold text-gray-900">Créer un CV standard</h3>
-        <p className="text-sm text-gray-500">Répondez à quelques questions : nous choisissons et ordonnons le contenu de votre profil. Aucune IA n'est nécessaire.</p>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Créer un CV standard</h3>
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">Répondez à quelques questions : nous choisissons et ordonnons le contenu de votre profil. Aucune IA n'est nécessaire.</p>
       </div>
 
       <div>
-        <label htmlFor="intent-role" className="block text-sm font-semibold text-gray-800 mb-1">Quel poste visez-vous ?</label>
+        <label htmlFor="intent-role" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Quel poste visez-vous ?</label>
         <input id="intent-role" className={field} value={intent.role} onChange={e => set('role', e.target.value)} placeholder="Ex. : Assistante commerciale" />
       </div>
       <div>
-        <label htmlFor="intent-sector" className="block text-sm font-semibold text-gray-800 mb-1">Dans quel secteur ? <span className="font-normal text-gray-500">(facultatif)</span></label>
+        <label htmlFor="intent-sector" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Dans quel secteur ? <span className="font-normal text-gray-500">(facultatif)</span></label>
         <input id="intent-sector" className={field} value={intent.sector} onChange={e => set('sector', e.target.value)} placeholder="Ex. : négoce de matériaux" />
       </div>
       <div>
-        <label htmlFor="intent-level" className="block text-sm font-semibold text-gray-800 mb-1">Quel est votre niveau ?</label>
+        <label htmlFor="intent-level" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Quel est votre niveau ?</label>
         <select id="intent-level" className={field} value={intent.level} onChange={e => set('level', e.target.value as CvIntent['level'])}>
           {LEVELS.map(l => <option key={l} value={l}>{LEVEL_LABELS[l]}</option>)}
         </select>
       </div>
 
       <fieldset>
-        <legend className="text-sm font-semibold text-gray-800 mb-1">Que voulez-vous mettre en avant ?</legend>
+        <legend className="text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Que voulez-vous mettre en avant ?</legend>
         <div className="grid gap-1.5">
           {HIGHLIGHTS.map(h => (
-            <label key={h} className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
+            <label key={h} className="flex items-center gap-2 text-sm text-gray-800 dark:text-[var(--pc-text)] cursor-pointer">
               <input type="checkbox" checked={intent.highlights.includes(h)} onChange={() => toggleHighlight(h)} className="accent-amber-500" />
               {HIGHLIGHT_LABELS[h]}
             </label>
@@ -183,16 +183,16 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
 
       {experiences.length > 0 && (
         <fieldset>
-          <legend className="text-sm font-semibold text-gray-800 mb-1">Des expériences à privilégier ou à laisser de côté ?</legend>
-          <ul className="rounded-lg border border-gray-200 divide-y divide-gray-100">
+          <legend className="text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Des expériences à privilégier ou à laisser de côté ?</legend>
+          <ul className="rounded-lg border border-gray-200 dark:border-[var(--pc-border)] divide-y divide-gray-100">
             {experiences.map(e => (
               <li key={e.id} className="flex items-center justify-between gap-2 px-3 py-2">
-                <span className="text-sm text-gray-900 min-w-0 truncate">{e.title}{e.subtitle ? ` (${e.subtitle})` : ''}</span>
+                <span className="text-sm text-gray-900 dark:text-[var(--pc-text)] min-w-0 truncate">{e.title}{e.subtitle ? ` (${e.subtitle})` : ''}</span>
                 <select
                   aria-label={`Choix pour ${e.title}`}
                   value={intent.preferences[e.id] ?? 'normal'}
                   onChange={ev => setPreference(e.id, ev.target.value as EntryPreference)}
-                  className="text-xs border border-gray-300 rounded-md p-1 bg-white"
+                  className="text-xs border border-gray-300 dark:border-[var(--pc-border)] rounded-md p-1 bg-white dark:bg-[var(--pc-card)]"
                 >
                   <option value="normal">Au besoin</option>
                   <option value="prefer">Privilégier</option>
@@ -206,20 +206,20 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="intent-pages" className="block text-sm font-semibold text-gray-800 mb-1">Longueur</label>
+          <label htmlFor="intent-pages" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Longueur</label>
           <select id="intent-pages" className={field} value={intent.pages} onChange={e => set('pages', Number(e.target.value) as 1 | 2)}>
             <option value={1}>1 page (conseillé)</option>
             <option value={2}>2 pages</option>
           </select>
-          <p className="text-xs text-gray-500 mt-1">Jusqu'à {experienceBudget(intent.pages)} expériences.</p>
+          <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Jusqu'à {experienceBudget(intent.pages)} expériences.</p>
         </div>
         <div>
-          <label htmlFor="intent-lang" className="block text-sm font-semibold text-gray-800 mb-1">Langue du CV</label>
+          <label htmlFor="intent-lang" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Langue du CV</label>
           <select id="intent-lang" className={field} value={intent.language} onChange={e => set('language', e.target.value as 'fr' | 'en')}>
             <option value="fr">Français</option>
             <option value="en">Anglais</option>
           </select>
-          {intent.language === 'en' && <p className="text-xs text-gray-500 mt-1">Pour traduire le contenu, utilisez ensuite l'IA (facultatif).</p>}
+          {intent.language === 'en' && <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Pour traduire le contenu, utilisez ensuite l'IA (facultatif).</p>}
         </div>
       </div>
 

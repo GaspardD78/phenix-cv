@@ -75,7 +75,7 @@ export function EntrySelector({ cvId, onClose }: EntrySelectorProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-50">
-      <div className="w-96 bg-white h-full shadow-2xl flex flex-col transform transition-transform">
+      <div className="w-96 bg-white dark:bg-[var(--pc-card)] h-full shadow-2xl flex flex-col transform transition-transform">
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-semibold">Ajouter au CV</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
@@ -88,7 +88,7 @@ export function EntrySelector({ cvId, onClose }: EntrySelectorProps) {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value as EntryType)}
-              className="w-full p-2 border rounded shadow-sm focus:ring focus:ring-blue-200"
+              className="w-full p-2 border rounded shadow-sm focus:ring focus:ring-lagon-200"
             >
               {availableTypes.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -98,16 +98,16 @@ export function EntrySelector({ cvId, onClose }: EntrySelectorProps) {
 
           <div className="flex-1 overflow-auto p-4 space-y-3">
             {filteredEntries.length === 0 ? (
-              <p className="text-gray-500 text-sm text-center">Aucune entrée trouvée pour ce type.</p>
+              <p className="text-gray-500 dark:text-[var(--pc-muted)] text-sm text-center">Aucune entrée trouvée pour ce type.</p>
             ) : (
               filteredEntries.map((entry) => {
                 const isAdded = existingEntryIds.has(entry.id);
                 return (
-                  <div key={entry.id} className="border rounded p-3 flex items-center justify-between hover:border-blue-300 transition-colors">
+                  <div key={entry.id} className="border rounded p-3 flex items-center justify-between hover:border-lagon-300 transition-colors">
                     <div className="flex-1 mr-4 overflow-hidden">
-                      <p className="font-semibold text-gray-900 truncate" title={entry.title}>{entry.title}</p>
+                      <p className="font-semibold text-gray-900 dark:text-[var(--pc-text)] truncate" title={entry.title}>{entry.title}</p>
                       {entry.subtitle && (
-                        <p className="text-sm text-gray-500 truncate" title={entry.subtitle}>{entry.subtitle}</p>
+                        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] truncate" title={entry.subtitle}>{entry.subtitle}</p>
                       )}
                     </div>
                     {isAdded ? (
@@ -117,7 +117,7 @@ export function EntrySelector({ cvId, onClose }: EntrySelectorProps) {
                     ) : (
                       <button
                         onClick={() => handleAddEntry(entry)}
-                        className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded text-sm font-medium transition-colors"
+                        className="bg-lagon-50 text-lagon-600 hover:bg-lagon-100 px-3 py-1 rounded text-sm font-medium transition-colors"
                       >
                         Ajouter
                       </button>

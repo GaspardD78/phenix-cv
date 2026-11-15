@@ -14,7 +14,7 @@ import { CVBlock, CVDocument } from '@/types/cv';
 import { readAngleSnapshot } from '@/lib/cv-angles';
 
 const TEMPLATE_ACCENTS: Record<string, string> = {
-  'ats-classic':   '#6366f1',
+  'ats-classic':   'var(--pc-accent)',
   'modern':        '#10b981',
   'minimal':       '#f59e0b',
   'executive':     '#7e22ce',
@@ -22,7 +22,7 @@ const TEMPLATE_ACCENTS: Record<string, string> = {
 };
 
 function getAccent(templateId: string) {
-  return TEMPLATE_ACCENTS[templateId] ?? '#6366f1';
+  return TEMPLATE_ACCENTS[templateId] ?? 'var(--pc-accent)';
 }
 
 function MiniCVPreview({ accent }: { accent: string }) {
@@ -94,7 +94,7 @@ function CVCard({ cv, onDelete, onDuplicate, onExportDocx, onExportPdf }: {
 
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <span style={{
-            background: 'rgba(99,102,241,.15)', color: '#818cf8',
+            background: 'var(--pc-accent-subtle)', color: 'var(--pc-accent-hover)',
             borderRadius: 99, fontSize: 10, fontWeight: 600,
             padding: '2px 8px', fontFamily: 'var(--font-body)',
           }}>{cv.templateId}</span>

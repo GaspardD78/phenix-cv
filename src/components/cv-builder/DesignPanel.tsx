@@ -92,17 +92,17 @@ export function DesignPanel({
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-4 text-sm text-gray-900 pb-8">
+    <div className="flex flex-col gap-4 text-sm text-gray-900 dark:text-[var(--pc-text)] pb-8">
       {/* ─── Zone 1: Style Rapide ─────────────────────────────────────── */}
-      <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 shadow-sm">
+      <div className="bg-lagon-50 border border-lagon-200 rounded-lg p-3 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
-          <Palette className="w-4 h-4 text-purple-600" />
-          <h3 className="font-semibold text-purple-900">Style Rapide</h3>
+          <Palette className="w-4 h-4 text-lagon-600" />
+          <h3 className="font-semibold text-lagon-900">Style Rapide</h3>
         </div>
 
         {(template.palettes && template.palettes.length > 0) && (
           <div className="mb-4">
-            <p className="text-xs font-semibold text-purple-800 mb-1.5">Palette</p>
+            <p className="text-xs font-semibold text-lagon-800 mb-1.5">Palette</p>
             <div className="flex flex-wrap gap-1.5">
               {template.palettes.map(p => {
                 const active = (primaryColor || '').toLowerCase() === p.accent.toLowerCase();
@@ -113,7 +113,7 @@ export function DesignPanel({
                     onClick={() => onApplyPalette(p.accent)}
                     title={p.name}
                     className={`h-7 w-7 rounded-full border-2 transition-all ${
-                      active ? 'border-gray-900 scale-110 ring-2 ring-purple-200' : 'border-white shadow-sm hover:scale-105'
+                      active ? 'border-gray-900 scale-110 ring-2 ring-lagon-200' : 'border-white shadow-sm hover:scale-105'
                     }`}
                     style={{ backgroundColor: p.accent }}
                     aria-label={`Palette ${p.name}`}
@@ -125,7 +125,7 @@ export function DesignPanel({
                   type="button"
                   onClick={() => onApplyPalette('')}
                   title="Réinitialiser"
-                  className="h-7 px-2 text-[10px] font-medium text-gray-600 hover:text-gray-900 border border-dashed border-gray-300 rounded-full"
+                  className="h-7 px-2 text-[10px] font-medium text-gray-600 dark:text-[var(--pc-muted)] hover:text-gray-900 border border-dashed border-gray-300 dark:border-[var(--pc-border)] rounded-full"
                 >
                   Auto
                 </button>
@@ -135,14 +135,14 @@ export function DesignPanel({
         )}
 
         <div className="mb-4">
-          <p className="text-xs font-semibold text-purple-800 mb-1.5">Densité</p>
+          <p className="text-xs font-semibold text-lagon-800 mb-1.5">Densité</p>
           <div className="grid grid-cols-3 gap-1">
             {(['compact', 'normal', 'comfortable'] as DensityId[]).map(id => (
               <button
                 key={id}
                 type="button"
                 onClick={() => onApplyDensity(id)}
-                className="text-[11px] font-medium py-1.5 px-1 rounded border border-gray-300 bg-white hover:bg-purple-100 hover:border-purple-400 transition-colors"
+                className="text-[11px] font-medium py-1.5 px-1 rounded border border-gray-300 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] hover:bg-lagon-100 hover:border-lagon-400 transition-colors"
               >
                 {DENSITY_PRESETS[id].name}
               </button>
@@ -155,33 +155,33 @@ export function DesignPanel({
           onClick={onFitToPage}
           disabled={fitting}
           aria-busy={fitting}
-          className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-md transition-colors shadow-sm disabled:opacity-60 disabled:cursor-wait"
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-lagon-600 hover:bg-lagon-700 text-white text-xs font-semibold rounded-md transition-colors shadow-sm disabled:opacity-60 disabled:cursor-wait"
         >
           <span>✨</span> {fitting ? 'Ajustement…' : 'Ajuster à 1 page'}
         </button>
       </div>
 
       {/* ─── Zone 2: Standard ─────────────────────────────────────── */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
+      <div className="border border-gray-200 dark:border-[var(--pc-border)] rounded-lg overflow-hidden bg-white dark:bg-[var(--pc-card)] shadow-sm">
         <button
           onClick={() => setIsStandardOpen(!isStandardOpen)}
-          className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-[var(--pc-card)] hover:bg-gray-100 dark:hover:bg-[var(--pc-hover)] transition-colors"
         >
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-gray-500" />
-            <span className="font-semibold text-gray-900 dark:text-gray-100">Typographie & Mise en page</span>
+            <SlidersHorizontal className="w-4 h-4 text-gray-500 dark:text-[var(--pc-muted)]" />
+            <span className="font-semibold text-gray-900 dark:text-[var(--pc-text)]">Typographie & Mise en page</span>
           </div>
-          {isStandardOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+          {isStandardOpen ? <ChevronUp className="w-4 h-4 text-gray-500 dark:text-[var(--pc-muted)]" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
         </button>
         
         {isStandardOpen && (
-          <div className="p-3 space-y-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-3 space-y-4 border-t border-gray-200 dark:border-[var(--pc-border)]">
             <div>
-              <label className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Police globale</label>
+              <label className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Police globale</label>
               <select
                 value={fontFamily}
                 onChange={e => setFontFamily(e.target.value)}
-                className="w-full p-1.5 border rounded focus:ring focus:ring-purple-200 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                className="w-full p-1.5 border rounded focus:ring focus:ring-lagon-200 text-sm dark:bg-[var(--pc-surface)] dark:border-[var(--pc-border-active)] dark:text-[var(--pc-text)]"
               >
                 <option value="Calibri">Calibri (défaut)</option>
                 <option value="Arial">Arial</option>
@@ -192,11 +192,11 @@ export function DesignPanel({
             </div>
             
             <div>
-              <label className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Taille du texte</label>
+              <label className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Taille du texte</label>
               <select
                 value={fontSize}
                 onChange={e => setFontSize(e.target.value)}
-                className="w-full p-1.5 border rounded focus:ring focus:ring-purple-200 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                className="w-full p-1.5 border rounded focus:ring focus:ring-lagon-200 text-sm dark:bg-[var(--pc-surface)] dark:border-[var(--pc-border-active)] dark:text-[var(--pc-text)]"
               >
                 <option value="10px">Petit (10pt)</option>
                 <option value="11px">Normal (11pt)</option>
@@ -205,20 +205,20 @@ export function DesignPanel({
             </div>
             
             <div>
-              <label className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Couleur d'accent libre</label>
+              <label className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Couleur d'accent libre</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="color"
                   value={primaryColor || '#1f2937'}
                   onChange={e => setPrimaryColor(e.target.value)}
-                  className="w-10 h-8 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
+                  className="w-10 h-8 rounded cursor-pointer border border-gray-300 dark:border-[var(--pc-border-active)]"
                 />
-                <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{primaryColor || 'Auto (thème)'}</span>
+                <span className="text-xs text-gray-500 dark:text-[var(--pc-muted)] font-mono">{primaryColor || 'Auto (thème)'}</span>
                 {primaryColor && (
                   <button
                     type="button"
                     onClick={() => setPrimaryColor('')}
-                    className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 underline"
+                    className="text-xs text-lagon-600 dark:text-lagon-400 hover:text-lagon-800 underline"
                   >
                     Reset
                   </button>
@@ -227,9 +227,9 @@ export function DesignPanel({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Style d'en-tête</label>
+              <label className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Style d'en-tête</label>
               <select value={headerStyle} onChange={e => setHeaderStyle(e.target.value)}
-                className="w-full p-1 border rounded text-sm focus:ring focus:ring-purple-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                className="w-full p-1 border rounded text-sm focus:ring focus:ring-lagon-200 dark:bg-[var(--pc-surface)] dark:border-[var(--pc-border-active)] dark:text-[var(--pc-text)]">
                 <option value="">Standard</option>
                 <option value="accent-light">Fond coloré léger</option>
                 <option value="accent-banner">Bandeau coloré</option>
@@ -239,9 +239,9 @@ export function DesignPanel({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Marges de la page</label>
+              <label className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Marges de la page</label>
               <select value={pageMargin} onChange={e => setPageMargin(e.target.value)}
-                className="w-full p-1 border rounded text-sm focus:ring focus:ring-purple-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                className="w-full p-1 border rounded text-sm focus:ring focus:ring-lagon-200 dark:bg-[var(--pc-surface)] dark:border-[var(--pc-border-active)] dark:text-[var(--pc-text)]">
                 <option value="">Auto</option>
                 <option value="24px 28px">Étroites</option>
                 <option value="32px 36px">Réduites</option>
@@ -252,9 +252,9 @@ export function DesignPanel({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Bordure des sections</label>
+              <label className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Bordure des sections</label>
               <select value={sectionBorderStyle} onChange={e => setSectionBorderStyle(e.target.value)}
-                className="w-full p-1 border rounded text-sm focus:ring focus:ring-purple-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                className="w-full p-1 border rounded text-sm focus:ring focus:ring-lagon-200 dark:bg-[var(--pc-surface)] dark:border-[var(--pc-border-active)] dark:text-[var(--pc-text)]">
                 <option value="">Auto</option>
                 <option value="solid">Ligne continue</option>
                 <option value="dashed">Tirets</option>
@@ -265,22 +265,22 @@ export function DesignPanel({
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Dates</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Dates</p>
               <div className="space-y-2">
                 <div>
-                  <label htmlFor="design-date-format" className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Format des dates</label>
+                  <label htmlFor="design-date-format" className="block text-xs text-gray-700 dark:text-[var(--pc-muted)] mb-1">Format des dates</label>
                   <select id="design-date-format" value={dateFormat} onChange={e => setDateFormat(e.target.value === 'year' ? 'year' : 'month-year')}
-                    className="w-full p-1 border rounded text-sm focus:ring focus:ring-purple-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    className="w-full p-1 border rounded text-sm focus:ring focus:ring-lagon-200 dark:bg-[var(--pc-surface)] dark:border-[var(--pc-border-active)] dark:text-[var(--pc-text)]">
                     <option value="month-year">Mois et année</option>
                     <option value="year">Année seule</option>
                   </select>
                 </div>
-                <label className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs text-gray-700 dark:text-[var(--pc-muted)] cursor-pointer">
                   <input type="checkbox" checked={showEducationYears} onChange={e => setShowEducationYears(e.target.checked)}
-                    className="accent-purple-600" />
+                    className="accent-lagon-600" />
                   <span>Afficher les années des formations</span>
                 </label>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">Les périodes saisies à la main restent affichées telles quelles.</p>
+                <p className="text-[11px] text-gray-500 dark:text-[var(--pc-muted)]">Les périodes saisies à la main restent affichées telles quelles.</p>
               </div>
             </div>
           </div>
@@ -288,29 +288,29 @@ export function DesignPanel({
       </div>
 
       {/* ─── Zone 3: Avancé ─────────────────────────────────────── */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
+      <div className="border border-gray-200 dark:border-[var(--pc-border)] rounded-lg overflow-hidden bg-white dark:bg-[var(--pc-card)] shadow-sm">
         <button
           onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-          className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-[var(--pc-card)] hover:bg-gray-100 dark:hover:bg-[var(--pc-hover)] transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Settings2 className="w-4 h-4 text-gray-500" />
-            <span className="font-semibold text-gray-900 dark:text-gray-100">Réglages Avancés</span>
+            <Settings2 className="w-4 h-4 text-gray-500 dark:text-[var(--pc-muted)]" />
+            <span className="font-semibold text-gray-900 dark:text-[var(--pc-text)]">Réglages Avancés</span>
           </div>
-          {isAdvancedOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+          {isAdvancedOpen ? <ChevronUp className="w-4 h-4 text-gray-500 dark:text-[var(--pc-muted)]" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
         </button>
 
         {isAdvancedOpen && (
-          <div className="p-3 space-y-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-3 space-y-4 border-t border-gray-200 dark:border-[var(--pc-border)]">
             
             {/* Section headers */}
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Titres de section</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Titres de section</p>
               <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-0.5">Police</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Police</label>
                   <select value={headerFontFamily} onChange={e => setHeaderFontFamily(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto (globale)</option>
                     <option value="Calibri">Calibri</option>
                     <option value="Arial">Arial</option>
@@ -320,9 +320,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Taille</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Taille</label>
                   <select value={headerFontSize} onChange={e => setHeaderFontSize(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="11px">Petit (11)</option>
                     <option value="13px">Moyen (13)</option>
@@ -331,9 +331,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Graisse</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Graisse</label>
                   <select value={headerFontWeight} onChange={e => setHeaderFontWeight(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="normal">Normal</option>
                     <option value="600">Semi-gras</option>
@@ -342,9 +342,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Casse</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Casse</label>
                   <select value={headerTextTransform} onChange={e => setHeaderTextTransform(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="none">Normal</option>
                     <option value="uppercase">MAJUSCULES</option>
@@ -352,9 +352,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Alignement</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Alignement</label>
                   <select value={headerTextAlign} onChange={e => setHeaderTextAlign(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="left">Gauche</option>
                     <option value="center">Centré</option>
@@ -366,12 +366,12 @@ export function DesignPanel({
 
             {/* Entry titles */}
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Titres d'entrée <span className="font-normal text-gray-400">(postes, diplômes…)</span></p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Titres d'entrée <span className="font-normal text-gray-400">(postes, diplômes…)</span></p>
               <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-0.5">Police</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Police</label>
                   <select value={subtitleFontFamily} onChange={e => setSubtitleFontFamily(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto (globale)</option>
                     <option value="Calibri">Calibri</option>
                     <option value="Arial">Arial</option>
@@ -381,9 +381,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Taille</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Taille</label>
                   <select value={subtitleFontSize} onChange={e => setSubtitleFontSize(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="10px">Petit (10)</option>
                     <option value="11px">Normal (11)</option>
@@ -392,9 +392,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Graisse</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Graisse</label>
                   <select value={subtitleFontWeight} onChange={e => setSubtitleFontWeight(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="normal">Normal</option>
                     <option value="500">Moyen</option>
@@ -402,9 +402,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-0.5">Style</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Style</label>
                   <select value={subtitleFontStyle} onChange={e => setSubtitleFontStyle(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="normal">Normal</option>
                     <option value="italic">Italique</option>
@@ -415,12 +415,12 @@ export function DesignPanel({
 
             {/* Body */}
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Corps du texte</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Corps du texte</p>
               <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-0.5">Police</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Police</label>
                   <select value={bodyFontFamily} onChange={e => setBodyFontFamily(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto (globale)</option>
                     <option value="Calibri">Calibri</option>
                     <option value="Arial">Arial</option>
@@ -430,9 +430,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Taille</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Taille</label>
                   <select value={bodyFontSize} onChange={e => setBodyFontSize(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto (globale)</option>
                     <option value="9px">Très petit (9)</option>
                     <option value="10px">Petit (10)</option>
@@ -441,9 +441,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Interligne</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Interligne</label>
                   <select value={bodyLineHeight} onChange={e => setBodyLineHeight(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="1.2">Serré (1.2)</option>
                     <option value="1.4">Normal (1.4)</option>
@@ -452,9 +452,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-0.5">Alignement</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Alignement</label>
                   <select value={bodyTextAlign} onChange={e => setBodyTextAlign(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="left">Gauche</option>
                     <option value="justify">Justifié</option>
@@ -466,12 +466,12 @@ export function DesignPanel({
 
             {/* Entry spacing */}
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Espacements</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Espacements</p>
               <div className="space-y-2">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Entre blocs</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Entre blocs</label>
                   <select value={entrySpacing} onChange={e => setEntrySpacing(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="4px">Très serré</option>
                     <option value="8px">Serré</option>
@@ -482,9 +482,9 @@ export function DesignPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs text-gray-500 mb-0.5">Section → Entrée</label>
+                    <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Section → Entrée</label>
                     <select value={sectionHeaderGap} onChange={e => setSectionHeaderGap(e.target.value)}
-                      className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                      className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                       <option value="">Auto</option>
                       <option value="2px">Minimal</option>
                       <option value="4px">Serré</option>
@@ -494,9 +494,9 @@ export function DesignPanel({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-0.5">Titre → Corps</label>
+                    <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Titre → Corps</label>
                     <select value={entryTitleGap} onChange={e => setEntryTitleGap(e.target.value)}
-                      className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                      className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                       <option value="">Auto</option>
                       <option value="0px">Aucun</option>
                       <option value="2px">Minimal</option>
@@ -511,12 +511,12 @@ export function DesignPanel({
 
             {/* Photo settings */}
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Photo de profil</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Photo de profil</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Forme</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Forme</label>
                   <select value={photoShape} onChange={e => setPhotoShape(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Cercle</option>
                     <option value="rounded-lg">Arrondi</option>
                     <option value="rounded-sm">Rect. arrondi</option>
@@ -524,9 +524,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Taille</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Taille</label>
                   <select value={photoSize} onChange={e => setPhotoSize(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Normale (96px)</option>
                     <option value="64px">Petite (64px)</option>
                     <option value="80px">Réduite (80px)</option>
@@ -535,9 +535,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-0.5">Bordure</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Bordure</label>
                   <select value={photoBorder} onChange={e => setPhotoBorder(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Fine grise</option>
                     <option value="none">Aucune</option>
                     <option value="accent">Couleur d'accent</option>
@@ -550,12 +550,12 @@ export function DesignPanel({
 
             {/* CV header typography (name / title / contact) */}
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Nom &amp; prénom</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Nom &amp; prénom</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Taille</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Taille</label>
                   <select value={nameFontSize} onChange={e => setNameFontSize(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto (thème)</option>
                     <option value="16px">Petit (16)</option>
                     <option value="20px">Moyen (20)</option>
@@ -565,9 +565,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Graisse</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Graisse</label>
                   <select value={nameFontWeight} onChange={e => setNameFontWeight(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="normal">Normal</option>
                     <option value="600">Semi-gras</option>
@@ -576,9 +576,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Casse</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Casse</label>
                   <select value={nameTextTransform} onChange={e => setNameTextTransform(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="none">Normal</option>
                     <option value="uppercase">MAJUSCULES</option>
@@ -586,9 +586,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Saut de ligne</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Saut de ligne</label>
                   <select value={nameLineBreak} onChange={e => setNameLineBreak(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Sur une ligne</option>
                     <option value="split">Prénom / Nom</option>
                   </select>
@@ -597,12 +597,12 @@ export function DesignPanel({
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Poste / Titre</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Poste / Titre</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Taille</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Taille</label>
                   <select value={titleFontSize} onChange={e => setTitleFontSize(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="12px">Petit (12)</option>
                     <option value="14px">Normal (14)</option>
@@ -611,9 +611,9 @@ export function DesignPanel({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-0.5">Style</label>
+                  <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Style</label>
                   <select value={titleFontStyle} onChange={e => setTitleFontStyle(e.target.value)}
-                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                    className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                     <option value="">Auto</option>
                     <option value="normal">Normal</option>
                     <option value="italic">Italique</option>
@@ -623,11 +623,11 @@ export function DesignPanel({
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">Coordonnées</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Coordonnées</p>
               <div>
-                <label className="block text-xs text-gray-500 mb-0.5">Taille</label>
+                <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Taille</label>
                 <select value={contactFontSize} onChange={e => setContactFontSize(e.target.value)}
-                  className="w-full p-1 border rounded text-xs focus:ring focus:ring-purple-200">
+                  className="w-full p-1 border rounded text-xs focus:ring focus:ring-lagon-200">
                   <option value="">Auto</option>
                   <option value="9px">Très petit (9)</option>
                   <option value="10px">Petit (10)</option>
