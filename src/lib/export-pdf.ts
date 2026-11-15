@@ -175,6 +175,7 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
 
     const result = await invoke<{ bytes: number[]; method: string }>('generate_pdf', { html: htmlContent, method });
     await writeFile(filePath, new Uint8Array(result.bytes));
+    options.onSaved?.(filePath);
     return true;
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
@@ -222,6 +223,8 @@ export interface ExportPdfOptions {
   confirmOverflow?: (overflow: PrintOverflow) => Promise<boolean>;
   /** Méthode imposée ; sinon le réglage « Options avancées » (automatique par défaut). */
   method?: PdfExportMethod;
+  /** Appelé avec le chemin du fichier une fois le PDF écrit (ex. pour « Ouvrir le dossier »). */
+  onSaved?: (filePath: string) => void;
 }
 
 /**
