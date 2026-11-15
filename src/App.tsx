@@ -9,6 +9,7 @@ import { TrackerPage } from "@/components/tracker/TrackerPage";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 import { ImportPage } from "@/components/import/ImportPage";
 import { HelpPage } from "@/components/help/HelpPage";
+import { WizardPage } from "@/components/wizard/WizardPage";
 import { GlobalFileDropGuard } from "@/components/import/GlobalFileDropGuard";
 import { GlobalHelpShortcut } from "@/components/help/GlobalHelpShortcut";
 import { useSessionStore } from "@/stores/sessionStore";
@@ -59,6 +60,7 @@ function AppRoutes() {
         <Route path="/tracker" element={<TrackerPage />} />
         <Route path="/import" element={<ImportPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/bienvenue" element={<WizardPage />} />
         <Route path="/aide" element={<HelpPage />} />
         <Route path="/aide/:page" element={<HelpPage />} />
       </Routes>

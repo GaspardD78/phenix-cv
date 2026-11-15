@@ -82,6 +82,18 @@ export const HELP = {
     example: 'Dans « Mes données », faites une sauvegarde chaque mois.',
     page: 'sauvegarder',
   },
+  guide: {
+    title: 'Guide de démarrage',
+    summary: 'Le guide vous accompagne pas à pas, du premier import jusqu\'à votre premier CV. Vous pouvez le quitter à tout moment : votre avancement est gardé.',
+    example: 'Cliquez sur « Quitter le guide » : vous le reprendrez où vous en étiez.',
+    page: 'premiers-pas',
+  },
+  'guide-depart': {
+    title: 'Point de départ',
+    summary: 'Dites-nous d\'où vous partez : un CV existant, un export LinkedIn ou une page blanche. Le guide adapte la suite.',
+    example: 'Un PDF de votre ancien CV suffit pour gagner du temps.',
+    page: 'importer-cv',
+  },
   sauvegarde: {
     title: 'Sauvegarde',
     summary: 'Copiez vos données dans un fichier de sauvegarde (.cvmaker) que vous gardez en lieu sûr : clé USB, disque externe.',
