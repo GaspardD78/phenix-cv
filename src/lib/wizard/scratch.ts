@@ -36,14 +36,14 @@ export function validateScratch(form: ScratchForm): ScratchErrors {
   if (!form.lastName.trim()) errors.lastName = 'Indiquez votre nom.';
   if (!form.expTitle.trim()) errors.expTitle = 'Indiquez l\'intitulé de ce poste.';
   if (!MONTH.test(form.expStart)) {
-    errors.expStart = 'Indiquez le mois de début, par exemple 2021-09.';
+    errors.expStart = 'Indiquez le mois et l\'année de début.';
   }
   if (!form.expCurrent && form.expEnd) {
-    if (!MONTH.test(form.expEnd)) errors.expEnd = 'Format attendu : 2024-06.';
+    if (!MONTH.test(form.expEnd)) errors.expEnd = 'Indiquez le mois et l\'année de fin.';
     else if (MONTH.test(form.expStart) && form.expEnd < form.expStart) errors.expEnd = 'La fin doit être après le début.';
   }
   if (!form.eduTitle.trim()) errors.eduTitle = 'Indiquez le diplôme ou la formation.';
-  if (form.eduEnd && !MONTH.test(form.eduEnd)) errors.eduEnd = 'Format attendu : 2019-06.';
+  if (form.eduEnd && !MONTH.test(form.eduEnd)) errors.eduEnd = 'Indiquez le mois et l\'année d\'obtention.';
   return errors;
 }
 
@@ -104,3 +104,11 @@ export function splitMonth(value: string): { month: string; year: string } {
   const m = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(value);
   return m ? { year: m[1], month: m[2] } : { month: '', year: '' };
 }
+
+/** Garde d'enregistrement : rien n'est écrit tant qu'une règle obligatoire n'est pas respectée. */
+export function canSave(form: ScratchForm): boolean {
+  return Object.keys(validateScratch(form)).length === 0;
+}
+
+/** Champs obligatoires affichés avec un astérisque. Les autres sont facultatifs. */
+export const REQUIRED_SCRATCH_FIELDS: readonly (keyof ScratchForm)[] = ['firstName', 'lastName', 'expTitle', 'expStart', 'eduTitle'];

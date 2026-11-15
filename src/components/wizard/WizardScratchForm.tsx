@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useProfileStore } from '@/stores/profileStore';
-import { EMPTY_SCRATCH_FORM, MONTHS_FR, buildScratchResult, joinMonth, splitMonth, validateScratch, type ScratchErrors, type ScratchForm } from '@/lib/wizard/scratch';
+import { EMPTY_SCRATCH_FORM, MONTHS_FR, buildScratchResult, canSave, joinMonth, splitMonth, validateScratch, type ScratchErrors, type ScratchForm } from '@/lib/wizard/scratch';
 
 const FIELD = 'w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
@@ -20,9 +20,10 @@ function Field({ id, label, error, required, children }: { id: string; label: st
 }
 
 /** Mois (liste) et année (4 chiffres) : la valeur reste « AAAA-MM » pour l'enregistrement. */
-function MonthYearField({ id, label, value, onChange, error, disabled }: {
-  id: string; label: string; value: string; onChange: (v: string) => void; error?: string; disabled?: boolean;
+function MonthYearField({ id, label, value, onChange, error, disabled, required }: {
+  id: string; label: string; value: string; onChange: (v: string) => void; error?: string; disabled?: boolean; required?: boolean;
 }) {
+  const shown = required ? `${label} *` : label;
   // Brouillon local : une année incomplète reste affichée même si la valeur enregistrée est vide.
   const [draft, setDraft] = useState(() => splitMonth(value));
   useEffect(() => {
@@ -37,7 +38,7 @@ function MonthYearField({ id, label, value, onChange, error, disabled }: {
   const describedBy = error ? `${id}-erreur` : undefined;
   return (
     <div className="space-y-1">
-      <span className="text-sm font-medium" id={`${id}-libelle`}>{label}</span>
+      <span className="text-sm font-medium" id={`${id}-libelle`}>{shown}</span>
       <div className="grid grid-cols-[1fr_6rem] gap-2" role="group" aria-labelledby={`${id}-libelle`}>
         <select
           id={`${id}-mois`}
@@ -83,9 +84,8 @@ export function WizardScratchForm({ onDone }: { onDone: () => void }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const found = validateScratch(form);
-    setErrors(found);
-    if (Object.keys(found).length > 0) return;
+    setErrors(validateScratch(form));
+    if (!canSave(form)) return;
     const store = useProfileStore.getState();
     setSaving(true);
     try {
@@ -129,7 +129,7 @@ export function WizardScratchForm({ onDone }: { onDone: () => void }) {
           <Field id="f-expCompany" label="Entreprise"><input {...input('expCompany')} /></Field>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <MonthYearField id="f-expStart" label="Début" value={form.expStart} error={errors.expStart} onChange={v => set('expStart', v)} />
+          <MonthYearField id="f-expStart" label="Début" required value={form.expStart} error={errors.expStart} onChange={v => set('expStart', v)} />
           <MonthYearField id="f-expEnd" label="Fin" value={form.expEnd} error={errors.expEnd} disabled={form.expCurrent} onChange={v => set('expEnd', v)} />
         </div>
         <label className="flex items-center gap-2 text-sm">

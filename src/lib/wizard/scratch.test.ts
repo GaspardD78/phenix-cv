@@ -72,3 +72,50 @@ describe('conversion mois et année', () => {
     expect(splitMonth('09/2021')).toEqual({ month: '', year: '' });
   });
 });
+
+import { REQUIRED_SCRATCH_FIELDS, canSave } from './scratch';
+
+describe('garde d\'enregistrement', () => {
+  it('une expérience sans date de début n\'est pas enregistrée', () => {
+    const sansDebut = { ...camille, expStart: '' };
+    expect(canSave(sansDebut)).toBe(false);
+    expect(validateScratch(sansDebut).expStart).toBeDefined();
+  });
+
+  it('une date de début incomplète (année seule) n\'est pas enregistrée', () => {
+    expect(canSave({ ...camille, expStart: '2021' })).toBe(false);
+  });
+
+  it('la saisie complète peut être enregistrée', () => {
+    expect(canSave(camille)).toBe(true);
+  });
+
+  it('l\'astérisque suit les règles : Début obligatoire, Fin et Obtenu en facultatives', () => {
+    expect(REQUIRED_SCRATCH_FIELDS).toContain('expStart');
+    expect(REQUIRED_SCRATCH_FIELDS).not.toContain('expEnd');
+    expect(REQUIRED_SCRATCH_FIELDS).not.toContain('eduEnd');
+  });
+});
+
+describe('messages d\'erreur lisibles', () => {
+  it('aucun message ne montre de format technique (AAAA-MM, AAAA, 2021-09)', () => {
+    const cases: ScratchForm[] = [
+      { ...camille, expStart: '' },
+      { ...camille, expStart: '2021' },
+      { ...camille, expEnd: '2024-13' },
+      { ...camille, eduEnd: '06/2019' },
+      { ...EMPTY_SCRATCH_FORM },
+    ];
+    for (const form of cases) {
+      for (const message of Object.values(validateScratch(form))) {
+        expect(message).not.toMatch(/AAAA|\d{4}-\d{2}|Format attendu/);
+      }
+    }
+  });
+
+  it('les messages de date disent « mois et année »', () => {
+    expect(validateScratch({ ...camille, expStart: '' }).expStart).toBe('Indiquez le mois et l\'année de début.');
+    expect(validateScratch({ ...camille, expEnd: '2024-13' }).expEnd).toBe('Indiquez le mois et l\'année de fin.');
+    expect(validateScratch({ ...camille, eduEnd: '06/2019' }).eduEnd).toBe('Indiquez le mois et l\'année d\'obtention.');
+  });
+});
