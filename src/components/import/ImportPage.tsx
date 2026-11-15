@@ -205,12 +205,13 @@ export function StepSource({
 const AI_SITES = [
   { label: 'Ouvrir ChatGPT', url: 'https://chatgpt.com/' },
   { label: 'Ouvrir Claude', url: 'https://claude.ai/new' },
+  { label: 'Ouvrir Gemini', url: 'https://gemini.google.com/app' },
 ] as const;
 
 function HowItWorks() {
   const items = [
     { icon: Copy, title: '1. Copier', text: 'Copiez le texte préparé par l\'application.' },
-    { icon: ExternalLink, title: '2. Coller dans l\'IA', text: 'Ouvrez ChatGPT ou Claude, collez le texte et envoyez.' },
+    { icon: ExternalLink, title: '2. Coller dans l\'IA', text: 'Ouvrez ChatGPT, Claude ou Gemini, collez le texte et envoyez.' },
     { icon: ClipboardPaste, title: '3. Recopier ici', text: 'Copiez la réponse de l\'IA et collez-la ci-dessous.' },
   ];
   return (
@@ -285,7 +286,7 @@ export function StepProcess({
       {isFromFile ? (
         <div className="space-y-5">
           <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">
-            Une IA (ChatGPT, Claude…) range très bien les informations d'un CV : expériences, formations, compétences. Votre fichier reste sur
+            Une IA (ChatGPT, Claude, Gemini…) range très bien les informations d'un CV : expériences, formations, compétences. Votre fichier reste sur
             votre ordinateur ; seul le texte que vous collez est envoyé, par vous, à l'IA de votre choix.{' '}
             <WikiLink page="utiliser-une-ia">Pourquoi passer par une IA ?</WikiLink>
           </p>
