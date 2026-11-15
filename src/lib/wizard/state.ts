@@ -25,10 +25,12 @@ export interface WizardState {
   skipped: WizardStep[];
   /** Vrai une fois le guide terminé (écran 8 quitté). */
   finished: boolean;
+  /** CV créé à l'écran 7 (repris à l'écran 8 pour l'export). */
+  cvId: string | null;
 }
 
 export function initialWizardState(): WizardState {
-  return { version: VERSION, step: 'welcome', startPath: null, completed: [], skipped: [], finished: false };
+  return { version: VERSION, step: 'welcome', startPath: null, completed: [], skipped: [], finished: false, cvId: null };
 }
 
 function isStep(v: unknown): v is WizardStep {
@@ -55,6 +57,7 @@ export function parseWizardState(raw: unknown): WizardState {
     completed: stepList(o.completed),
     skipped: stepList(o.skipped),
     finished: o.finished === true,
+    cvId: typeof o.cvId === 'string' && o.cvId.trim() ? o.cvId : null,
   };
 }
 
@@ -91,6 +94,11 @@ export function goToStep(state: WizardState, step: WizardStep): WizardState {
 
 export function chooseStartPath(state: WizardState, startPath: StartPath): WizardState {
   return { ...state, startPath };
+}
+
+/** Mémorise le CV créé par le guide (null pour l'oublier, par exemple s'il a été supprimé). */
+export function setWizardCv(state: WizardState, cvId: string | null): WizardState {
+  return { ...state, cvId };
 }
 
 export function finishWizard(state: WizardState): WizardState {
