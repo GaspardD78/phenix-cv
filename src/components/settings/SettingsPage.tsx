@@ -3,6 +3,7 @@ import { Download, Upload, AlertCircle, CheckCircle2, Loader2, Sparkles, Sun, Mo
 import { MODULES, ModuleId, BackupData, exportBackup, pickAndParseBackup } from '@/lib/backup';
 import { ImportConflictModal } from './ImportConflictModal';
 import { GoogleDriveSync } from './GoogleDriveSync';
+import { WizardSettings } from './WizardSettings';
 import { AdvancedOptions } from './AdvancedOptions';
 import { SETTINGS_TREE, resolveSettingsPage } from './settings-tree';
 import { CvAnglesSettings } from './CvAnglesSettings';
@@ -511,6 +512,10 @@ export function SettingsPage() {
 
       <SettingsPane id="avance" active={page}>
         <AdvancedOptions />
+      </SettingsPane>
+
+      <SettingsPane id="guide" active={page}>
+        <WizardSettings />
       </SettingsPane>
 
       <SettingsPane id="a-propos" active={page}>

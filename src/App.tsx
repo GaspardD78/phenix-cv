@@ -12,6 +12,7 @@ import { HelpPage } from "@/components/help/HelpPage";
 import { WizardPage } from "@/components/wizard/WizardPage";
 import { GlobalFileDropGuard } from "@/components/import/GlobalFileDropGuard";
 import { GlobalHelpShortcut } from "@/components/help/GlobalHelpShortcut";
+import { WizardAutoOpen } from "@/components/wizard/WizardAutoOpen";
 import { useSessionStore } from "@/stores/sessionStore";
 import PrintView from "@/pages/PrintView";
 import { Toaster } from "sonner";
@@ -52,6 +53,7 @@ function AppRoutes() {
     <Layout>
       <GlobalFileDropGuard />
       <GlobalHelpShortcut />
+      <WizardAutoOpen />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
