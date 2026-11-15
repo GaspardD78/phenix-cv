@@ -1,3 +1,4 @@
+import type { CVDocument } from '@/types/cv';
 /** Création d'un CV : les deux parcours proposés et le nom suggéré. Pur, testable. */
 
 export const NEW_CV_MODES = ['standard', 'offer'] as const;
@@ -24,4 +25,20 @@ export function suggestCvName(mode: NewCvMode, profileTitle: string | null | und
   const title = profileTitle?.trim();
   const suffix = mode === 'standard' ? 'standard' : 'offre';
   return title ? `CV ${title} – ${suffix}` : `Mon CV – ${suffix}`;
+}
+
+/**
+ * Enregistrement d'un CV neuf, partagé par « Nouveau CV » (Mes CV) et le guide de démarrage :
+ * modèle ATS classique, aucun réglage, le parcours (standard ou offre) s'ouvre ensuite dans l'éditeur.
+ */
+export function newCvRecord(profileId: string, name: string): Omit<CVDocument, 'id' | 'createdAt' | 'updatedAt'> {
+  return {
+    profileId, name: name.trim(), templateId: 'ats-classic', targetJob: null, targetCompany: null,
+    customSummary: null, settings: {}, isFavorite: false, lastExported: null, markdownContent: null, markdownMode: 0,
+  };
+}
+
+/** Nom de CV : non vide après nettoyage. */
+export function validateCvName(name: string): string | null {
+  return name.trim() ? null : 'Donnez un nom à votre CV.';
 }

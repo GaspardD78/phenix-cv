@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Check, FileText, Sparkles } from 'lucide-react';
 import { useCvStore } from '@/stores/cvStore';
 import { useProfileStore } from '@/stores/profileStore';
-import { DEFAULT_NEW_CV_MODE, NEW_CV_MODES, NEW_CV_MODE_INFO, suggestCvName, type NewCvMode } from '@/lib/new-cv';
+import { DEFAULT_NEW_CV_MODE, NEW_CV_MODES, NEW_CV_MODE_INFO, newCvRecord, suggestCvName, type NewCvMode } from '@/lib/new-cv';
 
 /**
  * « Nouveau CV » : on choisit d'abord le parcours (« CV standard » par défaut, ou « Adapter à une offre »),
@@ -28,10 +28,7 @@ export function NewCvDialog({ initialMode = DEFAULT_NEW_CV_MODE, onClose }: { in
     if (!name.trim() || !profile || busy) return;
     setBusy(true);
     try {
-      const id = await createCv({
-        profileId: profile.id, name: name.trim(), templateId: 'ats-classic', targetJob: null, targetCompany: null,
-        customSummary: null, settings: {}, isFavorite: false, lastExported: null, markdownContent: null, markdownMode: 0,
-      });
+      const id = await createCv(newCvRecord(profile.id, name));
       if (!id) throw new Error('CV non créé');
       onClose();
       navigate(`/cv/${id}?mode=${mode}`);

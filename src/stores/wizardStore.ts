@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { getSetting, setSetting } from '@/lib/db';
 import {
   WIZARD_KEY, chooseStartPath, completeStep, finishWizard, goToStep, initialWizardState, nextStep, parseWizardState,
-  previousStep, restartWizard, serializeWizardState, skipStep, type StartPath, type WizardState, type WizardStep,
+  previousStep, restartWizard, serializeWizardState, setWizardCv, skipStep, type StartPath, type WizardState, type WizardStep,
 } from '@/lib/wizard/state';
 
 interface WizardStoreState {
@@ -21,6 +21,8 @@ interface WizardStoreState {
   choosePath: (path: StartPath) => Promise<void>;
   finish: () => Promise<void>;
   restart: () => Promise<void>;
+  /** Mémorise le CV créé par le guide (écran 7). */
+  setCv: (cvId: string | null) => Promise<void>;
 }
 
 /** Accès au stockage, injecté pour pouvoir tester sans base. */
@@ -66,6 +68,7 @@ export function makeWizardStore(storage: WizardStorage) {
     choosePath: (path) => apply(chooseStartPath(get().wizard, path)),
     finish: () => apply(finishWizard(get().wizard)),
     restart: () => apply(restartWizard(get().wizard)),
+    setCv: (cvId) => apply(setWizardCv(get().wizard, cvId)),
   };
 });
 }
