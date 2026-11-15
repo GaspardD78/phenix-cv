@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Copy, Check, Sparkles, Wand2 } from 'lucide-react';
+import { Copy, Check, Sparkles } from 'lucide-react';
 import { usePromptStore } from '@/stores/promptStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { useCvStore } from '@/stores/cvStore';
@@ -10,6 +10,8 @@ import { useCvTarget } from '@/hooks/useCvTarget';
 import { TargetPanel } from './TargetPanel';
 import { TargetStatusLine } from './TargetStatusLine';
 import { SuggestedEntriesReview } from './SuggestedEntriesReview';
+import { IntentPanel } from './IntentPanel';
+import { intentToTarget, type CvIntent } from '@/lib/cv-intent';
 import { appendEntriesToCv, promoteSuggestedEntries } from '@/lib/suggested-entries';
 import type { ResolvedTarget } from '@/lib/cv-targets';
 import { readCvLanguage } from '@/lib/cv-language';
@@ -40,11 +42,12 @@ export function AIPromptPanel({ onClose }: AIPromptPanelProps) {
     choice, setChoice, dirty, markCopied, verbTense, detected, target, sheetOverrides, focus, focusFor, proposalFor, applyProposal, expandSignal, requestEdit,
   } = useCvTarget({ profileId: profile?.id, jobOfferText: jobOffer, company: currentCv?.targetCompany, cvSettings: currentCv?.settings });
 
+  const savePages = (pages: 1 | 2) => usePromptStore.getState().saveTargetPages(pages);
   const [selectedBlockId, setSelectedBlockId] = useState<string>('');
   const [contactName, setContactName] = useState('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'standard' | 'full'>('standard');
+  const [activeTab, setActiveTab] = useState<'intent' | 'standard' | 'full'>('intent');
   const [jsonInput, setJsonInput] = useState('');
   const [fullPromptCopied, setFullPromptCopied] = useState(false);
   const [clarify, setClarify] = useState(false);
@@ -214,33 +217,44 @@ export function AIPromptPanel({ onClose }: AIPromptPanelProps) {
         <div className="flex items-center justify-between p-4">
           <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            Générateur IA
+            Créer et adapter mon CV
           </h2>
         </div>
-        <div className="flex px-4 gap-4 border-t border-gray-100">
-          <button
-            onClick={() => setActiveTab('standard')}
-            className={`py-2 text-xs font-medium border-b-2 transition-colors ${
-              activeTab === 'standard' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Chirurgical
-          </button>
-          <button
-            onClick={() => setActiveTab('full')}
-            className={`py-2 text-xs font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
-              activeTab === 'full' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Wand2 className="w-3.5 h-3.5" />
-            CV Complet (One-Shot)
-          </button>
+        <div className="flex px-4 gap-4 border-t border-gray-100" role="tablist">
+          {([
+            ['intent', 'CV standard'],
+            ['full', 'Adapter à une offre'],
+            ['standard', 'Autres textes'],
+          ] as const).map(([id, label]) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={activeTab === id}
+              onClick={() => setActiveTab(id)}
+              className={`py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === id ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {activeTab === 'standard' ? (
+        {activeTab === 'intent' ? (
+          <IntentPanel
+            onApplied={onClose}
+            onUseAi={(intent: CvIntent) => {
+              setChoice(intentToTarget(intent));
+              void savePages(intent.pages);
+              if (currentCv) void useCvStore.getState().updateCv(currentCv.id, { settings: { ...(currentCv.settings ?? {}), cvLanguage: intent.language } });
+              setActiveTab('full');
+              toast.message('Vos réponses sont prêtes : copiez le texte pour l\'IA, puis collez sa réponse.');
+            }}
+          />
+        ) : activeTab === 'standard' ? (
           <>
             {/* 1. Job offer textarea */}
             <div>
@@ -409,7 +423,7 @@ export function AIPromptPanel({ onClose }: AIPromptPanelProps) {
                 className="mt-0.5 accent-amber-500 flex-shrink-0"
               />
               <span className="text-xs text-gray-600 leading-relaxed">
-                <span className="font-semibold text-gray-700">Affiner par questions</span> — l'IA pose 1 à 3 questions ciblées avant de générer (si besoin). Réponds-lui, puis colle le JSON final.
+                <span className="font-semibold text-gray-700">Affiner par questions</span> — l'IA pose 1 à 3 questions ciblées avant de générer (si besoin). Répondez-lui, puis collez sa réponse finale.
               </span>
             </label>
 
