@@ -141,6 +141,15 @@ function activatePrintRules(doc: Document): void {
 
 interface Fragment { node: Text; start: number; text: string; top: number; bottom: number; column: Element | null }
 
+/**
+ * Colonnes côte à côte : leurs lignes sont mesurées séparément (une ligne visuelle
+ * par colonne). Bande latérale (`sidebar-*`), colonne sans fond ou encadré
+ * (`header-columns`, `two-equal`, `magazine`), titre placé dans la marge (structure
+ * `margin`), tuiles et dates de la frise centrale comptent comme colonne latérale.
+ */
+const SIDE_COLUMN_SELECTOR = '.cv-sidebar, .cv-side-col, .cv-margin-section > h3, .cv-tiles > .cv-sidebar-section, .cv-alt-date';
+const COLUMN_SELECTOR = `${SIDE_COLUMN_SELECTOR}, .cv-main-col, .cv-margin-body, .cv-alt-body`;
+
 /** Découpe chaque nœud texte en fragments par ligne visuelle. */
 function collectFragments(doc: Document, root: HTMLElement): Fragment[] {
   const frags: Fragment[] = [];
@@ -150,7 +159,7 @@ function collectFragments(doc: Document, root: HTMLElement): Fragment[] {
     const node = n as Text;
     const value = node.data;
     if (!value.trim()) continue;
-    const column = node.parentElement?.closest('.cv-sidebar, .cv-main-col') ?? null;
+    const column = node.parentElement?.closest(COLUMN_SELECTOR) ?? null;
     range.selectNodeContents(node);
     const rects = Array.from(range.getClientRects()).filter((r) => r.height > 0);
     if (rects.length === 0) continue;
@@ -246,7 +255,7 @@ function buildLines(doc: Document, root: HTMLElement, frags: Fragment[]): PrintL
       return {
         text: squash(text),
         section: sectionOf(g.frags[0].node),
-        column: (g.column?.classList.contains('cv-sidebar') ? 'sidebar' : g.column ? 'main' : 'page') as PrintLine['column'],
+        column: (g.column?.matches(SIDE_COLUMN_SELECTOR) ? 'sidebar' : g.column ? 'main' : 'page') as PrintLine['column'],
         topMm: g.top / PX_PER_MM,
         bottomMm: g.bottom / PX_PER_MM,
         anchor: anchorOf(root, g.frags[0]),

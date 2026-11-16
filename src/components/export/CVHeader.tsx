@@ -106,22 +106,54 @@ interface CVHeaderProps {
   headerStyle: string;
   headerBlockStyle: React.CSSProperties;
   nameLineBreak: string;
+  /** Organisation de l'en-tête (`template.structure.header`) ; défaut : centré. */
+  layout?: 'centered' | 'left' | 'split' | 'monogram' | 'hero';
 }
 
 export function CVHeader({
   profile, title, template, hasPhoto,
   photoShape, photoSize, photoBorder, primaryColor,
-  isBanner, headerStyle, headerBlockStyle, nameLineBreak,
+  isBanner, headerStyle, headerBlockStyle, nameLineBreak, layout = 'centered',
 }: CVHeaderProps) {
   // Build contact items with icons
   const contactItems = buildContactItems(profile);
+  const isSplit = layout === 'split';
+  const isMonogram = layout === 'monogram';
+  const isHero = layout === 'hero';
+  // Disposition : centrée (d'origine), alignée à gauche, scindée (coordonnées à droite),
+  // monogramme (initiales à gauche) ou grand en-tête (bloc pleine largeur, photo en bas).
+  const blockLayout = isSplit
+    ? `cv-header-split flex ${hasPhoto ? 'items-center' : 'items-end'} gap-6`
+    : isMonogram ? 'cv-header-monogram flex items-center gap-6'
+    : isHero ? `cv-header-hero text-center${hasPhoto ? ' cv-header-hero-photo' : ''}`
+    : hasPhoto ? 'flex items-center gap-6' : layout === 'left' ? 'cv-header-left text-left' : 'text-center';
+  const contactsLeft = layout === 'left' || isMonogram;
+  /** Initiales du monogramme (décor, rendues par CSS depuis `data-initials`). */
+  const initials = `${profile.firstName?.trim().charAt(0) ?? ''}${profile.lastName?.trim().charAt(0) ?? ''}`.toUpperCase();
+
+  const contactNode = (item: ContactItem, idx: number) => (
+    item.href ? (
+      <a key={idx} href={item.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center whitespace-nowrap hover:underline">
+        {item.icon}
+        {item.text}
+      </a>
+    ) : (
+      <span key={idx} className="inline-flex items-center whitespace-nowrap">
+        {item.icon}
+        {item.text}
+      </span>
+    )
+  );
 
   return (
     <div
-      className={`cv-header-block ${hasPhoto ? 'flex items-center gap-6' : 'text-center'} ${!isBanner && headerStyle !== 'accent-light' ? 'mb-4 text-black dark:text-black' : ''}`}
+      className={`cv-header-block ${blockLayout} ${!isBanner && headerStyle !== 'accent-light' ? 'mb-4 text-black dark:text-black' : ''}`}
       style={Object.keys(headerBlockStyle).length > 0 ? headerBlockStyle : undefined}
     >
-      {hasPhoto && (() => {
+      {isMonogram && !hasPhoto && initials && (
+        <div className="cv-monogram" data-initials={initials} aria-hidden="true" />
+      )}
+      {hasPhoto && !isHero && (() => {
         const size = photoSize || '96px';
         const shapeClass = photoShape || 'rounded-full';
 
@@ -153,7 +185,7 @@ export function CVHeader({
           </div>
         );
       })()}
-      <div className={hasPhoto ? 'flex-1' : ''}>
+      <div className={isSplit || isMonogram ? 'flex-1 min-w-0' : hasPhoto && !isHero ? 'flex-1' : ''}>
         <h1 className={`cv-name ${template.preview.nameClass || 'text-3xl font-bold uppercase tracking-wider mb-1'}`}>
           {nameLineBreak === 'split'
             ? <>{profile.firstName}<br />{profile.lastName}</>
@@ -164,26 +196,27 @@ export function CVHeader({
             {title}
           </h2>
         )}
-        {contactItems.length > 0 && (
+        {!isSplit && contactItems.length > 0 && (
           <div className={`cv-contact-info mt-2 ${template.preview.contactClass || 'text-sm text-gray-600'}`}>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-              {contactItems.map((item, idx) => (
-                item.href ? (
-                  <a key={idx} href={item.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center whitespace-nowrap hover:underline">
-                    {item.icon}
-                    {item.text}
-                  </a>
-                ) : (
-                  <span key={idx} className="inline-flex items-center whitespace-nowrap">
-                    {item.icon}
-                    {item.text}
-                  </span>
-                )
-              ))}
+            <div className={`flex flex-wrap ${contactsLeft ? 'justify-start' : 'justify-center'} gap-x-4 gap-y-1`}>
+              {contactItems.map(contactNode)}
             </div>
           </div>
         )}
       </div>
+      {isHero && hasPhoto && (
+        // Photo ronde à cheval sur le bord bas du bloc (décalage géré par PrintableCV).
+        <div className="cv-hero-photo rounded-full overflow-hidden mx-auto" style={{ width: photoSize || '96px', height: photoSize || '96px' }}>
+          <img src={profile.photoPath!} alt="Photo de profil" className="w-full h-full object-cover" />
+        </div>
+      )}
+      {isSplit && contactItems.length > 0 && (
+        <div className={`cv-contact-info cv-contact-stack shrink-0 max-w-[45%] text-right ${template.preview.contactClass || 'text-sm text-gray-600'}`}>
+          <div className="flex flex-col items-end gap-y-0.5">
+            {contactItems.map(contactNode)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

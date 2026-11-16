@@ -1,0 +1,29 @@
+<div class="[font-family:Arial,sans-serif] bg-white bg-white dark:bg-white dark:text-black max-w-[210mm] mx-auto print:m-0 print:max-w-none print:p-0 print:shadow-none print:w-full px-12 py-10 shadow-lg text-black text-gray-900" id="printable-cv" style="font-family: Calibri, Arial, sans-serif;">
+  <style>
+    "#printable-cv { font-variant-ligatures: none; }\n#printable-cv .cv-title-row { column-gap: 8px; }\n#printable-cv .cv-title-row > :first-child { flex: 1 1 0; min-width: 0; }\n#printable-cv .cv-title-row > .cv-date { flex: 0 0 auto; max-width: 45%; white-space: nowrap; }\n#printable-cv .cv-meta-row { margin: 0 0 2px; line-height: 1.35; }\n#printable-cv .cv-meta-row .cv-subtitle { display: block; font-size: 0.92em; font-weight: 400; font-style: normal; color: #55656B; }\n#printable-cv .cv-title-row > :first-child::after { content: \" \"; white-space: pre; }\n@media print { #printable-cv { padding: 8px 10px !important; } }\n#printable-cv .cv-entry-alt { display: grid; grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr); margin-bottom: 0 !important; }\n#printable-cv .cv-alt-date, #printable-cv .cv-alt-body { padding-bottom: 16px; grid-row: 1; }\n#printable-cv .cv-alt-right .cv-alt-date { grid-column: 1; text-align: right; } #printable-cv .cv-alt-right .cv-alt-body { grid-column: 3; }\n#printable-cv .cv-alt-left .cv-alt-date { grid-column: 3; text-align: left; } #printable-cv .cv-alt-left .cv-alt-body { grid-column: 1; }\n#printable-cv .cv-alt-node { grid-column: 2; grid-row: 1; position: relative; } #printable-cv .cv-alt-node::before { content: \"\"; position: absolute; top: 0; bottom: 0; left: 14px; width: 2px; background: color-mix(in srgb, #4f46e5 35%, white); }\n#printable-cv .cv-alt-node::after { content: \"\"; position: absolute; top: 2px; left: 9px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 9999px; background: #ffffff; border: 2px solid #4f46e5; }\n#printable-cv .cv-alt-date .cv-date { white-space: normal; } #printable-cv h3 { text-align: center; }"
+  <div class="cv-header-block dark:text-black mb-4 text-black text-center">
+    <div class="">
+      <h1 class="[font-family:Georgia,serif] cv-name font-bold leading-tight mb-1 text-[34px] text-gray-900">
+        "Léo Bernard"
+      <div class="[font-family:Arial,sans-serif] cv-contact-info mt-2 text-[11.5px] text-gray-600">
+        <div class="flex flex-wrap gap-x-4 gap-y-1 justify-center">
+          <a class="hover:underline inline-flex items-center whitespace-nowrap" href="mailto:leo.bernard@example.com" rel="noopener noreferrer" target="_blank">
+            <svg class="mr-1 opacity-60" fill="currentColor" height="14" style="width: 14px; height: 14px; display: block; flex-shrink: 0;" viewBox="0 0 20 20" width="14" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.161V6a2 2 0 00-2-2H3z">
+              <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z">
+            "leo.bernard@example.com"
+  <hr class="border-gray-300 border-t mb-4 print:border-gray-400">
+  <h3 class="[font-family:Georgia,serif] font-bold mb-4 mt-6 print:break-after-avoid text-[17px] text-indigo-600">
+    "Expérience"
+  <div class="cv-alt-right cv-entry cv-entry-alt mb-0 print:break-inside-avoid">
+    <div class="cv-alt-date">
+      <span class="[font-family:Arial,sans-serif] cv-date font-semibold tabular-nums text-[11px] text-indigo-600">
+        "juin 2024 – septembre 2024"
+    <div aria-hidden="true" class="cv-alt-node">
+    <div class="cv-alt-body">
+      <div class="cv-title-row mb-0.5">
+        <span class="[font-family:Arial,sans-serif] cv-title font-bold text-[12.5px] text-gray-900">
+          "Vendeur"
+      <div class="cv-meta-row">
+        <span class="cv-subtitle text-[11.5px] text-gray-700">
+          "Boulangerie du Centre"

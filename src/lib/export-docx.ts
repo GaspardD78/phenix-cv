@@ -13,6 +13,7 @@ import { formatEntryDates, readDateSettings } from './entry-dates';
 import { isSubHeader, parentDisplayFormat, visibleHeaderMask, type SlotKind } from './cv-sections';
 import { entryDisplayTitle } from './entry-display';
 import { BADGE_ENTRY_TYPES, buildBadgeRows, isSkillLineBlock, itemLabel, SKILL_ITEM_SEPARATOR, type BadgeItem, type BadgeRow } from './skill-lines';
+import { cvExportFilename } from './export-filename';
 
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -260,7 +261,7 @@ export async function generateDocxBlob(
   if (profile.otherUrl) contactItems.push({ icon: CONTACT_ICONS.portfolio, text: shortenUrl(profile.otherUrl), href: ensureHref(profile.otherUrl) });
 
   /** Build a contact paragraph with Unicode icons (inline hyperlinks separated by " | "). */
-  const makeContactParagraph = (textColor: string, alignment: typeof AlignmentType[keyof typeof AlignmentType] = AlignmentType.CENTER): Paragraph => {
+  const makeContactParagraph = (textColor: string, alignment: typeof AlignmentType[keyof typeof AlignmentType] = AlignmentType.CENTER, extra: Record<string, unknown> = {}): Paragraph => {
     const linkColor = textColor || '444444';
     const children: (TextRun | ExternalHyperlink)[] = [];
     contactItems.forEach((item, idx) => {
@@ -283,12 +284,31 @@ export async function generateDocxBlob(
       children,
       alignment,
       spacing: { after: 60 },
+      ...extra,
     });
   };
 
   // ── Page dimensions (needed for banner bleed calculations) ──
   const pageWidth = effectiveTemplate.docx.pageSize === 'A4' ? 11906 : 12240;
   const pageHeight = effectiveTemplate.docx.pageSize === 'A4' ? 16838 : 15840;
+
+  // ── Organisation interne (template.structure) ──
+  // Facultative : sans structure, le document reste celui d'origine (aucun retrait ajouté).
+  // Aucun tableau ni zone de texte : retraits, tabulations et bordures de paragraphe seulement.
+  const struct = template.structure ?? {};
+  const contentWidthTw = pageWidth - effectiveMargins.left - effectiveMargins.right;
+  /** Couleur d'accent des décorations de structure : réglage du CV, sinon palette du modèle. */
+  const structAccentHex = accentHex || (template.palettes?.[0]?.accent ? docxHex(template.palettes[0].accent) : '1F2937');
+  /** Teinte claire de l'accent (mélange avec le blanc, `pct` % d'accent) : fond des titres en étiquette ou en bande. */
+  const tintHex = (pct: number) => {
+    const n = parseInt(structAccentHex, 16);
+    const mix = (c: number) => Math.round(c * pct / 100 + 255 * (1 - pct / 100)).toString(16).padStart(2, '0');
+    return `${mix((n >> 16) & 255)}${mix((n >> 8) & 255)}${mix(n & 255)}`.toUpperCase();
+  };
+  /** Titres en marge : le contenu des sections est décalé à droite du titre. */
+  const contentLeft = struct.section === 'margin' ? Math.round(contentWidthTw * 0.26) : 0;
+  const indentAt = (left: number, hanging = 0) => (left > 0 ? { indent: hanging ? { left, hanging } : { left } } : {});
+  const bulletIndentAt = (left: number) => (left > 0 ? { indent: { left: left + 540, hanging: 270 } } : {});
 
   // ── Build document sections ──
   const title = cv.targetJob || profile.title;
@@ -302,7 +322,8 @@ export async function generateDocxBlob(
   // alignment mismatch).
   if (isBanner || finalPhotoData) {
     // ── Table-based header (banner background and/or photo) ──
-    const shading = { fill: isBanner ? bannerHex : 'FFFFFF', type: ShadingType.CLEAR, color: 'auto' };
+    // Grand en-tête : fond clair de l'accent (pas de bandeau sombre).
+    const shading = { fill: isBanner ? bannerHex : struct.header === 'hero' ? tintHex(11) : 'FFFFFF', type: ShadingType.CLEAR, color: 'auto' };
     const textColor = isBanner ? 'FFFFFF' : '';
 
     const namePara = new Paragraph({
@@ -377,22 +398,56 @@ export async function generateDocxBlob(
       indent: tableIndent as any,
       borders: NO_TABLE_BORDERS,
     }));
+  } else if (struct.header === 'split') {
+    // ── En-tête scindé : nom et poste à gauche, une coordonnée par ligne à droite (taquet droit) ──
+    const left: TextRun[][] = [
+      [new TextRun({ text: `${profile.firstName} ${profile.lastName}`, bold: true, size: effectiveTemplate.docx.headingSize + 12, font: effectiveTemplate.docx.fonts.heading })],
+    ];
+    if (title) left.push([new TextRun({ text: title, bold: true, size: B + 4, font: effectiveTemplate.docx.fonts.heading, color: structAccentHex })]);
+    const rows = Math.max(left.length, contactItems.length);
+    for (let r = 0; r < rows; r++) {
+      const children: (TextRun | ExternalHyperlink)[] = [...(left[r] ?? [])];
+      const item = contactItems[r];
+      if (item) {
+        children.push(new TextRun({ text: '\t', size: B, font: F }));
+        const run = new TextRun({ text: item.text, size: B - 1, font: F, color: '444444' });
+        children.push(item.href ? new ExternalHyperlink({ link: item.href, children: [run] }) : run);
+      }
+      headerChildren.push(new Paragraph({
+        children,
+        tabStops: [{ type: TabStopType.RIGHT, position: contentWidthTw }],
+        spacing: { after: 20 },
+        ...(r === rows - 1 ? { border: { bottom: { color: structAccentHex, space: 6, style: BorderStyle.SINGLE, size: 18 } } } : {}),
+      }));
+    }
   } else {
     // ── Simple text header (no photo, no banner) ──
+    // Monogramme : en-tête aligné à gauche (les initiales, simple décor, ne sont pas reprises).
+    const headerAlign = struct.header === 'left' || struct.header === 'monogram' ? AlignmentType.LEFT : AlignmentType.CENTER;
+    // Grand en-tête : fond clair de l'accent sur toute la largeur (trame de paragraphe).
+    const heroShade = struct.header === 'hero' ? { shading: { type: ShadingType.CLEAR, color: 'auto', fill: tintHex(11) } } : {};
+    const fullName = `${profile.firstName} ${profile.lastName}`;
     headerChildren.push(new Paragraph({
-      text: `${profile.firstName} ${profile.lastName}`,
+      // Nom surligné : fond clair derrière le texte seul.
+      ...(effectiveTemplate.docx.nameHighlight
+        ? { children: [new TextRun({ text: fullName, shading: { type: ShadingType.CLEAR, color: 'auto', fill: tintHex(28) } })] }
+        : { text: fullName }),
       heading: HeadingLevel.HEADING_1,
-      alignment: AlignmentType.CENTER,
+      alignment: headerAlign,
+      ...heroShade,
     }));
     if (contactItems.length > 0) {
-      headerChildren.push(makeContactParagraph(''));
+      headerChildren.push(makeContactParagraph('', headerAlign, heroShade));
     }
     if (title) {
       headerChildren.push(new Paragraph({
         text: title,
         heading: HeadingLevel.HEADING_2,
-        alignment: AlignmentType.CENTER,
+        alignment: headerAlign,
         spacing: { after: 120 },
+        ...heroShade,
+        // Sans trait sous l'en-tête : on annule le filet du style « Titre 2 ».
+        ...(struct.headerRule === false ? { border: { bottom: { style: BorderStyle.NONE, size: 0, color: 'auto', space: 0 } } } : {}),
       }));
     }
   }
@@ -403,6 +458,7 @@ export async function generateDocxBlob(
     bodyChildren.push(new Paragraph({
       children: [new TextRun({ text: summary, size: B, font: F })],
       spacing: { after: sectionSpacing, line: lineSpacing },
+      ...indentAt(contentLeft),
     }));
   }
 
@@ -453,11 +509,13 @@ export async function generateDocxBlob(
           children: [new TextRun({ text: row.category ?? '', bold: true, size: B, font: F })],
           spacing: { before: 40, after: 20, line: lineSpacing },
           keepNext: true,
+          ...indentAt(contentLeft),
         }));
         row.items.forEach(item => result.push(new Paragraph({
           children: parseMarkdownText(item.name),
           spacing: { after: 30, line: lineSpacing },
           numbering: { reference: 'default-bullet', level: 0 },
+          ...bulletIndentAt(contentLeft),
         })));
       });
     } else if (format === 'columns2' || format === 'columns3') {
@@ -493,6 +551,7 @@ export async function generateDocxBlob(
       categories.forEach(row => result.push(new Paragraph({
         children: categoryRuns(row),
         spacing: { after: 40, line: lineSpacing },
+        ...indentAt(contentLeft),
       })));
     }
 
@@ -504,6 +563,7 @@ export async function generateDocxBlob(
       result.push(new Paragraph({
         children: [new TextRun({ text: labels.join(' · '), size: B, font: F })],
         spacing: { after: 60, line: lineSpacing },
+        ...indentAt(contentLeft),
       }));
 
     } else if (format === 'list') {
@@ -513,6 +573,7 @@ export async function generateDocxBlob(
           children: parseMarkdownText(label),
           spacing: { after: 30, line: lineSpacing },
           numbering: { reference: 'default-bullet', level: 0 },
+          ...bulletIndentAt(contentLeft),
         }));
       });
 
@@ -585,6 +646,7 @@ export async function generateDocxBlob(
         children: [new TextRun({ text: block.sectionName, bold: true, size: B, font: F })],
         spacing: { before: 80, after: 20 },
         keepNext: true,
+        ...indentAt(contentLeft),
       }));
       i++;
 
@@ -595,14 +657,31 @@ export async function generateDocxBlob(
         bold: true,
       };
       if (accentHex) sectionRun.color = accentHex;
+      const headingRule = effectiveTemplate.docx.headingRule ?? 'bottom';
+      if (headingRule !== 'bottom' && !accentHex) sectionRun.color = structAccentHex;
+      const headingText = effectiveTemplate.docx.headingUppercase === false
+        ? (block.sectionName || '')
+        : (block.sectionName || '').toUpperCase();
+      if (effectiveTemplate.docx.headingItalic) {
+        sectionRun.italics = true;
+        // Titres en italique : couleur d'accent du modèle si aucune couleur n'est choisie.
+        if (!accentHex) sectionRun.color = structAccentHex;
+      }
+      // Étiquette : fond clair derrière le texte seul ; bande : fond clair sur toute la largeur.
+      if (headingRule === 'label') sectionRun.shading = { type: ShadingType.CLEAR, color: 'auto', fill: tintHex(13) };
+      if (headingRule === 'label' || headingRule === 'band') sectionRun.color = accentHex || (headingRule === 'band' ? '1F2937' : structAccentHex);
+      const headingBorder = headingRule === 'none' || headingRule === 'label' ? {}
+        : headingRule === 'band'
+          ? { shading: { type: ShadingType.CLEAR, color: 'auto', fill: tintHex(13) } }
+        : headingRule === 'left'
+          ? { border: { left: { color: structAccentHex, space: 6, style: BorderStyle.SINGLE, size: 24 } }, indent: { left: 140 } }
+          : { border: { bottom: { color: accentHex || 'auto', space: 1, style: BorderStyle.SINGLE, size: 6 } } };
 
       bodyChildren.push(new Paragraph({
-        children: [new TextRun({ ...sectionRun, text: (block.sectionName || '').toUpperCase() })],
+        children: [new TextRun({ ...sectionRun, text: headingText })],
         spacing: { before: sectionSpacing, after: 60 },
         keepNext: true, // pas de titre de section orphelin en bas de page
-        border: {
-          bottom: { color: accentHex || 'auto', space: 1, style: BorderStyle.SINGLE, size: 6 },
-        },
+        ...headingBorder,
       }));
       i++;
 
@@ -611,6 +690,7 @@ export async function generateDocxBlob(
       bodyChildren.push(new Paragraph({
         children: [new TextRun({ text: block.customContent.trim(), size: B, font: F })],
         spacing: { after: 40, line: lineSpacing },
+        ...indentAt(contentLeft),
       }));
       i++;
 
@@ -622,6 +702,7 @@ export async function generateDocxBlob(
           children: parseMarkdownText(isBullet ? t.substring(2).trim() : line),
           spacing: { after: 40, line: lineSpacing },
           numbering: isBullet ? { reference: 'default-bullet', level: 0 } : undefined,
+          ...(isBullet ? bulletIndentAt(contentLeft) : indentAt(contentLeft)),
         }));
       }
       i++;
@@ -672,19 +753,72 @@ export async function generateDocxBlob(
         const contentWidth = (effectiveTemplate.docx.pageSize === 'A4' ? 11906 : 12240)
           - effectiveMargins.left - effectiveMargins.right;
 
+        // Structure : dates en marge (date, tabulation, intitulé, retrait suspendu) ou frise
+        // (filet gauche continu : bordure identique sur chaque paragraphe de l'entrée).
+        // Marge large (34 %) : la date la plus longue (« septembre 2018 – décembre 2020 ») y tient
+        // sur une ligne, sinon la tabulation sauterait au taquet suivant et décalerait l'intitulé.
+        const gutter = struct.entry === 'date-gutter' ? Math.round(contentWidthTw * 0.34) : 0;
+        const timeline = struct.entry === 'timeline';
+        // Cadre : bordure identique sur chaque paragraphe (Word les réunit en un seul cadre),
+        // puces écrites « • » pour garder le même retrait partout ; liseré d'accent à gauche.
+        const card = struct.entry === 'card';
+        const inline = struct.entry === 'inline';
+        // Dates sur la ligne de l'entreprise ; `hanging` : le reste en retrait sous l'intitulé.
+        const datesBelow = struct.entry === 'date-below' || struct.entry === 'hanging';
+        // Dates au-dessus de l'intitulé (`date-above`) ; la frise centrale (`alternate`) en une colonne.
+        const datesAbove = struct.entry === 'date-above' || struct.entry === 'alternate';
+        const hangingLeft = struct.entry === 'hanging' ? 360 : 0;
+        const entryLeft = contentLeft + gutter + (timeline ? 220 : 0);
+        const cardSide = { color: tintHex(30), space: 4, style: BorderStyle.SINGLE, size: 6 };
+        const entryDeco = timeline
+          ? { border: { left: { color: structAccentHex, space: 10, style: BorderStyle.SINGLE, size: 12 } } }
+          : card
+            ? { border: { top: cardSide, bottom: cardSide, right: cardSide, left: { color: structAccentHex, space: 6, style: BorderStyle.SINGLE, size: 18 } } }
+            : {};
+        const entryIndent = indentAt(entryLeft);
+        const bodyIndent = indentAt(entryLeft + hangingLeft);
+
         const line1: TextRun[] = [];
-        if (titleText) line1.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
-        if (dateText) line1.push(new TextRun({ text: `\t${dateText}`, size: B, font: F, color: '666666' }));
+        if (gutter) {
+          if (dateText) line1.push(new TextRun({ text: dateText, bold: true, size: B - 2, font: F, color: structAccentHex }));
+          line1.push(new TextRun({ text: '\t', size: B, font: F }));
+          if (titleText) line1.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
+        } else {
+          if (titleText) line1.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
+          if (inline && meta) line1.push(new TextRun({ text: `, ${meta}`, size: B, font: F, color: '555555' }));
+          if (dateText && !datesBelow && !datesAbove) line1.push(new TextRun({ text: `\t${dateText}`, size: B, font: F, color: '666666' }));
+        }
+        if (datesAbove && dateText) {
+          bodyChildren.push(new Paragraph({
+            children: [new TextRun({ text: dateText, bold: true, size: B - 2, font: F, color: structAccentHex })],
+            spacing: { before: 80, after: 0 },
+            keepNext: true,
+            ...entryIndent,
+          }));
+        }
+        // Ligne 2 : entreprise · lieu (absente en `inline`), suivie des dates en `date-below` / `hanging`.
+        const line2: TextRun[] = [];
+        if (meta && !inline) line2.push(new TextRun({ text: meta, size: B - 2, font: F, color: '555555' }));
+        if (datesBelow && dateText) {
+          if (line2.length) line2.push(new TextRun({ text: ' · ', size: B - 2, font: F, color: '555555' }));
+          line2.push(new TextRun({ text: dateText, size: B - 2, font: F, color: '555555' }));
+        }
         if (!line1.length) line1.push(new TextRun({ text: '' }));
         bodyChildren.push(new Paragraph({
           children: line1,
-          tabStops: [{ type: TabStopType.RIGHT, position: contentWidth }],
-          spacing: { before: 60, after: meta ? 0 : 20 },
+          tabStops: gutter
+            ? [{ type: TabStopType.LEFT, position: entryLeft }]
+            : [{ type: TabStopType.RIGHT, position: contentWidth }],
+          spacing: { before: datesAbove && dateText ? 0 : 60, after: line2.length ? 0 : 20 },
+          ...(gutter ? indentAt(entryLeft, gutter) : entryIndent),
+          ...entryDeco,
         }));
-        if (meta) {
+        if (line2.length) {
           bodyChildren.push(new Paragraph({
-            children: [new TextRun({ text: meta, size: B - 2, font: F, color: '555555' })],
+            children: line2,
             spacing: { after: 20 },
+            ...bodyIndent,
+            ...entryDeco,
           }));
         }
 
@@ -693,13 +827,29 @@ export async function generateDocxBlob(
             const t = line.trim();
             if (!t) continue;
             const isBullet = t.startsWith('- ') || t.startsWith('* ');
+            if (card) {
+              bodyChildren.push(new Paragraph({
+                children: [
+                  ...(isBullet ? [new TextRun({ text: '•  ', size: B, font: F })] : []),
+                  ...parseMarkdownText(isBullet ? t.substring(2).trim() : t),
+                ],
+                spacing: { after: 10, line: lineSpacing },
+                ...entryIndent,
+                ...entryDeco,
+              }));
+              continue;
+            }
             bodyChildren.push(new Paragraph({
               children: parseMarkdownText(isBullet ? t.substring(2).trim() : t),
               spacing: { after: 10, line: lineSpacing },
               numbering: isBullet ? { reference: 'default-bullet', level: 0 } : undefined,
+              ...(isBullet ? bulletIndentAt(entryLeft + hangingLeft) : bodyIndent),
+              ...entryDeco,
             }));
           }
         }
+        // Cadres : un paragraphe vide sans bordure sépare deux entrées (sinon Word les fusionne).
+        if (card) bodyChildren.push(new Paragraph({ children: [], spacing: { before: 0, after: 0, line: 160 } }));
         i++;
       }
     } else {
@@ -799,7 +949,7 @@ export async function exportToDocx(
   options: { onSaved?: (filePath: string) => void } = {},
 ) {
   try {
-    const defaultFilename = `${cv.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_ats.docx`;
+    const defaultFilename = cvExportFilename(cv, profile, 'docx');
     const blob = await generateDocxBlob(cv, profile, blocks, entries, template);
 
     // Desktop : dialogue de sauvegarde natif Tauri

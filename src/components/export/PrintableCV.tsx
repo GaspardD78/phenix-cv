@@ -181,6 +181,29 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
     const sbRule        = sidebarIsDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.12)';
     const sbRing        = sidebarIsDark ? 'rgba(255,255,255,0.5)'  : 'rgba(0,0,0,0.18)';
 
+    // ── Organisation interne (template.structure, layout `header-columns`) ───
+    // Tout est facultatif : sans structure, le rendu (et le DOM) reste celui d'origine.
+    const structure = template.structure ?? {};
+    const isHeaderColumns = template.layout === 'header-columns';
+    const isMarginSections = structure.section === 'margin';
+    const isSplitHeader = structure.header === 'split';
+    const isTwoEqual = template.layout === 'two-equal';
+    const isMagazine = template.layout === 'magazine';
+    const isHero = structure.header === 'hero';
+    const hasTiles = structure.badges === 'tiles';
+    /** Marges intérieures de la page (écran) : réglage du CV, sinon classes px-/py- du modèle. */
+    const screenPad = (() => {
+      if (pageMargin) { const p = pageMargin.trim().split(/\s+/); return { v: p[0], h: p[1] || p[0] }; }
+      const px = template.preview.containerClass.match(/\bpx-(\d+)\b/);
+      const py = template.preview.containerClass.match(/\bpy-(\d+)\b/);
+      return { v: `${py ? parseInt(py[1]) * 4 : 40}px`, h: `${px ? parseInt(px[1]) * 4 : 48}px` };
+    })();
+    const heroPhotoSize = settings.photoSize || '96px';
+    const heroHasPhoto = Boolean(profile.photoPath);
+    const entryStyle = structure.entry;
+    /** Une seule couleur d'accent : teintes claires dérivées par mélange avec le blanc (pas de dégradé). */
+    const accentTint = (pct: number) => `color-mix(in srgb, ${accentColor} ${pct}%, white)`;
+
     // Compute effective container padding for full-width banner bleed (negative margin trick)
     const getBannerPad = () => {
       if (pageMargin) {
@@ -327,6 +350,79 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       isSidebar ? `#printable-cv .cv-sidebar .cv-badge { background-color: ${sbBadgeBg} !important; border-color: ${sbBadgeBorder} !important; color: ${sidebarText} !important; }` : '',
       // La colonne principale conserve les couleurs d'accent du template.
       isSidebar && primaryColor ? `#printable-cv .cv-main-col h3 { color: ${primaryColor}; border-color: ${primaryColor}; }` : '',
+      // ── Dates en marge (structure.entry = date-gutter) ─────────────────────
+      structure.entry === 'date-gutter' ? '#printable-cv .cv-entry-gutter { display: grid; grid-template-columns: 24% minmax(0, 1fr); column-gap: 14px; }' : '',
+      structure.entry === 'date-gutter' ? '#printable-cv .cv-gutter-date { white-space: normal; padding-top: 1px; margin-bottom: 0; }' : '',
+      // Espace conservé dans le texte du PDF entre la date et l'intitulé (voir ENTRY_DATE_GAP_PX).
+      structure.entry === 'date-gutter' ? '#printable-cv .cv-gutter-date:not(:empty)::after { content: " "; white-space: pre; }' : '',
+      // ── Frise (structure.entry = timeline) : filet continu et pastille par entrée ──
+      structure.entry === 'timeline' ? `#printable-cv .cv-entry-timeline { position: relative; margin-left: 6px; padding-left: 18px; border-left: 2px solid ${accentTint(35)}; margin-bottom: 0 !important; padding-bottom: ${entrySpacing || '14px'}; }` : '',
+      structure.entry === 'timeline' ? `#printable-cv .cv-entry-timeline::before { content: ""; position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 9999px; background: #ffffff; border: 2px solid ${accentColor}; }` : '',
+      // ── En-tête scindé : filet d'accent épais sous l'en-tête ────────────────
+      isSplitHeader ? `#printable-cv .cv-header-rule { border: 0; border-top: 3px solid ${accentColor}; margin: 0 0 16px; }` : '',
+      // ── Titres en marge (structure.section = margin) ────────────────────────
+      isMarginSections ? '#printable-cv .cv-margin-section { display: grid; grid-template-columns: 26% minmax(0, 1fr); column-gap: 16px; margin-top: 16px; }' : '',
+      isMarginSections ? '#printable-cv .cv-margin-section > h3 { margin: 0; padding-top: 2px; text-align: right; }' : '',
+      isMarginSections ? `#printable-cv .cv-margin-body { min-width: 0; border-left: 1px solid ${accentTint(40)}; padding-left: 14px; }` : '',
+      isMarginSections ? '#printable-cv .cv-margin-body > :last-child { margin-bottom: 0; }' : '',
+      isMarginSections ? `#printable-cv .cv-margin-offset { margin-left: calc(26% + 16px); padding-left: 15px; }` : '',
+      // ── En-tête puis deux colonnes séparées par un filet (layout header-columns) ──
+      isHeaderColumns ? '#printable-cv .cv-columns { display: flex; align-items: stretch; }' : '',
+      isHeaderColumns ? `#printable-cv .cv-side-col { flex: 0 0 30%; width: 30%; box-sizing: border-box; padding-right: 18px; border-right: 1.5px solid ${accentColor}; }` : '',
+      isHeaderColumns ? '#printable-cv .cv-columns > .cv-main-col { flex: 1 1 auto; min-width: 0; padding-left: 20px; }' : '',
+      isHeaderColumns ? '#printable-cv .cv-side-col > :first-child h3, #printable-cv .cv-columns > .cv-main-col > h3:first-child { margin-top: 0; }' : '',
+      // ── Deux colonnes égales (layout two-equal) ─────────────────────────────
+      isTwoEqual ? '#printable-cv .cv-columns { display: flex; align-items: flex-start; column-gap: 28px; }' : '',
+      isTwoEqual ? '#printable-cv .cv-columns > .cv-main-col, #printable-cv .cv-columns > .cv-side-col { flex: 1 1 0; min-width: 0; }' : '',
+      isTwoEqual ? '#printable-cv .cv-columns > div > h3:first-child { margin-top: 0; }' : '',
+      // ── Monogramme : initiales (décor) dans un carré clair à contour d'accent ──
+      structure.header === 'monogram' ? `#printable-cv .cv-monogram { flex: 0 0 auto; width: 78px; height: 78px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid ${accentColor}; background: ${accentTint(10)}; color: ${accentColor}; font-size: 30px; line-height: 1; }` : '',
+      structure.header === 'monogram' ? `#printable-cv .cv-monogram { font-family: Georgia, serif` + ' }' : '',
+      structure.header === 'monogram' ? '#printable-cv .cv-monogram::before { content: attr(data-initials); }' : '',
+      // ── Grand en-tête : bloc clair pleine largeur, photo ronde à cheval sur son bord ──
+      isHero ? `#printable-cv .cv-header-hero { margin: -${screenPad.v} -${screenPad.h} ${heroHasPhoto ? `calc(${heroPhotoSize} / 2 + 24px)` : '24px'} !important; padding: 30px ${screenPad.h} ${heroHasPhoto ? '0' : '26px'} !important; background-color: ${accentTint(11)}; }` : '',
+      isHero ? `@media print { #printable-cv .cv-header-hero { margin-top: -${(pageMargin ? screenPad.v : '8px')} !important; margin-left: -${(pageMargin ? screenPad.h : '10px')} !important; margin-right: -${(pageMargin ? screenPad.h : '10px')} !important; padding-left: 24px !important; padding-right: 24px !important; } }` : '',
+      isHero ? '#printable-cv .cv-hero-photo { margin-top: 18px; transform: translateY(50%); border: 4px solid #ffffff; box-sizing: border-box; }' : '',
+      isHero ? '#printable-cv .cv-header-hero .cv-contact-info > div { justify-content: center; }' : '',
+      // ── Titres surlignés : aplat clair sous la moitié basse du texte (titres et nom) ──
+      structure.heading === 'highlight' ? '#printable-cv h3, #printable-cv .cv-name { display: table; position: relative; isolation: isolate; padding: 0 4px; margin-left: -4px; }' : '',
+      structure.heading === 'highlight' ? `#printable-cv h3::before, #printable-cv .cv-name::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0.08em; height: 0.48em; background: ${accentTint(28)}; z-index: -1; }` : '',
+      // ── Titres prolongés d'un filet jusqu'au bord droit ─────────────────────
+      structure.heading === 'rule-after' ? '#printable-cv h3 { display: flex; align-items: center; column-gap: 12px; }' : '',
+      structure.heading === 'rule-after' ? `#printable-cv h3::after { content: ""; flex: 1 1 auto; height: 1px; background-color: ${accentTint(45)}; }` : '',
+      // ── Pastille : petit carré avant l'intitulé, dates dans une pastille au contour fin ──
+      entryStyle === 'pill' ? `#printable-cv .cv-entry-pill .cv-title::before { content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 7px 1px 0; background: ${accentColor}; }` : '',
+      entryStyle === 'pill' ? `#printable-cv .cv-entry-pill .cv-title-row > .cv-date { border: 1px solid ${accentTint(45)}; border-radius: 9999px; padding: 0 8px; line-height: 1.5; }` : '',
+      // ── Frise centrale : ligne verticale au centre, contenu alterné ──────────
+      entryStyle === 'alternate' ? '#printable-cv .cv-entry-alt { display: grid; grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr); margin-bottom: 0 !important; }' : '',
+      entryStyle === 'alternate' ? `#printable-cv .cv-alt-date, #printable-cv .cv-alt-body { padding-bottom: ${entrySpacing || '16px'}; grid-row: 1; }` : '',
+      entryStyle === 'alternate' ? '#printable-cv .cv-alt-right .cv-alt-date { grid-column: 1; text-align: right; } #printable-cv .cv-alt-right .cv-alt-body { grid-column: 3; }' : '',
+      entryStyle === 'alternate' ? '#printable-cv .cv-alt-left .cv-alt-date { grid-column: 3; text-align: left; } #printable-cv .cv-alt-left .cv-alt-body { grid-column: 1; }' : '',
+      entryStyle === 'alternate' ? `#printable-cv .cv-alt-node { grid-column: 2; grid-row: 1; position: relative; } #printable-cv .cv-alt-node::before { content: ""; position: absolute; top: 0; bottom: 0; left: 14px; width: 2px; background: ${accentTint(35)}; }` : '',
+      entryStyle === 'alternate' ? `#printable-cv .cv-alt-node::after { content: ""; position: absolute; top: 2px; left: 9px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 9999px; background: #ffffff; border: 2px solid ${accentColor}; }` : '',
+      entryStyle === 'alternate' ? '#printable-cv .cv-alt-date .cv-date { white-space: normal; } #printable-cv h3 { text-align: center; }' : '',
+      // ── Magazine : filet épais, colonne large et encadré clair à droite ───────
+      isMagazine ? `#printable-cv .cv-header-rule { border: 0; border-top: 4px solid ${accentColor}; margin: 0 0 20px; }` : '',
+      isMagazine ? '#printable-cv .cv-columns { display: flex; align-items: flex-start; column-gap: 24px; }' : '',
+      isMagazine ? '#printable-cv .cv-columns > .cv-main-col { flex: 1 1 63%; min-width: 0; } #printable-cv .cv-columns > .cv-main-col > h3:first-child { margin-top: 0; }' : '',
+      isMagazine ? `#printable-cv .cv-panel { flex: 0 0 34%; width: 34%; box-sizing: border-box; padding: 16px 16px 6px; border-radius: 10px; background-color: ${accentTint(8)}; }` : '',
+      isMagazine ? '#printable-cv .cv-panel > :first-child, #printable-cv .cv-panel > :first-child h3 { margin-top: 0; } #printable-cv .cv-panel .cv-panel-lead { margin-bottom: 14px; }' : '',
+      // ── Tuiles : sections « badges » en fin de CV, en mosaïque claire ─────────
+      hasTiles ? '#printable-cv .cv-tiles { display: grid; grid-template-columns: repeat(var(--cv-tile-cols), minmax(0, 1fr)); gap: 12px; margin-top: 18px; }' : '',
+      hasTiles ? `#printable-cv .cv-tiles > .cv-sidebar-section { margin: 0; padding: 12px 14px; border-radius: 8px; background-color: ${accentTint(9)}; break-inside: avoid; }` : '',
+      hasTiles ? '#printable-cv .cv-tiles > .cv-sidebar-section h3 { margin-top: 0; }' : '',
+      // ── Titres en étiquette ou en bande claire (une teinte de l'accent, pas de dégradé) ──
+      structure.heading === 'label' || structure.heading === 'band' ? `#printable-cv h3 { background-color: ${accentTint(13)}; }` : '',
+      structure.heading === 'label' ? '#printable-cv h3 { display: table; padding: 2px 9px; border-radius: 3px; }' : '',
+      structure.heading === 'band' ? '#printable-cv h3 { display: block; padding: 4px 9px; }' : '',
+      // ── Entrée sur une ligne (inline) ───────────────────────────────────────
+      entryStyle === 'inline' ? '#printable-cv .cv-inline-meta { font-weight: 400; color: #55656B; }' : '',
+      // ── Dates sur la ligne de l'entreprise (date-below, hanging) ───────────
+      entryStyle === 'date-below' || entryStyle === 'hanging' ? '#printable-cv .cv-entry-date-below .cv-meta-row .cv-subtitle, #printable-cv .cv-entry-hanging .cv-meta-row .cv-subtitle { display: inline; }' : '',
+      entryStyle === 'date-below' || entryStyle === 'hanging' ? '#printable-cv .cv-meta-row .cv-meta-sep { color: #55656B; font-size: 0.92em; }' : '',
+      entryStyle === 'hanging' ? '#printable-cv .cv-hanging-body { padding-left: 20px; }' : '',
+      // ── Cadres (card) : filet fin teinté, liseré d'accent à gauche, fond blanc ──
+      entryStyle === 'card' ? `#printable-cv .cv-entry-card { border: 1px solid ${accentTint(28)}; border-left: 3px solid ${accentColor}; border-radius: 6px; padding: 8px 12px 9px; background: #ffffff; }` : '',
     ].filter(Boolean).join('\n');
 
     const hasPhoto = Boolean(profile.photoPath);
@@ -390,8 +486,39 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
     // intérêts, certifications) go to the sidebar; everything else stays in the
     // main column. Sections are delimited by section_header blocks.
     const sidebarSections: SidebarSection[] = [];
-    const mainItems: RenderItem[] = isSidebar ? [] : visibleItems;
-    if (isSidebar) {
+    // `header-columns` range aussi les sections « badges » dans une colonne à part.
+    const splitsSections = isSidebar || isHeaderColumns || isMagazine || hasTiles;
+    // Deux colonnes égales : sections d'expériences, de projets ou de bénévolat à gauche, le reste à droite.
+    const LEFT_COLUMN_TYPES = ['experience', 'project', 'volunteer'];
+    const equalColumns = (() => {
+      if (!isTwoEqual) return null;
+      const left: RenderItem[] = [];
+      const right: RenderItem[] = [];
+      let target = left;
+      let k = 0;
+      while (k < visibleItems.length) {
+        const item = visibleItems[k];
+        if (item.type === 'block' && item.block.blockType === 'section_header' && !isSubHeader(item.block)) {
+          let j = k + 1;
+          let hasLeftType = false;
+          while (j < visibleItems.length) {
+            const next = visibleItems[j];
+            if (next.type === 'block' && next.block.blockType === 'section_header' && !isSubHeader(next.block)) break;
+            if (next.type === 'block' && next.block.blockType === 'entry_ref') {
+              const e = entries.find(x => x.id === next.block.entryId);
+              if (e && LEFT_COLUMN_TYPES.includes(e.entryType)) hasLeftType = true;
+            }
+            j++;
+          }
+          target = hasLeftType ? left : right;
+        }
+        target.push(item);
+        k++;
+      }
+      return { left, right };
+    })();
+    const mainItems: RenderItem[] = splitsSections ? [] : visibleItems;
+    if (splitsSections) {
       type Group = { header: CVBlock | null; items: RenderItem[] };
       const groups: Group[] = [];
       let current: Group | null = null;
@@ -435,6 +562,20 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       }
     }
 
+    /** Magazine : encadré présent seulement s'il a quelque chose à montrer (accroche ou badges). */
+    const magazinePanel = isMagazine && (sidebarSections.length > 0 || Boolean(summary));
+
+    // Frise centrale : le côté du contenu alterne à chaque entrée, en repartant à droite à chaque section.
+    const altSides = new Map<string, 'left' | 'right'>();
+    if (entryStyle === 'alternate') {
+      let n = 0;
+      for (const it of visibleItems) {
+        if (it.type !== 'block') continue;
+        if (it.block.blockType === 'section_header' && !isSubHeader(it.block)) { n = 0; continue; }
+        if (it.block.blockType === 'entry_ref') altSides.set(it.block.id, n++ % 2 === 0 ? 'right' : 'left');
+      }
+    }
+
     const renderItem = (item: RenderItem, idx: number) => {
       if (item.type === 'badge-group') {
         return (
@@ -464,10 +605,43 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       if (block.blockType === 'entry_ref' && block.entryId) {
         const entry = entries.find((e) => e.id === block.entryId);
         if (!entry) return null;
-        return <CVEntryBlock key={block.id} block={block} entry={entry} template={template} dateSettings={dateSettings} />;
+        return <CVEntryBlock key={block.id} block={block} entry={entry} template={template} dateSettings={dateSettings} side={altSides.get(block.id)} />;
       }
 
       return null;
+    };
+
+    // ── Titres en marge : chaque section devient une rangée « titre | contenu » ──
+    const renderMain = (items: RenderItem[]) => {
+      if (!isMarginSections) return items.map((item, idx) => renderItem(item, idx));
+      const out: React.ReactNode[] = [];
+      let k = 0;
+      while (k < items.length) {
+        const item = items[k];
+        if (item.type === 'block' && item.block.blockType === 'section_header' && !isSubHeader(item.block)) {
+          const header = item;
+          const body: React.ReactNode[] = [];
+          let j = k + 1;
+          while (j < items.length) {
+            const next = items[j];
+            if (next.type === 'block' && next.block.blockType === 'section_header' && !isSubHeader(next.block)) break;
+            body.push(renderItem(next, j));
+            j++;
+          }
+          out.push(
+            <section key={`margin-${header.block.id}`} className="cv-margin-section">
+              {renderItem(header, k)}
+              <div className="cv-margin-body">{body}</div>
+            </section>,
+          );
+          k = j;
+        } else {
+          // Contenu sans titre de section : aligné sur la colonne de contenu.
+          out.push(<div key={`offset-${k}`} className="cv-margin-offset">{renderItem(item, k)}</div>);
+          k++;
+        }
+      }
+      return out;
     };
 
     // ── Layout deux colonnes (templates graphiques) ──────────────────────────
@@ -543,21 +717,81 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
           headerStyle={headerStyle}
           headerBlockStyle={headerBlockStyle}
           nameLineBreak={nameLineBreak}
+          layout={structure.header}
         />
 
         {/* Separator — hidden for full-width banners */}
-        {!isBanner && (
-          <hr className="border-t border-gray-300 mb-4 print:border-gray-400" style={primaryColor ? { borderColor: primaryColor } : undefined} />
+        {!isBanner && (isSplitHeader || isMagazine
+          ? <hr className="cv-header-rule" />
+          : structure.headerRule === false
+          ? null
+          : <hr className="border-t border-gray-300 mb-4 print:border-gray-400" style={primaryColor ? { borderColor: primaryColor } : undefined} />
         )}
 
-        {summary && (
-          <div className="mb-5">
+        {summary && !(isMagazine && magazinePanel) && (
+          <div className={isMarginSections ? 'mb-5 cv-margin-offset' : 'mb-5'}>
             <p className={`cv-summary ${template.preview.summaryClass || template.preview.descriptionClass}`}>{summary}</p>
           </div>
         )}
 
         {/* Dynamic Blocks */}
-        {mainItems.map((item, idx) => renderItem(item, idx))}
+        {isMagazine && magazinePanel ? (
+          <div className="cv-columns">
+            <div className="cv-main-col">
+              {mainItems.map((item, idx) => renderItem(item, idx))}
+            </div>
+            <CVSidebar
+              profile={profile}
+              entries={entries}
+              template={template}
+              sections={sidebarSections}
+              hasPhoto={false}
+              photoShape={photoShape}
+              photoSize={photoSize}
+              photoBorder={photoBorder}
+              variant="panel"
+              lead={summary ? <p className={`cv-summary cv-panel-lead ${template.preview.summaryClass || template.preview.descriptionClass}`}>{summary}</p> : null}
+            />
+          </div>
+        ) : equalColumns && equalColumns.left.length > 0 && equalColumns.right.length > 0 ? (
+          <div className="cv-columns">
+            <div className="cv-main-col">{equalColumns.left.map((item, idx) => renderItem(item, idx))}</div>
+            <div className="cv-side-col">{equalColumns.right.map((item, idx) => renderItem(item, idx + equalColumns.left.length))}</div>
+          </div>
+        ) : isHeaderColumns && sidebarSections.length > 0 ? (
+          <div className="cv-columns">
+            <CVSidebar
+              profile={profile}
+              entries={entries}
+              template={template}
+              sections={sidebarSections}
+              hasPhoto={false}
+              photoShape={photoShape}
+              photoSize={photoSize}
+              photoBorder={photoBorder}
+              variant="column"
+            />
+            <div className="cv-main-col">
+              {mainItems.map((item, idx) => renderItem(item, idx))}
+            </div>
+          </div>
+        ) : renderMain(mainItems)}
+
+        {hasTiles && sidebarSections.length > 0 && (
+          <div style={{ ['--cv-tile-cols' as string]: String(Math.min(3, sidebarSections.length)) }} className="cv-tiles-wrap">
+            <CVSidebar
+              profile={profile}
+              entries={entries}
+              template={template}
+              sections={sidebarSections}
+              hasPhoto={false}
+              photoShape={photoShape}
+              photoSize={photoSize}
+              photoBorder={photoBorder}
+              variant="tiles"
+            />
+          </div>
+        )}
       </div>
     );
   }
