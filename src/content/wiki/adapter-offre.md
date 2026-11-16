@@ -19,6 +19,23 @@ Vous avez une offre d'emploi précise ? L'application vous aide à mettre en ava
 
 Vous pouvez aussi choisir **Affiner par questions** : l'IA vous pose une ou deux questions avant de proposer le CV.
 
+## Répondre aux remarques de l'IA
+
+Le rapport peut contenir des questions de l'IA, des exigences que votre profil ne montre pas, ou des points à vérifier. Cliquez sur **Répondre aux remarques** :
+
+1. Répondez aux questions qui vous concernent ; laissez vide le reste. Ce que vous écrivez compte comme une source, comme votre profil.
+2. Cliquez sur **Copier le texte pour l'IA**, collez-le dans la même conversation, puis collez la nouvelle réponse de l'IA.
+3. La nouvelle version passe par le même contrôle. Chaque changement s'affiche avec l'avant et l'après : décochez ceux que vous ne voulez pas garder.
+4. Cliquez sur **Utiliser cette version**, relisez le rapport, puis **Appliquer au CV**. Rien ne change dans votre CV avant ce dernier clic.
+
+Vos réponses sont enregistrées avec ce CV. Elles ne s'ajoutent jamais à « Mon profil ».
+
+## Les compétences proposées par l'IA
+
+L'IA peut ajouter à ce CV quelques compétences tirées de vos expériences, par exemple « Relation client » ou « Gestion des commandes ». Elles s'affichent en étiquettes, comme vos autres compétences, et ne s'ajoutent jamais à « Mon profil ». Chacune doit s'appuyer sur une expérience ou une compétence de votre profil : sinon, le rapport la retire.
+
+Un CV préparé avec une version précédente peut contenir des lignes de compétences en texte. Dans la liste des blocs, le bouton **Convertir en étiquettes** vous propose de les découper : vous relisez et corrigez les étiquettes, puis vous validez.
+
 ## Ce qu'un recruteur cherche
 
 Les mots de l'annonce, utilisés avec des faits réels. Un CV adapté reprend les intitulés et les compétences demandés, sans rien inventer.

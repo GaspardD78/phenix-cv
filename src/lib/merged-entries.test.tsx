@@ -138,18 +138,18 @@ describe('garde-fou : fusions', () => {
     expect(r.data.mergedEntries?.[0].description).toBe('- Traiter des profils\n- Suivre les candidatures');
   });
 
-  it('lot 3 : une cvSkillLine peut citer une entrée fusionnée, la source reste valide', () => {
+  it('lot 3 : une compétence de l\'IA peut citer une entrée fusionnée, la source reste valide', () => {
     const r = guardAiCv(resp({
       mergedEntries: [GROUP],
-      cvSkillLines: [
-        { text: 'Animation du prospection avec les managers', sources: ['a2'] },
-        { text: 'Suivi des candidatures dans un ATS', sources: ['a3'] },
-        { text: 'Gestion de comptes clés', sources: ['a1'] },
+      cvSkills: [
+        { name: 'Animation de la prospection', sources: ['a2'] },
+        { name: 'Suivi des candidatures', sources: ['a3'] },
+        { name: 'Gestion de comptes clés', sources: ['a1'] },
       ],
     }), ctx());
-    expect(r.data.cvSkillLines).toHaveLength(3);
-    expect(codes(r)).not.toContain('skill-line-no-source');
-    expect(codes(r)).not.toContain('skill-lines-too-few');
+    expect(r.data.cvSkills).toHaveLength(3);
+    expect(codes(r)).not.toContain('cv-skill-no-source');
+    expect(codes(r)).not.toContain('cv-skills-too-few');
   });
 
   it('sans mergedEntries : aucun code de fusion, JSON v2 inchangé', () => {

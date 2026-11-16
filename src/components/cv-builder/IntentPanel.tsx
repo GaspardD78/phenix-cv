@@ -5,7 +5,8 @@ import { useProfileStore } from '@/stores/profileStore';
 import { useCvStore } from '@/stores/cvStore';
 import { applyAiCvToBlocks } from '@/lib/apply-ai-cv';
 import {
-  DEFAULT_INTENT, HIGHLIGHTS, HIGHLIGHT_LABELS, LEVELS, LEVEL_LABELS, experienceBudget, proposalToResponse, proposeCv,
+  ASSERTIVENESS, ASSERTIVENESS_HINTS, ASSERTIVENESS_LABELS, DEFAULT_INTENT, HIGHLIGHTS, HIGHLIGHT_LABELS, INTENT_QUESTIONS,
+  LEVELS, LEVEL_LABELS, MAX_ANSWER_CHARS, experienceBudget, proposalToResponse, proposeCv, readCvIntent, withCvIntent,
   type CvIntent, type CvProposal, type EntryPreference, type Highlight,
 } from '@/lib/cv-intent';
 
@@ -13,6 +14,21 @@ const TYPE_LABELS: Record<string, string> = {
   experience: 'Expériences', education: 'Formations', skill: 'Compétences', certification: 'Certifications',
   language: 'Langues', project: 'Projets', volunteer: 'Bénévolat', interest: "Centres d'intérêt",
 };
+
+const label = 'block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1';
+
+/** Question ouverte et facultative : quelques mots ou phrases. */
+function OpenQuestion({ id, n, question, hint, value, onChange }: {
+  id: string; n: number; question: string; hint: string; value: string; onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className={label}>{n}. {question} <span className="font-normal text-gray-500">(facultatif)</span></label>
+      <textarea id={id} rows={2} maxLength={MAX_ANSWER_CHARS} className={`${field} resize-y`} value={value} onChange={e => onChange(e.target.value)} />
+      <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">{hint}</p>
+    </div>
+  );
+}
 
 const field = 'w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-sm focus:ring-2 focus:ring-amber-200 focus:border-amber-400 bg-white dark:bg-[var(--pc-card)]';
 
@@ -23,7 +39,8 @@ const field = 'w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] 
 export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent) => void; onApplied: () => void }) {
   const { profile, entries } = useProfileStore();
   const { currentCv } = useCvStore();
-  const [intent, setIntent] = useState<CvIntent>(() => ({ ...DEFAULT_INTENT, role: profile?.title ?? '' }));
+  // Réponses déjà données pour ce CV (cv.settings.cvIntent), sinon le titre du profil comme poste visé.
+  const [intent, setIntent] = useState<CvIntent>(() => readCvIntent(currentCv?.settings) ?? { ...DEFAULT_INTENT, role: profile?.title ?? '' });
   const [proposal, setProposal] = useState<CvProposal | null>(null);
   const [applying, setApplying] = useState(false);
 
@@ -35,11 +52,18 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
   const setPreference = (id: string, value: EntryPreference) =>
     set('preferences', { ...intent.preferences, [id]: value });
 
+  /** Enregistre les réponses dans le CV : retrouvées à la réouverture, et source pour le garde-fou. */
+  const saveIntent = async () => {
+    const cv = useCvStore.getState().currentCv;
+    if (cv) await useCvStore.getState().updateCv(cv.id, { settings: withCvIntent(cv.settings, intent) });
+  };
+
   const propose = () => {
     if (!intent.role.trim()) {
       toast.error('Indiquez d\'abord le poste que vous visez.');
       return;
     }
+    void saveIntent();
     setProposal(proposeCv(intent, entries, profile, new Date()));
   };
 
@@ -151,26 +175,26 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
     <div className="space-y-5" data-testid="intent-form">
       <div>
         <h3 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Créer un CV standard</h3>
-        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">Répondez à quelques questions : nous choisissons et ordonnons le contenu de votre profil. Aucune IA n'est nécessaire.</p>
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">Répondez à quelques questions : nous choisissons et ordonnons le contenu de votre profil. Aucune IA n'est nécessaire. Vos réponses sont enregistrées avec ce CV.</p>
       </div>
 
       <div>
-        <label htmlFor="intent-role" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Quel poste visez-vous ?</label>
-        <input id="intent-role" className={field} value={intent.role} onChange={e => set('role', e.target.value)} placeholder="Ex. : Assistante commerciale" />
+        <label htmlFor="intent-role" className={label}>1. {INTENT_QUESTIONS.role}</label>
+        <input id="intent-role" className={field} value={intent.role} onChange={e => set('role', e.target.value)} />
       </div>
       <div>
-        <label htmlFor="intent-sector" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Dans quel secteur ? <span className="font-normal text-gray-500">(facultatif)</span></label>
-        <input id="intent-sector" className={field} value={intent.sector} onChange={e => set('sector', e.target.value)} placeholder="Ex. : négoce de matériaux" />
+        <label htmlFor="intent-sector" className={label}>Dans quel secteur ? <span className="font-normal text-gray-500">(facultatif)</span></label>
+        <input id="intent-sector" className={field} value={intent.sector} onChange={e => set('sector', e.target.value)} />
       </div>
-      <div>
-        <label htmlFor="intent-level" className="block text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Quel est votre niveau ?</label>
-        <select id="intent-level" className={field} value={intent.level} onChange={e => set('level', e.target.value as CvIntent['level'])}>
-          {LEVELS.map(l => <option key={l} value={l}>{LEVEL_LABELS[l]}</option>)}
-        </select>
-      </div>
+      <OpenQuestion id="intent-environment" n={2} question={INTENT_QUESTIONS.environment} hint="Le type de structure, d'équipe ou de rythme qui vous convient."
+        value={intent.environment} onChange={v => set('environment', v)} />
+      <OpenQuestion id="intent-ease" n={3} question={INTENT_QUESTIONS.ease} hint="Deux ou trois choses que vous faites bien, sans effort."
+        value={intent.ease} onChange={v => set('ease', v)} />
+      <OpenQuestion id="intent-achievements" n={4} question={INTENT_QUESTIONS.achievements} hint="Une à trois réalisations. Donnez un chiffre seulement s'il est exact : il pourra être repris tel quel."
+        value={intent.achievements} onChange={v => set('achievements', v)} />
 
       <fieldset>
-        <legend className="text-sm font-semibold text-gray-800 dark:text-[var(--pc-text)] mb-1">Que voulez-vous mettre en avant ?</legend>
+        <legend className={label}>5. {INTENT_QUESTIONS.highlights}</legend>
         <div className="grid gap-1.5">
           {HIGHLIGHTS.map(h => (
             <label key={h} className="flex items-center gap-2 text-sm text-gray-800 dark:text-[var(--pc-text)] cursor-pointer">
@@ -180,6 +204,16 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
           ))}
         </div>
       </fieldset>
+
+      <div>
+        <label htmlFor="intent-level" className={label}>6. {INTENT_QUESTIONS.level}</label>
+        <select id="intent-level" className={field} value={intent.level} onChange={e => set('level', e.target.value as CvIntent['level'])}>
+          {LEVELS.map(l => <option key={l} value={l}>{LEVEL_LABELS[l]}</option>)}
+        </select>
+      </div>
+
+      <OpenQuestion id="intent-avoid" n={7} question={INTENT_QUESTIONS.avoid} hint="Ces missions passeront au second plan, sans cacher votre parcours."
+        value={intent.avoid} onChange={v => set('avoid', v)} />
 
       {experiences.length > 0 && (
         <fieldset>
@@ -222,6 +256,25 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
           {intent.language === 'en' && <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Pour traduire le contenu, utilisez ensuite l'IA (facultatif).</p>}
         </div>
       </div>
+
+      <fieldset data-testid="intent-assertiveness">
+        <legend className={label}>Niveau d'affirmation</legend>
+        <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-1.5">Utilisé si vous faites affiner votre CV par une IA. Le ton change, jamais les faits.</p>
+        <div className="grid grid-cols-3 gap-1.5" role="radiogroup">
+          {ASSERTIVENESS.map(a => (
+            <label key={a} className={`flex flex-col gap-0.5 rounded-md border p-2 cursor-pointer text-xs ${intent.assertiveness === a
+              ? 'border-amber-400 bg-amber-50 text-amber-900 dark:bg-[var(--pc-accent-subtle)] dark:text-[var(--pc-text)]'
+              : 'border-gray-300 dark:border-[var(--pc-border)] text-gray-700 dark:text-[var(--pc-muted)]'}`}>
+              <span className="flex items-center gap-1.5 font-semibold text-sm">
+                <input type="radio" name="intent-assertiveness" value={a} checked={intent.assertiveness === a}
+                  onChange={() => set('assertiveness', a)} className="accent-amber-500" />
+                {ASSERTIVENESS_LABELS[a]}
+              </span>
+              <span>{ASSERTIVENESS_HINTS[a]}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <button onClick={propose} className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md flex items-center justify-center gap-2">
         <Sparkles className="w-4 h-4" /> Voir ma proposition

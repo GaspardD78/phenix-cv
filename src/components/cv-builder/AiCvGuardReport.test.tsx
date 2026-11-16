@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { AiCvGuardReport } from './AiCvGuardReport';
 import { guardAiCv } from '../../lib/ai-cv-guard';
 import { TEST_PROFILE, makeEntry } from '../../lib/test-helpers/cv-fixtures';
+import { resolveTarget } from '../../lib/cv-targets';
 
 describe('AiCvGuardReport - dépassement', () => {
   const heavy = [
@@ -49,5 +50,27 @@ describe('AiCvGuardReport - alertes de cohérence et angle', () => {
     const html = renderToStaticMarkup(<AiCvGuardReport report={report} />);
     expect(html).not.toContain('ai-cv-alertes-cap');
     expect(html).toContain('Angle fictif');
+  });
+});
+
+describe('AiCvGuardReport - photo déconseillée par la fiche', () => {
+  const entries = [makeEntry('m1', 'experience', 'Assistante commerciale', { startDate: '2022-01', isCurrent: true, description: '- Suivre les commandes' })];
+  const reportFor = (photoShown: boolean) => guardAiCv(
+    { entries: [{ id: 'm1', visible: true }], suggestedEntries: [] },
+    {
+      entries, pageBudget: 1, photoShown, target: resolveTarget({ type: 'public' }),
+      profile: { ...TEST_PROFILE, photoPath: 'data:image/png;base64,AAAA' },
+    },
+  ).report;
+
+  it('propose « Masquer la photo sur ce CV » quand la photo est affichée', () => {
+    const html = renderToStaticMarkup(<AiCvGuardReport report={reportFor(true)} onHidePhoto={() => {}} />);
+    expect(html).toContain('data-testid="ai-cv-hide-photo"');
+    expect(html).toContain('Masquer la photo sur ce CV');
+  });
+
+  it('aucun bouton quand la photo est déjà masquée, ni sans action fournie', () => {
+    expect(renderToStaticMarkup(<AiCvGuardReport report={reportFor(false)} onHidePhoto={() => {}} />)).not.toContain('ai-cv-hide-photo');
+    expect(renderToStaticMarkup(<AiCvGuardReport report={reportFor(true)} />)).not.toContain('ai-cv-hide-photo');
   });
 });

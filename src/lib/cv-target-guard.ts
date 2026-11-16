@@ -117,7 +117,7 @@ export function checkTarget(input: TargetGuardInput): TargetIssue[] {
 
   // ── Photo ──
   if (sheet?.affichage.photo === 'non' && input.photoShown) {
-    issues.push({ code: 'target-photo', message: `La fiche « ${sheet.label} » déconseille la photo : elle est affichée sur ce CV (à retirer dans le design).` });
+    issues.push({ code: 'target-photo', message: `La fiche « ${sheet.label} » déconseille la photo : elle est affichée sur ce CV. Vous pouvez la masquer pour ce CV seulement (« Afficher la photo », dans le design) : la photo de « Mon profil » est conservée.` });
   }
 
   // ── Premier lecteur et personne qui transmet le CV ──

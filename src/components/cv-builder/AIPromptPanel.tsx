@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Copy, Check, Sparkles } from 'lucide-react';
 import { usePromptStore } from '@/stores/promptStore';
 import { useProfileStore } from '@/stores/profileStore';
@@ -11,11 +11,17 @@ import { TargetPanel } from './TargetPanel';
 import { TargetStatusLine } from './TargetStatusLine';
 import { SuggestedEntriesReview } from './SuggestedEntriesReview';
 import { IntentPanel } from './IntentPanel';
-import { intentToTarget, type CvIntent } from '@/lib/cv-intent';
+import { ASSERTIVENESS_LABELS, candidateAnswersText, intentToTarget, withCvIntent, type CvIntent } from '@/lib/cv-intent';
+import { buildGenericCvPrompt } from '@/lib/cv-generic-prompt';
+import {
+  buildFollowUpPrompt, collectFollowUps, followUpSourceText, readFollowUpAnswers, toSchemaJson, withFollowUpAnswers, type FollowUpAnswers,
+} from '@/lib/ai-cv-followup';
+import { AiFollowUpPanel } from './AiFollowUpPanel';
 import { appendEntriesToCv, promoteSuggestedEntries } from '@/lib/suggested-entries';
 import type { ResolvedTarget } from '@/lib/cv-targets';
 import { readCvLanguage } from '@/lib/cv-language';
 import { applyAiCvToBlocks } from '@/lib/apply-ai-cv';
+import { isPhotoShown } from '@/lib/cv-photo';
 import { CVBlock, CVDocument } from '@/types/cv';
 import { toast } from 'sonner';
 import { HelpButton } from '@/components/help/HelpButton';
@@ -53,6 +59,11 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
   const [jsonInput, setJsonInput] = useState('');
   const [fullPromptCopied, setFullPromptCopied] = useState(false);
   const [clarify, setClarify] = useState(false);
+  // CV standard confié à une IA : réponses au questionnaire (prompt « coach de carrière », sans annonce).
+  const [genericIntent, setGenericIntent] = useState<CvIntent | null>(null);
+  // Seconde passe : réponses aux remarques (enregistrées dans le CV, source pour le garde-fou).
+  const [followUpOpen, setFollowUpOpen] = useState(false);
+  const [followUpAnswers, setFollowUpAnswers] = useState<FollowUpAnswers>(() => readFollowUpAnswers(currentCv?.settings));
 
   useEffect(() => {
     if (!isLoaded) loadDifferentiator();
@@ -63,12 +74,32 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
     if (profile) { loadPersonalRules(profile.id); loadBulletFocus(profile.id); }
   }, [profile?.id, loadPersonalRules, loadBulletFocus]);
 
+  // Photo réellement affichée sur ce CV (photo du profil ET interrupteur « Afficher la photo »).
+  const photoShown = isPhotoShown(profile, currentCv?.settings);
+  // Réponses du candidat : source au même titre que le profil pour le garde-fou (CV standard seulement).
+  const candidateAnswers = [genericIntent ? candidateAnswersText(genericIntent) : '', followUpSourceText(followUpAnswers)]
+    .filter(Boolean).join('\n') || undefined;
+
   // Parse + garde-fou du JSON collé (rapport affiché avant l'application).
   const analysis = useMemo(
-    () => (jsonInput.trim() ? analyzeAiCvJson(jsonInput, { entries, profile, pageBudget: targetPages, focus, verbTense, target }) : null),
-    [jsonInput, entries, profile, targetPages, focus, verbTense, target],
+    () => (jsonInput.trim() ? analyzeAiCvJson(jsonInput, { entries, profile, pageBudget: targetPages, focus, verbTense, target, photoShown, candidateAnswers }) : null),
+    [jsonInput, entries, profile, targetPages, focus, verbTense, target, photoShown, candidateAnswers],
   );
   const hasBlockingIssues = analysis !== null && analysis.ok && analysis.report.errors.length > 0;
+  const followUpCount = useMemo(() => (analysis && analysis.ok ? collectFollowUps(analysis.report).length : 0), [analysis]);
+
+  /** Seconde passe : même garde-fou, avec en plus les réponses en cours comme source. */
+  const analyzeSecondPass = useCallback((raw: string, answers: FollowUpAnswers) => analyzeAiCvJson(raw, {
+    entries, profile, pageBudget: targetPages, focus, verbTense, target, photoShown,
+    candidateAnswers: [genericIntent ? candidateAnswersText(genericIntent) : '', followUpSourceText(answers)].filter(Boolean).join('\n') || undefined,
+  }), [entries, profile, targetPages, focus, verbTense, target, photoShown, genericIntent]);
+
+  /** Réponses enregistrées avec ce CV (une seule écriture, réglages les plus récents). */
+  const saveFollowUpAnswers = useCallback((answers: FollowUpAnswers) => {
+    setFollowUpAnswers(answers);
+    const cv = useCvStore.getState().currentCv;
+    if (cv) void useCvStore.getState().updateCv(cv.id, { settings: withFollowUpAnswers(cv.settings, answers) });
+  }, []);
 
   // Entrées suggérées hors profil maître : revue opt-in (rien n'est écrit pour une entrée non cochée).
   const suggestions = useMemo(() => (analysis && analysis.ok ? analysis.data.suggestedEntries : []), [analysis]);
@@ -148,6 +179,17 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
     });
 
   const handleCopyFullPrompt = async (t: ResolvedTarget = target) => {
+    if (genericIntent) {
+      await copyPrompt(() => buildGenericCvPrompt({
+        profile: profile!, entries, intent: genericIntent, clarify,
+        options: {
+          personalRules: personalRulesProfileId === profile!.id ? personalRules : '',
+          bulletFocus: focusFor(t),
+          verbTense,
+        },
+      }));
+      return;
+    }
     if (t.intent === 'annonce' && !jobOffer.trim()) {
       setError("Collez d'abord le texte de l'annonce");
       return;
@@ -156,10 +198,13 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
       setError('Décrivez au moins l\'entreprise ou un poste envisagé (Préciser la cible)');
       return;
     }
-    if (!profile) return;
+    await copyPrompt(() => buildFullPrompt(t));
+  };
 
+  const copyPrompt = async (build: () => string) => {
+    if (!profile) return;
     try {
-      const prompt = buildFullPrompt(t);
+      const prompt = build();
       await navigator.clipboard.writeText(prompt);
       setFullPromptCopied(true);
       markCopied();
@@ -178,7 +223,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
     }
     if (!currentCv) return;
 
-    const result = analyzeAiCvJson(jsonInput, { entries, profile, pageBudget: targetPages, focus, verbTense, target });
+    const result = analyzeAiCvJson(jsonInput, { entries, profile, pageBudget: targetPages, focus, verbTense, target, photoShown, candidateAnswers });
     if (!result.ok) {
       toast.error("Erreur de parsing JSON. Vérifiez le format.");
       return;
@@ -251,8 +296,11 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
             onApplied={onClose}
             onUseAi={(intent: CvIntent) => {
               setChoice(intentToTarget(intent));
+              setGenericIntent(intent);
               void savePages(intent.pages);
-              if (currentCv) void useCvStore.getState().updateCv(currentCv.id, { settings: { ...(currentCv.settings ?? {}), cvLanguage: intent.language } });
+              // Une seule écriture : langue du CV et réponses (retrouvées à la réouverture, source du garde-fou).
+              const cv = useCvStore.getState().currentCv;
+              if (cv) void useCvStore.getState().updateCv(cv.id, { settings: withCvIntent({ ...(cv.settings ?? {}), cvLanguage: intent.language }, intent) });
               setActiveTab('full');
               toast.message('Vos réponses sont prêtes : copiez le texte pour l\'IA, puis collez sa réponse.');
             }}
@@ -387,18 +435,31 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
           </>
         ) : (
           <>
-            <TargetPanel
-              choice={choice}
-              onChange={c => { setChoice(c); setError(''); }}
-              detected={detected}
-              effectiveType={target.type}
-              effectiveIntent={target.intent}
-              dirty={dirty}
-              onCopyPrompt={() => handleCopyFullPrompt()}
-              expandSignal={expandSignal}
-            />
+            {genericIntent ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-[var(--pc-accent-subtle)] dark:border-[var(--pc-border)] p-3 text-sm text-amber-900 dark:text-[var(--pc-text)] space-y-2" data-testid="generic-cv-banner">
+                <p className="font-semibold">CV standard, sans annonce</p>
+                <p>L'IA part de vos réponses (poste recherché : « {genericIntent.role} ») et reformule votre profil sans rien inventer. Niveau d'affirmation : <strong>{ASSERTIVENESS_LABELS[genericIntent.assertiveness]}</strong>.</p>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setActiveTab('intent')}
+                    className="px-2.5 py-1 text-xs rounded border border-amber-300 bg-white dark:bg-[var(--pc-card)] hover:bg-amber-100">Modifier mes réponses</button>
+                  <button type="button" onClick={() => { setGenericIntent(null); setChoice({}); setJsonInput(''); }}
+                    className="px-2.5 py-1 text-xs rounded border border-gray-300 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] hover:bg-gray-50">Adapter plutôt à une annonce</button>
+                </div>
+              </div>
+            ) : (
+              <TargetPanel
+                choice={choice}
+                onChange={c => { setChoice(c); setError(''); }}
+                detected={detected}
+                effectiveType={target.type}
+                effectiveIntent={target.intent}
+                dirty={dirty}
+                onCopyPrompt={() => handleCopyFullPrompt()}
+                expandSignal={expandSignal}
+              />
+            )}
 
-            {offerFieldShown && (
+            {offerFieldShown && !genericIntent && (
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
                   1. Coller l'annonce
@@ -439,7 +500,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               }`}
             >
               {fullPromptCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {fullPromptCopied ? 'Prompt copié !' : '1. Copier le texte d\'analyse'}
+              {fullPromptCopied ? 'Prompt copié !' : genericIntent ? '1. Copier le texte pour l\'IA' : '1. Copier le texte d\'analyse'}
             </button>
 
             <div className="pt-4 border-t border-gray-200 dark:border-[var(--pc-border)]">
@@ -454,7 +515,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               />
             </div>
 
-            {analysis && analysis.ok && (
+            {analysis && analysis.ok && !genericIntent && (
               <TargetStatusLine
                 retained={target}
                 proposal={proposalFor(analysis.data.analyse?.cible)}
@@ -468,10 +529,47 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
                 }}
               />
             )}
-            {analysis && analysis.ok && <AiCvGuardReport report={analysis.report} />}
-            <SuggestedEntriesReview suggestions={suggestions} accepted={acceptedSug} onToggle={toggleSuggestion} />
+            {analysis && analysis.ok && <AiCvGuardReport report={analysis.report} onHidePhoto={() => { void useCvStore.getState().setShowPhoto(false); toast.success('La photo est masquée sur ce CV. Elle reste dans « Mon profil ».'); }} />}
 
-            <button
+            {analysis && analysis.ok && !followUpOpen && followUpCount > 0 && (
+              <button type="button" onClick={() => setFollowUpOpen(true)} data-testid="ai-follow-up-open"
+                className="w-full py-2 text-sm font-semibold rounded-md border border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100">
+                Répondre aux remarques ({followUpCount}) et faire corriger par l'IA
+              </button>
+            )}
+            {analysis && analysis.ok && followUpOpen && profile && (
+              <AiFollowUpPanel
+                report={analysis.report}
+                first={analysis.data}
+                entries={entries}
+                initialAnswers={followUpAnswers}
+                buildPrompt={(questions, answers) => buildFollowUpPrompt({
+                  profile, entries, current: analysis.data, questions, answers,
+                  mode: genericIntent
+                    ? { kind: 'generic', intent: genericIntent }
+                    : { kind: 'offer', jobOfferText: hasOfferField(target) ? jobOffer : '', target },
+                  options: {
+                    pageBudget: targetPages,
+                    personalRules: personalRulesProfileId === profile.id ? personalRules : '',
+                    bulletFocus: focusFor(target),
+                    verbTense,
+                    cvLanguage: readCvLanguage(currentCv?.settings),
+                  },
+                })}
+                analyze={analyzeSecondPass}
+                onSaveAnswers={saveFollowUpAnswers}
+                onUseVersion={merged => {
+                  setJsonInput(toSchemaJson(merged));
+                  setFollowUpOpen(false);
+                  toast.success('Nouvelle version prête : relisez le rapport, puis appliquez au CV.');
+                }}
+                onClose={() => setFollowUpOpen(false)}
+              />
+            )}
+
+            {!followUpOpen && <SuggestedEntriesReview suggestions={suggestions} accepted={acceptedSug} onToggle={toggleSuggestion} />}
+
+            {!followUpOpen && <button
               onClick={handleApplyFullCV}
               className={`w-full py-2.5 text-white text-sm font-semibold rounded-md transition-colors shadow-sm flex items-center justify-center gap-2 ${
                 hasBlockingIssues ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600'
@@ -479,7 +577,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
             >
               <Sparkles className="w-4 h-4" />
               {hasBlockingIssues ? '3. Appliquer quand même' : '3. Appliquer au CV'}
-            </button>
+            </button>}
           </>
         )}
       </div>

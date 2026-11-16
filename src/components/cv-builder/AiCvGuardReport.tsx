@@ -1,9 +1,11 @@
-import { AlertTriangle, CheckCircle2, Lightbulb, OctagonAlert } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, EyeOff, Lightbulb, OctagonAlert } from 'lucide-react';
 import type { GuardReport } from '@/lib/ai-cv-guard';
 import { warningsLabel } from '@/lib/cv-focus-rules';
 
 interface AiCvGuardReportProps {
   report: GuardReport;
+  /** Masque la photo sur ce CV (interrupteur « Afficher la photo ») ; bouton proposé quand la fiche la déconseille. */
+  onHidePhoto?: () => void;
 }
 
 /** Bloc titré du rapport : un titre clair, puis son contenu en texte lisible (jamais de jargon). */
@@ -33,7 +35,7 @@ const List = ({ items }: { items: string[] }) => (
  * verdict d'abord, puis ce qui bloque, ce qui est à savoir, puis les conseils et questions de l'IA.
  * L'écran appelant adapte son bouton (« Appliquer quand même ») quand `report.errors` n'est pas vide.
  */
-export function AiCvGuardReport({ report }: AiCvGuardReportProps) {
+export function AiCvGuardReport({ report, onHidePhoto }: AiCvGuardReportProps) {
   const { keywordCoverage: cov, ecarts, estimatedLines, pageBudget, visibleBullets, overflow } = report.metrics;
   const hasErrors = report.errors.length > 0;
   const pages = `${pageBudget} page${pageBudget > 1 ? 's' : ''}`;
@@ -113,6 +115,12 @@ export function AiCvGuardReport({ report }: AiCvGuardReportProps) {
         <Block icon={<AlertTriangle className="w-4 h-4" />} tone="amber"
           title={`À savoir (${report.warnings.length})`}>
           <List items={report.warnings.map(w => w.message)} />
+          {onHidePhoto && report.warnings.some(w => w.code === 'target-photo') && (
+            <button type="button" onClick={onHidePhoto} data-testid="ai-cv-hide-photo"
+              className="mt-1 inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100">
+              <EyeOff className="w-3.5 h-3.5" /> Masquer la photo sur ce CV
+            </button>
+          )}
         </Block>
       )}
     </div>

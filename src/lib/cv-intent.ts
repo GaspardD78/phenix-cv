@@ -36,20 +36,117 @@ export const HIGHLIGHT_LABELS: Readonly<Record<Highlight, string>> = {
 /** Statut d'une expérience pour ce CV. */
 export type EntryPreference = 'prefer' | 'normal' | 'exclude';
 
+/** Niveau d'affirmation du CV rédigé par une IA : le ton change, jamais les faits. */
+export const ASSERTIVENESS = ['sobre', 'equilibre', 'affirme'] as const;
+export type Assertiveness = (typeof ASSERTIVENESS)[number];
+export const ASSERTIVENESS_LABELS: Readonly<Record<Assertiveness, string>> = {
+  sobre: 'Sobre',
+  equilibre: 'Équilibré',
+  affirme: 'Affirmé',
+};
+/** Explication affichée sous chaque valeur du réglage. */
+export const ASSERTIVENESS_HINTS: Readonly<Record<Assertiveness, string>> = {
+  sobre: 'Des faits présentés simplement, sans mise en avant appuyée.',
+  equilibre: 'Vos réalisations en premier, avec des verbes d\'action concrets.',
+  affirme: 'Vos points forts assumés, avec des mots plus forts, toujours sans rien exagérer.',
+};
+export const DEFAULT_ASSERTIVENESS: Assertiveness = 'equilibre';
+
 export interface CvIntent {
+  /** 1. Poste ou type de missions recherché. */
   role: string;
   sector: string;
-  level: Level;
+  /** 2. Environnement où le candidat s'épanouit. */
+  environment: string;
+  /** 3. Ce qu'il fait avec aisance. */
+  ease: string;
+  /** 4. Réalisations dont il est fier. */
+  achievements: string;
+  /** 5. Ce que l'on doit retenir en premier. */
   highlights: Highlight[];
+  /** 6. Niveau. */
+  level: Level;
+  /** 7. Ce qu'il ne veut plus faire. */
+  avoid: string;
   /** Préférence par identifiant d'entrée (absent : normal). */
   preferences: Record<string, EntryPreference>;
   pages: 1 | 2;
   language: 'fr' | 'en';
+  /** Niveau d'affirmation du texte rédigé par une IA (sans effet sur la proposition locale). */
+  assertiveness: Assertiveness;
 }
 
 export const DEFAULT_INTENT: CvIntent = {
-  role: '', sector: '', level: 'confirme', highlights: [], preferences: {}, pages: 1, language: 'fr',
+  role: '', sector: '', environment: '', ease: '', achievements: '', highlights: [], level: 'confirme', avoid: '',
+  preferences: {}, pages: 1, language: 'fr', assertiveness: DEFAULT_ASSERTIVENESS,
 };
+
+/** Libellés des questions ouvertes (écran et prompt partagent ces textes). */
+export const INTENT_QUESTIONS = {
+  role: 'Quel poste ou quel type de missions recherchez-vous ?',
+  environment: 'Dans quel environnement vous épanouissez-vous ?',
+  ease: "Qu'est-ce que vous faites avec aisance ?",
+  achievements: 'De quelles réalisations êtes-vous fier(e) ?',
+  highlights: 'Que doit-on retenir de vous en premier ?',
+  level: 'Quel est votre niveau ?',
+  avoid: 'Que ne voulez-vous plus faire ?',
+} as const;
+
+/** Clé des réponses dans `cv.settings` : elles sont retrouvées à la réouverture et servent de source au garde-fou. */
+export const CV_INTENT_SETTING = 'cvIntent';
+
+/** Longueur maximale d'une réponse libre (quelques phrases). */
+export const MAX_ANSWER_CHARS = 500;
+
+const text = (v: unknown): string => (typeof v === 'string' ? v.slice(0, MAX_ANSWER_CHARS) : '');
+const oneOf = <T extends string>(v: unknown, values: readonly T[], fallback: T): T =>
+  (typeof v === 'string' && (values as readonly string[]).includes(v) ? (v as T) : fallback);
+
+/**
+ * Réponses enregistrées dans `cv.settings.cvIntent`, lues avec tolérance : champ absent ou
+ * inattendu = valeur par défaut (réponses d'une version précédente comprises). `null` sans réponses.
+ */
+export function readCvIntent(settings: Record<string, unknown> | null | undefined): CvIntent | null {
+  const raw = settings?.[CV_INTENT_SETTING];
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const r = raw as Record<string, unknown>;
+  const preferences: Record<string, EntryPreference> = {};
+  if (r.preferences && typeof r.preferences === 'object' && !Array.isArray(r.preferences)) {
+    for (const [id, v] of Object.entries(r.preferences as Record<string, unknown>)) {
+      if (v === 'prefer' || v === 'exclude') preferences[id] = v;
+    }
+  }
+  return {
+    role: text(r.role),
+    sector: text(r.sector),
+    environment: text(r.environment),
+    ease: text(r.ease),
+    achievements: text(r.achievements),
+    highlights: Array.isArray(r.highlights) ? HIGHLIGHTS.filter(h => (r.highlights as unknown[]).includes(h)) : [],
+    level: oneOf(r.level, LEVELS, DEFAULT_INTENT.level),
+    avoid: text(r.avoid),
+    preferences,
+    pages: r.pages === 2 ? 2 : 1,
+    language: r.language === 'en' ? 'en' : 'fr',
+    assertiveness: oneOf(r.assertiveness, ASSERTIVENESS, DEFAULT_ASSERTIVENESS),
+  };
+}
+
+/** Réglages du CV avec les réponses enregistrées ; les autres réglages sont conservés. */
+export function withCvIntent(settings: Record<string, unknown> | null | undefined, intent: CvIntent): Record<string, unknown> {
+  return { ...(settings ?? {}), [CV_INTENT_SETTING]: intent };
+}
+
+/**
+ * Ce que le candidat affirme lui-même dans ses réponses : source au même titre que le profil pour
+ * le garde-fou (un chiffre qu'il y écrit peut être repris). « Ce qu'il ne veut plus faire » n'est
+ * pas une source de faits et n'y figure pas.
+ */
+export function candidateAnswersText(intent: CvIntent | null | undefined): string {
+  if (!intent) return '';
+  return [intent.role, intent.sector, intent.environment, intent.ease, intent.achievements]
+    .map(t => t.trim()).filter(Boolean).join('\n');
+}
 
 // ── Texte → mots comparables ─────────────────────────────────────────────────
 

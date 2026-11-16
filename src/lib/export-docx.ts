@@ -12,7 +12,8 @@ import { writeFile } from '@tauri-apps/plugin-fs';
 import { formatEntryDates, readDateSettings } from './entry-dates';
 import { isSubHeader, parentDisplayFormat, visibleHeaderMask, type SlotKind } from './cv-sections';
 import { entryDisplayTitle } from './entry-display';
-import { BADGE_ENTRY_TYPES, buildBadgeRows, isSkillLineBlock, itemLabel, SKILL_ITEM_SEPARATOR, type BadgeItem, type BadgeRow } from './skill-lines';
+import { isPhotoShown } from './cv-photo';
+import { BADGE_ENTRY_TYPES, buildBadgeRows, isAiSkillBlock, isSkillLineBlock, itemLabel, SKILL_ITEM_SEPARATOR, type BadgeItem, type BadgeRow } from './skill-lines';
 import { cvExportFilename } from './export-filename';
 
 
@@ -213,7 +214,8 @@ export async function generateDocxBlob(
   };
   const photoPixels = photoSizeMap[cvSettings.photoSize || ''] || 80;
   const photoShape = (cvSettings.photoShape || '') as PhotoShape;
-  const photoData = profile.photoPath ? base64ToUint8Array(profile.photoPath) : null;
+  // Interrupteur « Afficher la photo » coupé : aucune image n'entre dans le fichier.
+  const photoData = isPhotoShown(profile, cv.settings) ? base64ToUint8Array(profile.photoPath!) : null;
 
   // Apply shape mask to photo if needed
   let finalPhotoData: Uint8Array | null = null;
@@ -499,7 +501,7 @@ export async function generateDocxBlob(
     const result: (Paragraph | Table)[] = [];
     const rows = buildBadgeRows(badgeBlocks, entries);
     const categories = rows.filter(r => r.category !== null);
-    const loose: BadgeItem[] = rows.find(r => r.category === null)?.items ?? [];
+    const loose: BadgeItem[] = rows.find(r => r.category === null && !r.plain)?.items ?? [];
     const labels = loose.map(itemLabel);
 
     // 1. Catégories de compétences : une ligne (ou une cellule) par catégorie.
@@ -621,6 +623,11 @@ export async function generateDocxBlob(
 
   // ── Process blocks ──
   const sortedBlocks = [...blocks].sort((a, b) => a.sortOrder - b.sortOrder);
+  const isBadgeEntryBlock = (b: CVBlock): boolean => {
+    if (b.blockType !== 'entry_ref' || !b.entryId) return false;
+    const entry = entries.find(e => e.id === b.entryId);
+    return Boolean(entry && BADGE_ENTRY_TYPES.includes(entry.entryType));
+  };
 
   // Aucune section vide (même règle que le rendu écran/PDF, voir lib/cv-sections.ts).
   const visibleBlocks = sortedBlocks.filter(b => b.isVisible);
@@ -694,7 +701,7 @@ export async function generateDocxBlob(
       }));
       i++;
 
-    } else if (block.blockType === 'custom_text' && block.customContent) {
+    } else if (block.blockType === 'custom_text' && block.customContent && !isAiSkillBlock(block)) {
       for (const line of block.customContent.split('\n')) {
         const t = line.trim();
         const isBullet = t.startsWith('- ') || t.startsWith('* ');
@@ -707,151 +714,148 @@ export async function generateDocxBlob(
       }
       i++;
 
+    } else if (isAiSkillBlock(block) || isBadgeEntryBlock(block)) {
+      // Éléments badges consécutifs, compétences ajoutées par l'IA comprises (même ligne que les
+      // compétences isolées du profil, comme à l'écran).
+      const badgeGroup: CVBlock[] = [block];
+      let j = i + 1;
+      while (j < sortedBlocks.length) {
+        const next = sortedBlocks[j];
+        if (!next.isVisible) { j++; continue; }
+        if (!isAiSkillBlock(next) && !isBadgeEntryBlock(next)) break;
+        badgeGroup.push(next);
+        j++;
+      }
+
+      const format = getDisplayFormat(i, sortedBlocks);
+      const rendered = renderBadgeGroup(badgeGroup, format);
+      bodyChildren.push(...rendered);
+      i = j;
+
     } else if (block.blockType === 'entry_ref' && block.entryId) {
       const entry = entries.find(e => e.id === block.entryId);
       if (!entry) { i++; continue; }
 
-      if (BADGE_ENTRY_TYPES.includes(entry.entryType)) {
-        // Collect consecutive badge entries
-        const badgeGroup: CVBlock[] = [block];
-        let j = i + 1;
-        while (j < sortedBlocks.length) {
-          const next = sortedBlocks[j];
-          if (!next.isVisible) { j++; continue; }
-          if (next.blockType !== 'entry_ref' || !next.entryId) break;
-          const nextEntry = entries.find(e => e.id === next.entryId);
-          if (!nextEntry || !BADGE_ENTRY_TYPES.includes(nextEntry.entryType)) break;
-          badgeGroup.push(next);
-          j++;
-        }
+      // Regular entries (experience, education, certification…)
+      const entryData = { ...entry, ...(block.overrideData || {}) };
+      // Même mise en forme que le PDF (entry-dates.ts) ; « Aujourd'hui » conservé sans date de fin.
+      const dateText = formatEntryDates(
+        { entryType: entry.entryType, startDate: entryData.startDate as string | null, endDate: entryData.endDate as string | null, isCurrent: entryData.isCurrent as boolean | null },
+        (block.overrideData as Record<string, unknown> | undefined)?.datesOverride,
+        dateSettings,
+        { missingEnd: 'today' },
+      );
 
-        const format = getDisplayFormat(i, sortedBlocks);
-        const rendered = renderBadgeGroup(badgeGroup, format);
-        bodyChildren.push(...rendered);
-        i = j;
+      // Sans l'employeur en double (lib/entry-display.ts) ; une surcharge de titre prime.
+      const titleText = entryDisplayTitle(entry, block.overrideData);
+      // Ligne 2 : entreprise · lieu (même présentation que le PDF).
+      const meta = [entryData.subtitle, entryData.location]
+        .map(v => (typeof v === 'string' ? v.trim() : ''))
+        .filter(Boolean)
+        .join(' · ');
+      // Ligne 1 : intitulé, puis une tabulation vers la marge droite pour les dates (pas de tableau,
+      // pour rester lisible par les logiciels de recrutement).
+      const contentWidth = (effectiveTemplate.docx.pageSize === 'A4' ? 11906 : 12240)
+        - effectiveMargins.left - effectiveMargins.right;
 
+      // Structure : dates en marge (date, tabulation, intitulé, retrait suspendu) ou frise
+      // (filet gauche continu : bordure identique sur chaque paragraphe de l'entrée).
+      // Marge large (34 %) : la date la plus longue (« septembre 2018 – décembre 2020 ») y tient
+      // sur une ligne, sinon la tabulation sauterait au taquet suivant et décalerait l'intitulé.
+      const gutter = struct.entry === 'date-gutter' ? Math.round(contentWidthTw * 0.34) : 0;
+      const timeline = struct.entry === 'timeline';
+      // Cadre : bordure identique sur chaque paragraphe (Word les réunit en un seul cadre),
+      // puces écrites « • » pour garder le même retrait partout ; liseré d'accent à gauche.
+      const card = struct.entry === 'card';
+      const inline = struct.entry === 'inline';
+      // Dates sur la ligne de l'entreprise ; `hanging` : le reste en retrait sous l'intitulé.
+      const datesBelow = struct.entry === 'date-below' || struct.entry === 'hanging';
+      // Dates au-dessus de l'intitulé (`date-above`) ; la frise centrale (`alternate`) en une colonne.
+      const datesAbove = struct.entry === 'date-above' || struct.entry === 'alternate';
+      const hangingLeft = struct.entry === 'hanging' ? 360 : 0;
+      const entryLeft = contentLeft + gutter + (timeline ? 220 : 0);
+      const cardSide = { color: tintHex(30), space: 4, style: BorderStyle.SINGLE, size: 6 };
+      const entryDeco = timeline
+        ? { border: { left: { color: structAccentHex, space: 10, style: BorderStyle.SINGLE, size: 12 } } }
+        : card
+          ? { border: { top: cardSide, bottom: cardSide, right: cardSide, left: { color: structAccentHex, space: 6, style: BorderStyle.SINGLE, size: 18 } } }
+          : {};
+      const entryIndent = indentAt(entryLeft);
+      const bodyIndent = indentAt(entryLeft + hangingLeft);
+
+      const line1: TextRun[] = [];
+      if (gutter) {
+        if (dateText) line1.push(new TextRun({ text: dateText, bold: true, size: B - 2, font: F, color: structAccentHex }));
+        line1.push(new TextRun({ text: '\t', size: B, font: F }));
+        if (titleText) line1.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
       } else {
-        // Regular entries (experience, education, certification…)
-        const entryData = { ...entry, ...(block.overrideData || {}) };
-        // Même mise en forme que le PDF (entry-dates.ts) ; « Aujourd'hui » conservé sans date de fin.
-        const dateText = formatEntryDates(
-          { entryType: entry.entryType, startDate: entryData.startDate as string | null, endDate: entryData.endDate as string | null, isCurrent: entryData.isCurrent as boolean | null },
-          (block.overrideData as Record<string, unknown> | undefined)?.datesOverride,
-          dateSettings,
-          { missingEnd: 'today' },
-        );
-
-        // Sans l'employeur en double (lib/entry-display.ts) ; une surcharge de titre prime.
-        const titleText = entryDisplayTitle(entry, block.overrideData);
-        // Ligne 2 : entreprise · lieu (même présentation que le PDF).
-        const meta = [entryData.subtitle, entryData.location]
-          .map(v => (typeof v === 'string' ? v.trim() : ''))
-          .filter(Boolean)
-          .join(' · ');
-        // Ligne 1 : intitulé, puis une tabulation vers la marge droite pour les dates (pas de tableau,
-        // pour rester lisible par les logiciels de recrutement).
-        const contentWidth = (effectiveTemplate.docx.pageSize === 'A4' ? 11906 : 12240)
-          - effectiveMargins.left - effectiveMargins.right;
-
-        // Structure : dates en marge (date, tabulation, intitulé, retrait suspendu) ou frise
-        // (filet gauche continu : bordure identique sur chaque paragraphe de l'entrée).
-        // Marge large (34 %) : la date la plus longue (« septembre 2018 – décembre 2020 ») y tient
-        // sur une ligne, sinon la tabulation sauterait au taquet suivant et décalerait l'intitulé.
-        const gutter = struct.entry === 'date-gutter' ? Math.round(contentWidthTw * 0.34) : 0;
-        const timeline = struct.entry === 'timeline';
-        // Cadre : bordure identique sur chaque paragraphe (Word les réunit en un seul cadre),
-        // puces écrites « • » pour garder le même retrait partout ; liseré d'accent à gauche.
-        const card = struct.entry === 'card';
-        const inline = struct.entry === 'inline';
-        // Dates sur la ligne de l'entreprise ; `hanging` : le reste en retrait sous l'intitulé.
-        const datesBelow = struct.entry === 'date-below' || struct.entry === 'hanging';
-        // Dates au-dessus de l'intitulé (`date-above`) ; la frise centrale (`alternate`) en une colonne.
-        const datesAbove = struct.entry === 'date-above' || struct.entry === 'alternate';
-        const hangingLeft = struct.entry === 'hanging' ? 360 : 0;
-        const entryLeft = contentLeft + gutter + (timeline ? 220 : 0);
-        const cardSide = { color: tintHex(30), space: 4, style: BorderStyle.SINGLE, size: 6 };
-        const entryDeco = timeline
-          ? { border: { left: { color: structAccentHex, space: 10, style: BorderStyle.SINGLE, size: 12 } } }
-          : card
-            ? { border: { top: cardSide, bottom: cardSide, right: cardSide, left: { color: structAccentHex, space: 6, style: BorderStyle.SINGLE, size: 18 } } }
-            : {};
-        const entryIndent = indentAt(entryLeft);
-        const bodyIndent = indentAt(entryLeft + hangingLeft);
-
-        const line1: TextRun[] = [];
-        if (gutter) {
-          if (dateText) line1.push(new TextRun({ text: dateText, bold: true, size: B - 2, font: F, color: structAccentHex }));
-          line1.push(new TextRun({ text: '\t', size: B, font: F }));
-          if (titleText) line1.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
-        } else {
-          if (titleText) line1.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
-          if (inline && meta) line1.push(new TextRun({ text: `, ${meta}`, size: B, font: F, color: '555555' }));
-          if (dateText && !datesBelow && !datesAbove) line1.push(new TextRun({ text: `\t${dateText}`, size: B, font: F, color: '666666' }));
-        }
-        if (datesAbove && dateText) {
-          bodyChildren.push(new Paragraph({
-            children: [new TextRun({ text: dateText, bold: true, size: B - 2, font: F, color: structAccentHex })],
-            spacing: { before: 80, after: 0 },
-            keepNext: true,
-            ...entryIndent,
-          }));
-        }
-        // Ligne 2 : entreprise · lieu (absente en `inline`), suivie des dates en `date-below` / `hanging`.
-        const line2: TextRun[] = [];
-        if (meta && !inline) line2.push(new TextRun({ text: meta, size: B - 2, font: F, color: '555555' }));
-        if (datesBelow && dateText) {
-          if (line2.length) line2.push(new TextRun({ text: ' · ', size: B - 2, font: F, color: '555555' }));
-          line2.push(new TextRun({ text: dateText, size: B - 2, font: F, color: '555555' }));
-        }
-        if (!line1.length) line1.push(new TextRun({ text: '' }));
+        if (titleText) line1.push(new TextRun({ text: titleText, bold: true, size: B, font: F }));
+        if (inline && meta) line1.push(new TextRun({ text: `, ${meta}`, size: B, font: F, color: '555555' }));
+        if (dateText && !datesBelow && !datesAbove) line1.push(new TextRun({ text: `\t${dateText}`, size: B, font: F, color: '666666' }));
+      }
+      if (datesAbove && dateText) {
         bodyChildren.push(new Paragraph({
-          children: line1,
-          tabStops: gutter
-            ? [{ type: TabStopType.LEFT, position: entryLeft }]
-            : [{ type: TabStopType.RIGHT, position: contentWidth }],
-          spacing: { before: datesAbove && dateText ? 0 : 60, after: line2.length ? 0 : 20 },
-          ...(gutter ? indentAt(entryLeft, gutter) : entryIndent),
+          children: [new TextRun({ text: dateText, bold: true, size: B - 2, font: F, color: structAccentHex })],
+          spacing: { before: 80, after: 0 },
+          keepNext: true,
+          ...entryIndent,
+        }));
+      }
+      // Ligne 2 : entreprise · lieu (absente en `inline`), suivie des dates en `date-below` / `hanging`.
+      const line2: TextRun[] = [];
+      if (meta && !inline) line2.push(new TextRun({ text: meta, size: B - 2, font: F, color: '555555' }));
+      if (datesBelow && dateText) {
+        if (line2.length) line2.push(new TextRun({ text: ' · ', size: B - 2, font: F, color: '555555' }));
+        line2.push(new TextRun({ text: dateText, size: B - 2, font: F, color: '555555' }));
+      }
+      if (!line1.length) line1.push(new TextRun({ text: '' }));
+      bodyChildren.push(new Paragraph({
+        children: line1,
+        tabStops: gutter
+          ? [{ type: TabStopType.LEFT, position: entryLeft }]
+          : [{ type: TabStopType.RIGHT, position: contentWidth }],
+        spacing: { before: datesAbove && dateText ? 0 : 60, after: line2.length ? 0 : 20 },
+        ...(gutter ? indentAt(entryLeft, gutter) : entryIndent),
+        ...entryDeco,
+      }));
+      if (line2.length) {
+        bodyChildren.push(new Paragraph({
+          children: line2,
+          spacing: { after: 20 },
+          ...bodyIndent,
           ...entryDeco,
         }));
-        if (line2.length) {
+      }
+
+      if (entryData.description && typeof entryData.description === 'string') {
+        for (const line of entryData.description.split('\n')) {
+          const t = line.trim();
+          if (!t) continue;
+          const isBullet = t.startsWith('- ') || t.startsWith('* ');
+          if (card) {
+            bodyChildren.push(new Paragraph({
+              children: [
+                ...(isBullet ? [new TextRun({ text: '•  ', size: B, font: F })] : []),
+                ...parseMarkdownText(isBullet ? t.substring(2).trim() : t),
+              ],
+              spacing: { after: 10, line: lineSpacing },
+              ...entryIndent,
+              ...entryDeco,
+            }));
+            continue;
+          }
           bodyChildren.push(new Paragraph({
-            children: line2,
-            spacing: { after: 20 },
-            ...bodyIndent,
+            children: parseMarkdownText(isBullet ? t.substring(2).trim() : t),
+            spacing: { after: 10, line: lineSpacing },
+            numbering: isBullet ? { reference: 'default-bullet', level: 0 } : undefined,
+            ...(isBullet ? bulletIndentAt(entryLeft + hangingLeft) : bodyIndent),
             ...entryDeco,
           }));
         }
-
-        if (entryData.description && typeof entryData.description === 'string') {
-          for (const line of entryData.description.split('\n')) {
-            const t = line.trim();
-            if (!t) continue;
-            const isBullet = t.startsWith('- ') || t.startsWith('* ');
-            if (card) {
-              bodyChildren.push(new Paragraph({
-                children: [
-                  ...(isBullet ? [new TextRun({ text: '•  ', size: B, font: F })] : []),
-                  ...parseMarkdownText(isBullet ? t.substring(2).trim() : t),
-                ],
-                spacing: { after: 10, line: lineSpacing },
-                ...entryIndent,
-                ...entryDeco,
-              }));
-              continue;
-            }
-            bodyChildren.push(new Paragraph({
-              children: parseMarkdownText(isBullet ? t.substring(2).trim() : t),
-              spacing: { after: 10, line: lineSpacing },
-              numbering: isBullet ? { reference: 'default-bullet', level: 0 } : undefined,
-              ...(isBullet ? bulletIndentAt(entryLeft + hangingLeft) : bodyIndent),
-              ...entryDeco,
-            }));
-          }
-        }
-        // Cadres : un paragraphe vide sans bordure sépare deux entrées (sinon Word les fusionne).
-        if (card) bodyChildren.push(new Paragraph({ children: [], spacing: { before: 0, after: 0, line: 160 } }));
-        i++;
       }
+      // Cadres : un paragraphe vide sans bordure sépare deux entrées (sinon Word les fusionne).
+      if (card) bodyChildren.push(new Paragraph({ children: [], spacing: { before: 0, after: 0, line: 160 } }));
+      i++;
     } else {
       i++;
     }
