@@ -110,7 +110,7 @@ describe('PrintableCV - C : langue du CV', () => {
   });
 });
 
-describe('PrintableCV - les 11 templates (états de référence, ARCHITECTURE.md §4.1)', () => {
+describe('PrintableCV - les 26 modèles (états de référence, ARCHITECTURE.md § Modèles de CV)', () => {
   const templateIds = Object.keys(templates);
 
   function structured(): CVBlock[] {
@@ -124,8 +124,8 @@ describe('PrintableCV - les 11 templates (états de référence, ARCHITECTURE.md
     return [...base, sub('sa', 'Outils de vente', first - 0.5), sub('sb', 'Systèmes', mid - 0.5), sub('sc', 'Catégorie vide', 99999)];
   }
 
-  it('couvre bien les 11 templates', () => {
-    expect(templateIds).toHaveLength(11);
+  it('couvre bien les 26 modèles', () => {
+    expect(templateIds).toHaveLength(26);
   });
 
   for (const id of templateIds) {

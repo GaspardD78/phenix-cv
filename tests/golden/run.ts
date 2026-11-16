@@ -138,7 +138,10 @@ function checkOverflowCoherence(o: PrintOverflow, pdfText: string, pages: number
   if (pages !== 1) problems.push(`le PDF fait ${pages} pages : la mesure suppose une page unique`);
   if (o.overflows) {
     const visible = o.lines.filter((l) => l.bottomMm <= PAGE_HEIGHT_MM && probe(l)).sort((a, b) => b.bottomMm - a.bottomMm);
-    const hidden = o.lines.filter((l) => l.topMm >= PAGE_HEIGHT_MM && probe(l));
+    // Une ligne coupée dont le texte existe aussi plus haut (même établissement deux fois…)
+    // serait trouvée dans le PDF par sa copie visible : on teste une ligne au texte unique.
+    const count = (l: PrintLine) => o.lines.filter((x) => norm(x.text) === norm(l.text)).length;
+    const hidden = o.lines.filter((l) => l.topMm >= PAGE_HEIGHT_MM && probe(l) && count(l) === 1);
     if (!visible[0]) problems.push('aucune ligne visible testable');
     else if (!inPdf(visible[0])) problems.push(`dernière ligne visible absente du PDF : « ${visible[0].text} »`);
     if (!hidden[0]) problems.push('aucune ligne entièrement coupée testable');

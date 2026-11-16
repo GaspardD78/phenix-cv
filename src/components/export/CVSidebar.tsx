@@ -32,6 +32,16 @@ interface CVSidebarProps {
   photoShape: string;
   photoSize: string;
   photoBorder: string;
+  /**
+   * `band` (défaut) : bande latérale colorée avec photo et coordonnées.
+   * `column` : colonne sans fond sous l'en-tête (layout `header-columns`) ; photo et
+   * coordonnées restent dans l'en-tête, les titres reprennent ceux du modèle.
+   * `panel` : encadré clair à droite (layout `magazine`), même contenu que `column`
+   * précédé de `lead`. `tiles` : une tuile par section (structure `badges: 'tiles'`).
+   */
+  variant?: 'band' | 'column' | 'panel' | 'tiles';
+  /** Contenu placé en tête de l'encadré `panel` (l'accroche du modèle Magazine). */
+  lead?: React.ReactNode;
 }
 
 /**
@@ -45,13 +55,16 @@ interface CVSidebarProps {
  */
 export function CVSidebar({
   profile, entries, template, sections,
-  hasPhoto, photoShape, photoSize, photoBorder,
+  hasPhoto, photoShape, photoSize, photoBorder, variant = 'band', lead = null,
 }: CVSidebarProps) {
-  const contactItems = buildContactItems(profile);
+  const isColumn = variant !== 'band';
+  const contactItems = isColumn ? [] : buildContactItems(profile);
+  const headingClass = isColumn ? `${template.preview.headingClass} print:break-after-avoid` : 'cv-sidebar-heading';
 
   return (
-    <aside className="cv-sidebar">
-      {hasPhoto && (() => {
+    <aside className={variant === 'band' ? 'cv-sidebar' : variant === 'column' ? 'cv-side-col' : variant === 'panel' ? 'cv-side-col cv-panel' : 'cv-tiles'}>
+      {lead}
+      {hasPhoto && !isColumn && (() => {
         const size = photoSize || '120px';
         const shapeClass = photoShape || 'rounded-full';
         let borderClass = 'cv-sidebar-photo-ring';
@@ -93,7 +106,7 @@ export function CVSidebar({
 
       {sections.map((section) => (
         <div key={section.id} className="cv-sidebar-section mb-5">
-          <h3 className="cv-sidebar-heading">{section.sectionName}</h3>
+          <h3 className={headingClass}>{section.sectionName}</h3>
           {section.groups.map((group, gi) => {
             const badges = (
               <CVBadgeGroup
