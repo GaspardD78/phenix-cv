@@ -13,6 +13,7 @@ import { useWizardStore } from '@/stores/wizardStore';
 import { getTemplate } from '@/templates';
 import { exportNativePdf } from '@/lib/export-pdf';
 import { exportToDocx } from '@/lib/export-docx';
+import { cvExportFilename } from '@/lib/export-filename';
 import type { PrintOverflow } from '@/lib/print-overflow';
 import { NEXT_STEPS, nextStepRoute, savedMessage, type ExportFormat } from '@/lib/wizard/export-step';
 
@@ -84,6 +85,7 @@ export function WizardExportStep() {
       if (format === 'pdf') {
         await exportNativePdf('printable-cv', {
           onSaved,
+          defaultFileName: cvExportFilename(currentCv, profile, 'pdf'),
           confirmOverflow: o => new Promise<boolean>(resolve => { setOverflow(o); setOverflowAnswer(() => resolve); }),
         });
       } else {

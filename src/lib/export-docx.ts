@@ -13,6 +13,7 @@ import { formatEntryDates, readDateSettings } from './entry-dates';
 import { isSubHeader, parentDisplayFormat, visibleHeaderMask, type SlotKind } from './cv-sections';
 import { entryDisplayTitle } from './entry-display';
 import { BADGE_ENTRY_TYPES, buildBadgeRows, isSkillLineBlock, itemLabel, SKILL_ITEM_SEPARATOR, type BadgeItem, type BadgeRow } from './skill-lines';
+import { cvExportFilename } from './export-filename';
 
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -799,7 +800,7 @@ export async function exportToDocx(
   options: { onSaved?: (filePath: string) => void } = {},
 ) {
   try {
-    const defaultFilename = `${cv.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_ats.docx`;
+    const defaultFilename = cvExportFilename(cv, profile, 'docx');
     const blob = await generateDocxBlob(cv, profile, blocks, entries, template);
 
     // Desktop : dialogue de sauvegarde natif Tauri

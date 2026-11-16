@@ -161,7 +161,7 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
 
   try {
     const filePath = await save({
-      defaultPath: 'cv_export.pdf',
+      defaultPath: options.defaultFileName ?? 'cv_export.pdf',
       filters: [{ name: 'PDF', extensions: ['pdf'] }],
     });
 
@@ -225,6 +225,8 @@ export interface ExportPdfOptions {
   method?: PdfExportMethod;
   /** Appelé avec le chemin du fichier une fois le PDF écrit (ex. pour « Ouvrir le dossier »). */
   onSaved?: (filePath: string) => void;
+  /** Nom proposé dans la fenêtre d'enregistrement (modifiable), voir lib/export-filename.ts. */
+  defaultFileName?: string;
 }
 
 /**

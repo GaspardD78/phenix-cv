@@ -11,6 +11,7 @@ import { MarkdownEditorPage } from '@/components/markdown-editor/MarkdownEditorP
 import { ArrowLeft, Code2, Download, FileText, Loader2, Check, RefreshCw } from 'lucide-react';
 import { exportToDocx } from '@/lib/export-docx';
 import { exportNativePdf } from '@/lib/export-pdf';
+import { cvExportFilename } from '@/lib/export-filename';
 import type { PrintOverflow } from '@/lib/print-overflow';
 import { getTemplate } from '@/templates';
 import { toast } from 'sonner';
@@ -157,6 +158,7 @@ export function CVBuilderPage() {
     setIsExporting(true);
     try {
       const success = await exportNativePdf('printable-cv', {
+        defaultFileName: currentCv && profile ? cvExportFilename(currentCv, profile, 'pdf') : undefined,
         confirmOverflow: (overflow) => new Promise<boolean>((resolve) => {
           overflowResolveRef.current = resolve;
           setOverflowPrompt(overflow);
