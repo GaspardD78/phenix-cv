@@ -7,17 +7,17 @@ import { applyAiCvToBlocks } from './apply-ai-cv';
 import { DEFAULT_TARGET_SHEETS, resolveTarget } from './cv-targets';
 import { readTargetSnapshot } from './cv-target-snapshot';
 import { generateDocxBlob } from './export-docx';
-import { isSkillLineBlock } from './skill-lines';
+import { isAiSkillBlock } from './skill-lines';
 import { makeFakeStore } from './test-helpers/cv-fixtures';
 import {
-  GENERALIST_ENTRIES, GENERALIST_NOW, GENERALIST_PROFILE, GENERALIST_SKILL_LINES, GENERALIST_TITLE, generalistResponse, makeGeneralistBlocks,
+  GENERALIST_ENTRIES, GENERALIST_NOW, GENERALIST_PROFILE, GENERALIST_SKILLS, GENERALIST_TITLE, generalistResponse, makeGeneralistBlocks,
 } from './test-helpers/generalist-fixture';
 import { getTemplate } from '../templates';
 import type { CVDocument } from '../types/cv';
 
 /**
  * Cas de bout en bout : un CV « assistante commerciale généraliste », ciblage public · annonce · rh, produit
- * entièrement par l'IA (en-tête, titre libre, 4 postes détaillés, 2 lignes fusionnées, 7 lignes de compétences,
+ * entièrement par l'IA (en-tête, titre libre, 4 postes détaillés, 2 lignes fusionnées, 7 compétences en étiquettes,
  * formation sur 2 lignes, aucune autre section), sans retouche manuelle. Aucune donnée réelle.
  */
 
@@ -51,21 +51,21 @@ describe('assistante commerciale généraliste : pipeline complet sans retouche 
     expect(analysis.report.errors).toEqual([]);
     const codes = analysis.report.warnings.map(w => w.code);
     for (const bad of [
-      'merge-ignored', 'merge-dates-ignored', 'skill-line-no-source', 'skill-line-unsourced', 'skill-lines-too-few', 'target-forbidden-term',
+      'merge-ignored', 'merge-dates-ignored', 'cv-skill-no-source', 'cv-skill-unsourced', 'cv-skills-too-few', 'cv-skill-too-long', 'cv-skill-duplicate', 'target-forbidden-term',
       'unsupported-title', 'angle-title-corrected', 'tense', 'too-many-numbers', 'summary-has-numbers', 'bold-in-missions-mode',
       'summary-starts-with-title', 'target-photo', 'target-reader-mentioned', 'header-extra-invented', 'unknown-id', 'empty-description',
     ]) expect(codes).not.toContain(bad);
     // Le garde-fou garde tout ce qui est valide.
     expect(analysis.data.title).toBe(GENERALIST_TITLE);
-    expect(analysis.data.cvSkillLines).toHaveLength(7);
+    expect(analysis.data.cvSkills).toHaveLength(7);
     expect(analysis.data.mergedEntries?.map(g => g.ids)).toEqual([['a1', 'a2'], ['b1', 'b2', 'b3']]);
     expect(analysis.data.header).toEqual({ showDrivingLicense: true });
   });
 
-  it('application : fusions, lignes de compétences, en-tête et instantané de ciblage', async () => {
+  it('application : fusions, compétences de l\'IA, en-tête et instantané de ciblage', async () => {
     const { store, report } = await produce();
     expect(report.merges).toBe(2);
-    expect(report.skillLines).toBe('applied');
+    expect(report.cvSkills).toBe('applied');
     expect(store.settings.showDrivingLicense).toBe(true);
     expect(readTargetSnapshot(store.settings)?.titleRule).toBe('free');
     const byId = (id: string) => store.currentCvBlocks.find(b => b.id === id)!;
@@ -73,15 +73,15 @@ describe('assistante commerciale généraliste : pipeline complet sans retouche 
     expect(byId('b-a1').overrideData.mergedFrom).toEqual(['a1', 'a2']);
     expect(byId('b-b1').overrideData.mergedFrom).toEqual(['b1', 'b2', 'b3']);
     for (const id of ['b-a2', 'b-b2', 'b-b3']) expect(byId(id).isVisible).toBe(false);
-    // Catégories de compétences du profil masquées au profit des 7 lignes.
+    // Catégories de compétences du profil masquées au profit des 7 compétences de l'IA.
     expect(byId('b-k1').isVisible).toBe(false);
     expect(byId('b-k2').isVisible).toBe(false);
-    expect(store.currentCvBlocks.filter(isSkillLineBlock)).toHaveLength(7);
+    expect(store.currentCvBlocks.filter(isAiSkillBlock)).toHaveLength(7);
     expect(byId('b-c1').isVisible).toBe(false);
     expect(byId('b-i1').isVisible).toBe(false);
   });
 
-  it('CV rendu : en-tête avec « Permis B », titre libre, 4 postes + 2 lignes fusionnées aux dates calculées, 7 lignes, formation sur 2 lignes, aucune autre section', async () => {
+  it('CV rendu : en-tête avec « Permis B », titre libre, 4 postes + 2 lignes fusionnées aux dates calculées, 7 étiquettes, formation sur 2 lignes, aucune autre section', async () => {
     const { store, cv, analysis } = await produce();
     const html = renderToStaticMarkup(
       <PrintableCV cv={cv} profile={GENERALIST_PROFILE} blocks={store.currentCvBlocks} entries={GENERALIST_ENTRIES} template={getTemplate('ats-classic')} />,
@@ -115,9 +115,10 @@ describe('assistante commerciale généraliste : pipeline complet sans retouche 
     // Poste en cours : « auj. ».
     expect(text).toContain('janvier 2022 – auj.');
 
-    // 7 lignes de compétences reformulées, aucune catégorie du profil.
-    expect(html.match(/class="cv-desc cv-skill-line /g)).toHaveLength(7);
-    for (const l of GENERALIST_SKILL_LINES) expect(text).toContain(l.text.replace(/\s+/g, ' '));
+    // 7 compétences de l'IA en étiquettes (comme les compétences du profil), aucune catégorie du profil.
+    expect(html).not.toContain('cv-skill-line');
+    expect(html.match(/class="cv-badge cv-badge-item/g)).toHaveLength(7);
+    for (const k of GENERALIST_SKILLS) expect(html).toContain(`>${k.name.replace(/'/g, '&#x27;')}</span>`);
     for (const hidden of ['Tableur', 'Messagerie', 'Randonnée', 'secouriste']) expect(text).not.toContain(hidden);
 
     // Formation sur 2 lignes : une ligne chacune, sans description.
@@ -147,10 +148,10 @@ describe('assistante commerciale généraliste : pipeline complet sans retouche 
     expect(bad.report.errors).toEqual([]);
   });
 
-  it('lot 3 × lot 2 : une cvSkillLine citant une entrée fusionnée reste valide, bloc masqué ou non', async () => {
+  it('lot 3 × lot 2 : une compétence de l\'IA citant une entrée fusionnée reste valide, bloc masqué ou non', async () => {
     const { analysis, store } = await produce();
-    expect(analysis.ok && analysis.data.cvSkillLines?.map(l => l.sources)).toEqual(GENERALIST_SKILL_LINES.map(l => l.sources));
-    const lines = store.currentCvBlocks.filter(isSkillLineBlock);
+    expect(analysis.ok && analysis.data.cvSkills?.map(k => k.sources)).toEqual(GENERALIST_SKILLS.map(k => k.sources));
+    const lines = store.currentCvBlocks.filter(isAiSkillBlock);
     expect(lines.map(l => l.overrideData.sources)).toContainEqual(['a2']);
     expect(lines.map(l => l.overrideData.sources)).toContainEqual(['b3']);
     expect(store.currentCvBlocks.find(b => b.id === 'b-a2')!.isVisible).toBe(false);
@@ -173,7 +174,7 @@ describe('assistante commerciale généraliste : pipeline complet sans retouche 
     for (const expected of ['Permis B', 'Epsilon, Zeta', 'Eta, Theta, Iota', 'mars 2013 – mai 2015', 'septembre 2010 – février 2013', 'Master Commerce et gestion', 'Licence Économie']) {
       expect(xml).toContain(expected);
     }
-    for (const l of GENERALIST_SKILL_LINES) expect(xml).toContain(l.text.replace(/'/g, '&apos;'));
+    expect(xml).toContain(GENERALIST_SKILLS.map(k => k.name).join(' · ').replace(/'/g, '&apos;'));
     expect(xml).not.toContain('Tableur');
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { DEFAULT_INTENT, experienceBudget, intentToTarget, proposalToResponse, proposeCv, tokens, yearsOfExperience, type CvIntent } from './cv-intent';
+import { DEFAULT_INTENT, MAX_ANSWER_CHARS, experienceBudget, intentToTarget, proposalToResponse, proposeCv, readCvIntent, tokens, withCvIntent, yearsOfExperience, type CvIntent } from './cv-intent';
 import { applyAiCvToBlocks } from './apply-ai-cv';
 import { makeBlocks, makeEntry, makeFakeStore, TEST_PROFILE } from './test-helpers/cv-fixtures';
 import type { MasterEntry } from '@/types/profile';
@@ -223,5 +223,33 @@ describe('années d\'expérience : périodes fusionnées', () => {
     const p = proposeCv(intent({ role: 'Vendeuse' }), e, TEST_PROFILE, now);
     expect(p.experience.ignored).toBe(1);
     expect(p.notes.join(' ')).toContain('pas été comptée');
+  });
+});
+
+describe('réponses enregistrées dans le CV (cv.settings.cvIntent)', () => {
+  it('relecture identique après enregistrement', () => {
+    const saved = intent({ environment: 'Petite équipe', ease: 'Le suivi des commandes', achievements: 'Salon 2024', avoid: 'Le standard', assertiveness: 'affirme', preferences: { e1: 'prefer' } });
+    expect(readCvIntent(withCvIntent({ photoShape: 'rounded-lg' }, saved))).toEqual(saved);
+    expect(withCvIntent({ photoShape: 'rounded-lg' }, saved).photoShape).toBe('rounded-lg');
+  });
+
+  it('réponses d\'une version précédente : les nouvelles questions sont vides, le ton est « Équilibré »', () => {
+    const old = { role: 'Assistante commerciale', sector: 'négoce', level: 'expert', highlights: ['expertise'], preferences: {}, pages: 2, language: 'en' };
+    expect(readCvIntent({ cvIntent: old })).toEqual({
+      ...DEFAULT_INTENT, role: 'Assistante commerciale', sector: 'négoce', level: 'expert', highlights: ['expertise'], pages: 2, language: 'en',
+    });
+    expect(DEFAULT_INTENT.assertiveness).toBe('equilibre');
+  });
+
+  it('valeurs inattendues ignorées, aucune réponse : null', () => {
+    const r = readCvIntent({ cvIntent: { role: 42, level: 'chef', highlights: ['x', 'management'], preferences: { e1: 'bof', e2: 'exclude' }, assertiveness: 'fort', pages: 3 } });
+    expect(r).toEqual({ ...DEFAULT_INTENT, highlights: ['management'], preferences: { e2: 'exclude' } });
+    expect(readCvIntent({})).toBeNull();
+    expect(readCvIntent(null)).toBeNull();
+    expect(readCvIntent({ cvIntent: [] })).toBeNull();
+  });
+
+  it(`réponses libres limitées à ${MAX_ANSWER_CHARS} caractères`, () => {
+    expect(readCvIntent({ cvIntent: { ease: 'x'.repeat(MAX_ANSWER_CHARS + 50) } })?.ease).toHaveLength(MAX_ANSWER_CHARS);
   });
 });

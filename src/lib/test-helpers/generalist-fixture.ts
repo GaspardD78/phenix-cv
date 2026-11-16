@@ -72,15 +72,16 @@ export function makeGeneralistBlocks(entries: readonly MasterEntry[] = GENERALIS
 
 export const GENERALIST_TITLE = 'Assistante commerciale · Relation client et gestion des commandes';
 
-export const GENERALIST_SKILL_LINES = [
-  { text: 'Analyse des besoins clients et rédaction de devis', sources: ['d1'] },
-  { text: 'Animation de réunions de suivi et coordination des équipes', sources: ['d1', 'd4'] },
-  { text: 'Accompagnement des responsables dans le suivi des clients', sources: ['d2'] },
-  { text: "Organisation d'événements professionnels", sources: ['d2'] },
-  { text: 'Mise en place de procédures et suivi administratif des dossiers', sources: ['d3', 'd4'] },
+/** Compétences ajoutées par l'IA (étiquettes propres au CV), chacune étayée par une entrée du profil. */
+export const GENERALIST_SKILLS = [
+  { name: 'Rédaction de devis', sources: ['d1'] },
+  { name: 'Coordination des équipes', sources: ['d1', 'd4'] },
+  { name: 'Suivi des clients', sources: ['d2'] },
+  { name: "Organisation d'événements", sources: ['d2'] },
+  { name: 'Suivi administratif', sources: ['d3', 'd4'] },
   // Sources : entrées fusionnées (leurs blocs sont masqués par la fusion, la source reste valide).
-  { text: 'Relance des clients et planification des rendez-vous', sources: ['a2'] },
-  { text: 'Accueil des clients et suivi des dossiers de facturation', sources: ['b3'] },
+  { name: 'Planification des rendez-vous', sources: ['a2'] },
+  { name: 'Accueil des clients', sources: ['b3'] },
 ];
 
 /** Réponse de l'IA (schéma v2 additif), telle qu'une IA rigoureuse la produirait pour une annonce du secteur public. */
@@ -114,7 +115,7 @@ export function generalistResponse(overrides: { d1Description?: string } = {}): 
       { ids: ['a1', 'a2'], titleOverride: 'Assistante commerciale', description: "- Traiter les commandes de plusieurs services\n- Relancer les clients et planifier les rendez-vous" },
       { ids: ['b1', 'b2', 'b3'], titleOverride: 'Assistant administratif' },
     ],
-    cvSkillLines: GENERALIST_SKILL_LINES,
+    cvSkills: GENERALIST_SKILLS,
     sectionOrder: ['Expériences Professionnelles', 'Compétences', 'Formations'],
     suggestedEntries: [],
   };

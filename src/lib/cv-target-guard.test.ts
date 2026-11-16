@@ -177,3 +177,24 @@ describe('équivalences : recherche', () => {
     expect(equivalenceFor('deal', eqs)).toBeUndefined();
   });
 });
+
+describe('target-photo et interrupteur « Afficher la photo »', () => {
+  const entries = [exp('m1', 'Assistante commerciale', '- Piloter les commandes')];
+  const run = (photoShown: boolean | undefined) =>
+    guardAiCv(resp({ entries: [{ id: 'm1', visible: true }] }), base(entries, { type: 'public' }, {
+      profile: { ...TEST_PROFILE, title: 'Assistante commerciale', photoPath: 'data:image/png;base64,AAAA' },
+      ...(photoShown === undefined ? {} : { photoShown }),
+    }));
+  it('photo masquée sur ce CV : plus d\'avertissement, même si le profil a une photo', () => {
+    expect(codes(run(false))).not.toContain('target-photo');
+  });
+  it('photo affichée : avertissement qui indique comment la masquer pour ce CV seulement', () => {
+    const issue = run(true).report.warnings.find(w => w.code === 'target-photo');
+    expect(issue?.message).toContain('Afficher la photo');
+    expect(issue?.message).toContain('« Mon profil »');
+    expect(issue?.message).not.toContain('à retirer dans le design');
+  });
+  it('sans réglage transmis : la photo du profil suffit (comportement d\'avant)', () => {
+    expect(codes(run(undefined))).toContain('target-photo');
+  });
+});

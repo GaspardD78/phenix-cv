@@ -1,6 +1,7 @@
 import type { EntryType } from '@/types/profile';
 import { isSectionHeader, isSubHeader, normalizeLabel } from './cv-sections';
 import { normalizeLanguageCode } from './cv-language';
+import { cleanSkillName, splitSkillLine } from './skill-lines';
 import { FIRST_READERS, INTENTS, TARGET_TYPES } from './cv-targets';
 import type { AiCvCible } from './cv-target-snapshot';
 
@@ -131,12 +132,12 @@ export interface AiCvMergedEntry {
 }
 
 /**
- * Ligne de compétences reformulée, propre au CV (champ additif `cvSkillLines`). Chaque ligne cite les
- * entrées du profil (expérience ou compétence) qui l'étayent : c'est la traçabilité anti-invention.
- * Jamais écrite dans le profil maître.
+ * Compétence ajoutée par l'IA, propre au CV (champ additif `cvSkills`) : un libellé court, rendu en
+ * étiquette comme les compétences du profil. Elle cite les entrées du profil (expérience ou compétence)
+ * qui l'étayent : c'est la traçabilité anti-invention. Jamais écrite dans le profil maître.
  */
-export interface AiCvSkillLine {
-  text: string;
+export interface AiCvSkill {
+  name: string;
   sources: string[];
 }
 
@@ -184,8 +185,11 @@ export interface AiCvResponse {
   header?: AiCvHeader;
   /** Fusions d'entrées en une ligne (champ additif ; absent : aucune fusion). */
   mergedEntries?: AiCvMergedEntry[];
-  /** Lignes de compétences reformulées, propres au CV (champ additif ; absent : compétences inchangées). */
-  cvSkillLines?: AiCvSkillLine[];
+  /**
+   * Compétences ajoutées par l'IA, propres au CV (champ additif ; absent : compétences inchangées).
+   * L'ancien champ `cvSkillLines` (lignes de texte) est lu et découpé en compétences.
+   */
+  cvSkills?: AiCvSkill[];
 }
 
 /** Returns a trimmed non-empty string, or `undefined`. */
@@ -305,17 +309,30 @@ function parseMergedEntries(raw: unknown): AiCvMergedEntry[] | undefined {
   return groups.length > 0 ? groups : undefined;
 }
 
-function parseSkillLines(raw: unknown): AiCvSkillLine[] | undefined {
+function parseCvSkills(raw: unknown): AiCvSkill[] | undefined {
   if (!Array.isArray(raw)) return undefined;
-  const lines: AiCvSkillLine[] = [];
+  const skills: AiCvSkill[] = [];
   for (const item of raw) {
     if (item === null || typeof item !== 'object') continue;
     const r = item as Record<string, unknown>;
-    const text = cleanString(r.text)?.replace(/^[-*]\s+/, '').trim();
-    if (!text) continue;
-    lines.push({ text, sources: parseStringList(r.sources) ?? [] });
+    const name = cleanSkillName(cleanString(r.name) ?? cleanString(r.text) ?? '');
+    if (!name) continue;
+    skills.push({ name, sources: parseStringList(r.sources) ?? [] });
   }
-  return lines.length > 0 ? lines : undefined;
+  return skills.length > 0 ? skills : undefined;
+}
+
+/** Ancien champ `cvSkillLines` (lignes de texte) : chaque ligne devient une ou plusieurs compétences, avec ses sources. */
+function parseLegacySkillLines(raw: unknown): AiCvSkill[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const skills: AiCvSkill[] = [];
+  for (const item of raw) {
+    if (item === null || typeof item !== 'object') continue;
+    const r = item as Record<string, unknown>;
+    const sources = parseStringList(r.sources) ?? [];
+    for (const name of splitSkillLine(cleanString(r.text) ?? '')) skills.push({ name, sources: [...sources] });
+  }
+  return skills.length > 0 ? skills : undefined;
 }
 
 function parseHeader(raw: unknown): AiCvHeader | undefined {
@@ -513,8 +530,8 @@ export function parseAiCvResponse(raw: string): AiCvResponse {
   const mergedEntries = parseMergedEntries(obj.mergedEntries);
   if (mergedEntries) response.mergedEntries = mergedEntries;
 
-  const cvSkillLines = parseSkillLines(obj.cvSkillLines);
-  if (cvSkillLines) response.cvSkillLines = cvSkillLines;
+  const cvSkills = parseCvSkills(obj.cvSkills) ?? parseLegacySkillLines(obj.cvSkillLines);
+  if (cvSkills) response.cvSkills = cvSkills;
 
   return response;
 }

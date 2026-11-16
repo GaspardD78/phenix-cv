@@ -9,7 +9,8 @@ import { confirm } from '@tauri-apps/plugin-dialog';
 import { toast } from 'sonner';
 import { MergeBadge } from './MergeBadge';
 import { isMergedMember } from '@/lib/merged-entries';
-import { unmergeCarrierBlock } from '@/lib/apply-ai-cv';
+import { convertSkillLineToSkills, unmergeCarrierBlock } from '@/lib/apply-ai-cv';
+import { isAiSkillBlock, isSkillLineBlock, splitSkillLine } from '@/lib/skill-lines';
 
 type DisplayFormat = 'badges' | 'comma' | 'list' | 'columns2' | 'columns3' | 'table';
 
@@ -37,6 +38,11 @@ export function SectionItem({ block }: SectionItemProps) {
 
   const isEntryRef = block.blockType === 'entry_ref' && block.entryId;
   const isSectionHeader = block.blockType === 'section_header';
+  const isAiSkill = isAiSkillBlock(block);
+  const isSkillLine = isSkillLineBlock(block);
+  // « Convertir en étiquettes » (ancienne ligne de compétences) : étiquettes proposées, modifiables avant validation.
+  const [convertNames, setConvertNames] = useState<string[] | null>(null);
+  const [converting, setConverting] = useState(false);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -167,10 +173,36 @@ export function SectionItem({ block }: SectionItemProps) {
       subtitle = (block.overrideData?.subtitle as string) || entry.subtitle || '';
       defaultDescription = (block.overrideData?.description as string) || entry.description || '';
     }
+  } else if (isAiSkill) {
+    title = block.customContent || 'Compétence';
+    subtitle = 'Compétence ajoutée pour ce CV';
+    defaultDescription = block.customContent || '';
+  } else if (isSkillLine) {
+    title = block.customContent || 'Ligne de compétences';
+    subtitle = 'Ligne de compétences (texte) : vous pouvez la convertir en étiquettes';
+    defaultDescription = block.customContent || '';
   } else if (block.blockType === 'custom_text') {
     title = 'Texte personnalisé';
     defaultDescription = block.customContent || '';
   }
+
+  const confirmConversion = async () => {
+    if (!convertNames) return;
+    setConverting(true);
+    try {
+      const created = await convertSkillLineToSkills(block.cvId, block.id, convertNames);
+      if (created === 0) {
+        toast.error('Ajoutez au moins une étiquette avant de convertir.');
+        return;
+      }
+      toast.success(created > 1 ? `${created} étiquettes ont remplacé la ligne.` : 'Une étiquette a remplacé la ligne.');
+      setConvertNames(null);
+    } catch {
+      toast.error('Impossible de convertir cette ligne.');
+    } finally {
+      setConverting(false);
+    }
+  };
 
   const startEditing = () => {
     if (isSectionHeader) {
@@ -292,7 +324,21 @@ export function SectionItem({ block }: SectionItemProps) {
           </>
         )}
 
-        {(isEntryRef || block.blockType === 'custom_text') && (
+        {isAiSkill && (
+          <>
+            <input
+              type="text"
+              value={overrideDescription}
+              onChange={(e) => setOverrideDescription(e.target.value)}
+              aria-label="Compétence"
+              placeholder="Compétence (quelques mots)"
+              className="p-1 text-sm border border-gray-300 dark:border-[var(--pc-border)] rounded focus:ring-lagon-500 focus:border-lagon-500"
+            />
+            <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Affichée en étiquette, comme vos autres compétences. Elle ne s'ajoute pas à « Mon profil ».</p>
+          </>
+        )}
+
+        {(isEntryRef || (block.blockType === 'custom_text' && !isAiSkill)) && (
           <>
             <textarea
               value={overrideDescription}
@@ -303,6 +349,44 @@ export function SectionItem({ block }: SectionItemProps) {
             <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Astuce : <code className="bg-white dark:bg-[var(--pc-card)] px-1 rounded">- texte</code> liste à puces · <code className="bg-white px-1 rounded">**texte**</code> gras · <code className="bg-white px-1 rounded">*texte*</code> italique</p>
           </>
         )}
+      </div>
+    );
+  }
+
+  // ── Conversion d'une ancienne ligne en étiquettes : aperçu modifiable, rien n'est changé avant validation ──
+
+  if (convertNames) {
+    const field = 'flex-1 min-w-0 p-1 text-sm border border-gray-300 dark:border-[var(--pc-border)] rounded focus:ring-lagon-500 focus:border-lagon-500 bg-white dark:bg-[var(--pc-card)]';
+    const valid = convertNames.filter(n => n.trim()).length;
+    return (
+      <div ref={setNodeRef} style={style} data-testid="skill-line-convert"
+        className="border rounded mb-2 bg-lagon-50 dark:bg-[var(--pc-surface)] flex flex-col gap-2 p-3 shadow-md border-lagon-200 text-gray-900 dark:text-[var(--pc-text)]">
+        <p className="text-xs font-semibold text-lagon-800 dark:text-[var(--pc-text)]">Convertir en étiquettes</p>
+        <p className="text-xs text-gray-600 dark:text-[var(--pc-muted)]">Ligne actuelle : « {block.customContent} »</p>
+        <p className="text-xs text-gray-600 dark:text-[var(--pc-muted)]">Relisez les étiquettes proposées : raccourcissez-les, retirez-en ou ajoutez-en. Rien ne change tant que vous n'avez pas validé.</p>
+        <ul className="flex flex-col gap-1.5">
+          {convertNames.map((name, i) => (
+            <li key={i} className="flex items-center gap-1.5">
+              <input value={name} aria-label={`Étiquette ${i + 1}`} className={field}
+                onChange={e => setConvertNames(convertNames.map((n, k) => (k === i ? e.target.value : n)))} />
+              <button type="button" title="Retirer cette étiquette" aria-label={`Retirer l'étiquette ${i + 1}`}
+                onClick={() => setConvertNames(convertNames.filter((_, k) => k !== i))}
+                className="p-1 rounded text-gray-500 hover:text-red-600 hover:bg-red-50">
+                <X className="w-4 h-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button type="button" onClick={() => setConvertNames([...convertNames, ''])}
+          className="self-start text-xs font-medium text-lagon-700 hover:underline">+ Ajouter une étiquette</button>
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={() => setConvertNames(null)} disabled={converting}
+            className="px-2.5 py-1 text-xs rounded border border-gray-300 dark:border-[var(--pc-border)] bg-white dark:bg-[var(--pc-card)] hover:bg-gray-50">Annuler</button>
+          <button type="button" onClick={() => { void confirmConversion(); }} disabled={converting || valid === 0}
+            className="px-2.5 py-1 text-xs rounded bg-lagon-600 text-white hover:bg-lagon-700 disabled:opacity-50">
+            {valid > 1 ? `Remplacer la ligne par ces ${valid} étiquettes` : 'Remplacer la ligne par cette étiquette'}
+          </button>
+        </div>
       </div>
     );
   }
@@ -336,6 +420,12 @@ export function SectionItem({ block }: SectionItemProps) {
           {isEntryRef && <MergeBadge block={block} onUnmerge={() => { void unmergeCarrierBlock(block.cvId, block.id); }} />}
         </div>
         {subtitle && <span className="text-xs text-gray-500 dark:text-[var(--pc-muted)] truncate">{subtitle}</span>}
+        {isSkillLine && (
+          <button type="button" onClick={() => setConvertNames(splitSkillLine(block.customContent ?? ''))} data-testid="skill-line-convert-start"
+            className="mt-1 self-start inline-flex items-center gap-1 rounded border border-lagon-200 bg-lagon-50 px-2 py-0.5 text-xs font-medium text-lagon-700 hover:bg-lagon-100 dark:bg-[var(--pc-surface)] dark:border-[var(--pc-border)] dark:text-[var(--pc-text)]">
+            <Tags className="w-3.5 h-3.5" /> Convertir en étiquettes
+          </button>
+        )}
       </div>
 
       <div className="flex p-1.5 space-x-0.5 text-gray-400 dark:text-[var(--pc-muted)] opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">

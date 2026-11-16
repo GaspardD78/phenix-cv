@@ -22,7 +22,7 @@ import { DEFAULT_TARGET_PAGES, experienceYears, nowMonthIndex, toMonthIndex } fr
 import { normalizeLanguageCode } from './cv-language';
 import { normalizeLabel } from './cv-sections';
 import { normalizeDescription, normalizeTypography } from './cv-typography';
-import { bulletItems, isSkillCategory } from './skill-lines';
+import { AI_SKILL_LIMITS, bulletItems, cleanSkillName, isSkillCategory, skillNameTooLong } from './skill-lines';
 import { matchProfileExtras, parseHeaderExtras } from './header-extras';
 import type { BulletFocus, VerbTense } from './cv-focus-rules';
 import { checkTarget, type TargetTextField } from './cv-target-guard';
@@ -37,7 +37,8 @@ export type GuardCode =
   | 'skill-item-invented' | 'angle-hidden-entry-visible' | 'angle-lead-entry-hidden' | 'angle-title-corrected' | 'header-extra-invented'
   | 'too-many-numbers' | 'bold-in-missions-mode' | 'summary-has-numbers'
   | 'target-forbidden-term' | 'target-equivalence-applied' | 'target-photo' | 'target-reader-mentioned'
-  | 'summary-starts-with-title' | 'skill-line-no-source' | 'skill-line-unsourced' | 'skill-lines-too-few'
+  | 'summary-starts-with-title' | 'cv-skill-no-source' | 'cv-skill-unsourced' | 'cv-skills-too-few' | 'cv-skills-too-many'
+  | 'cv-skill-too-long' | 'cv-skill-duplicate'
   | 'merge-ignored' | 'merge-dates-ignored';
 
 export interface GuardIssue {
@@ -105,6 +106,12 @@ export interface GuardContext {
   profile?: Pick<Profile, 'title' | 'summary' | 'drivingLicense' | 'headerExtras' | 'photoPath'> | null;
   /** « Contexte additionnel » saisi par l'utilisateur : seule source des suggestions. */
   extraContext?: string;
+  /**
+   * Réponses du candidat au questionnaire du CV standard (`candidateAnswersText`, lib/cv-intent.ts) :
+   * ce qu'il y affirme compte comme source au même titre que le profil (chiffres, termes). Jamais
+   * source de suggestions d'entrées : celles-ci restent réservées au contexte additionnel.
+   */
+  candidateAnswers?: string;
   /** Pages cibles (réglage « Pages cibles ») ; défaut : 1, comme le prompt. */
   pageBudget?: number;
   now?: Date;
@@ -128,6 +135,11 @@ export interface GuardContext {
    * titre, photo, mention du premier lecteur). Absent : aucun. L'anti-invention ne change jamais.
    */
   target?: ResolvedTarget;
+  /**
+   * La photo sort-elle sur ce CV (`isPhotoShown`, lib/cv-photo.ts : photo du profil ET interrupteur
+   * « Afficher la photo ») ? Absent : la photo du profil suffit (comportement historique).
+   */
+  photoShown?: boolean;
 }
 
 /** Lignes par page A4 à 11 px (titres de section et espacements compris), approximation prudente. */
@@ -151,7 +163,7 @@ function buildSource(ctx: GuardContext): { text: string; numbers: Set<string> } 
   for (const e of ctx.entries) {
     parts.push(e.title, e.subtitle ?? '', e.location ?? '', e.description ?? '', e.startDate ?? '', e.endDate ?? '');
   }
-  parts.push(ctx.profile?.title ?? '', ctx.profile?.summary ?? '', ctx.extraContext ?? '');
+  parts.push(ctx.profile?.title ?? '', ctx.profile?.summary ?? '', ctx.extraContext ?? '', ctx.candidateAnswers ?? '');
   const raw = parts.join('\n');
   return { text: normalizeLabel(raw), numbers: new Set(extractNumbers(raw)) };
 }
@@ -165,9 +177,6 @@ export function extractNumbers(text: string): string[] {
   }
   return out;
 }
-
-/** Lignes de compétences valides minimales pour remplacer les catégories du profil (en dessous : catégories conservées). */
-export const MIN_SKILL_LINES = 3;
 
 /** Mode « missions » : nombre maximal de chiffres distincts sur tout le CV (hors années et durées). */
 export const MAX_MISSION_NUMBERS = 3;
@@ -498,26 +507,39 @@ export function guardAiCv(input: AiCvResponse, ctx: GuardContext): { data: AiCvR
     }
   }
 
-  // ── Lignes de compétences reformulées : chaque ligne cite au moins une entrée source valide ──
-  let skillLines = input.cvSkillLines;
-  if (skillLines) {
-    const seenLines = new Set<string>();
-    const keptLines: NonNullable<AiCvResponse['cvSkillLines']> = [];
-    for (const line of skillLines) {
-      const text = normalizeTypography(line.text, language);
-      const key = normalizeApostrophes(normalizeLabel(text));
-      if (seenLines.has(key)) continue;
-      const sources = [...new Set(line.sources)].filter(id => {
+  // ── Compétences ajoutées par l'IA : des étiquettes courtes, chacune étayée par une entrée source ──
+  let cvSkills = input.cvSkills;
+  if (cvSkills) {
+    const seen = new Set<string>();
+    // Compétences isolées du profil : déjà des étiquettes, une compétence de l'IA identique ferait doublon.
+    const profileSkills = new Map(ctx.entries
+      .filter(e => e.entryType === 'skill' && !isSkillCategory(e))
+      .map(e => [normalizeApostrophes(normalizeLabel(e.title)), e.title] as const));
+    const kept: NonNullable<AiCvResponse['cvSkills']> = [];
+    for (const skill of cvSkills) {
+      const name = cleanSkillName(normalizeTypography(skill.name, language));
+      const key = normalizeApostrophes(normalizeLabel(name));
+      if (!name || seen.has(key)) continue;
+      const own = profileSkills.get(key);
+      if (own !== undefined) {
+        warn({ code: 'cv-skill-duplicate', message: `« ${own} » figure déjà dans vos compétences : non ajoutée une seconde fois.` });
+        continue;
+      }
+      if (skillNameTooLong(name)) {
+        warn({ code: 'cv-skill-too-long', message: `« ${name} » est trop long pour une étiquette (${AI_SKILL_LIMITS.maxChars} caractères et ${AI_SKILL_LIMITS.maxWords} mots au plus) : non ajoutée.` });
+        continue;
+      }
+      const sources = [...new Set(skill.sources)].filter(id => {
         const e = entryById.get(id);
         if (e && (e.entryType === 'experience' || e.entryType === 'skill')) return true;
         unknownIds.add(id);
         return false;
       });
       if (sources.length === 0) {
-        warn({ code: 'skill-line-no-source', message: `Ligne de compétences retirée, aucune entrée source valide : « ${text} ».` });
+        warn({ code: 'cv-skill-no-source', message: `Compétence « ${name} » retirée : aucune entrée de votre profil ne l'appuie.` });
         continue;
       }
-      seenLines.add(key);
+      seen.add(key);
       // Chiffres et termes techniques : doivent figurer dans les sources citées.
       const sourceText = sources
         .map(id => entryById.get(id) as MasterEntry)
@@ -525,17 +547,21 @@ export function guardAiCv(input: AiCvResponse, ctx: GuardContext): { data: AiCvR
         .join('\n');
       const sourceNorm = normalizeLabel(sourceText);
       const sourceNumbers = new Set(extractNumbers(sourceText));
-      const missingNumbers = [...new Set(extractNumbers(text))].filter(n => !sourceNumbers.has(n));
-      const missingTerms = extractTechnicalTerms(text, { properNouns: language === 'fr' }).filter(t => !containsWord(sourceNorm, t));
+      const missingNumbers = [...new Set(extractNumbers(name))].filter(n => !sourceNumbers.has(n));
+      const missingTerms = extractTechnicalTerms(name, { properNouns: language === 'fr' }).filter(t => !containsWord(sourceNorm, t));
       const missing = [...missingNumbers, ...missingTerms];
       if (missing.length > 0) {
-        warn({ code: 'skill-line-unsourced', message: `Ligne de compétences « ${text} » : absent des sources citées : ${missing.join(', ')}.` });
+        warn({ code: 'cv-skill-unsourced', message: `Compétence « ${name} » : absent des entrées citées : ${missing.join(', ')}.` });
       }
-      keptLines.push({ text, sources });
+      kept.push({ name, sources });
     }
-    skillLines = keptLines.length > 0 ? keptLines : undefined;
-    if (skillLines && skillLines.length < MIN_SKILL_LINES) {
-      warn({ code: 'skill-lines-too-few', message: `${skillLines.length} ligne(s) de compétences valide(s) (minimum ${MIN_SKILL_LINES}) : les catégories de compétences du profil sont conservées.` });
+    if (kept.length > AI_SKILL_LIMITS.max) {
+      warn({ code: 'cv-skills-too-many', message: `${kept.length} compétences proposées : seules les ${AI_SKILL_LIMITS.max} premières sont gardées.` });
+      kept.length = AI_SKILL_LIMITS.max;
+    }
+    cvSkills = kept.length > 0 ? kept : undefined;
+    if (cvSkills && cvSkills.length < AI_SKILL_LIMITS.min) {
+      warn({ code: 'cv-skills-too-few', message: `${cvSkills.length} compétence(s) valide(s) (minimum ${AI_SKILL_LIMITS.min}) : rien n'est ajouté et les catégories de compétences du profil sont conservées.` });
     }
   }
 
@@ -620,7 +646,7 @@ export function guardAiCv(input: AiCvResponse, ctx: GuardContext): { data: AiCvR
     skillGroups,
   };
   if (header !== undefined) data.header = header; else delete data.header;
-  if (skillLines !== undefined) data.cvSkillLines = skillLines; else delete data.cvSkillLines;
+  if (cvSkills !== undefined) data.cvSkills = cvSkills; else delete data.cvSkills;
   if (mergedEntries !== undefined) data.mergedEntries = mergedEntries; else delete data.mergedEntries;
   if (data.entryOrder === undefined) delete data.entryOrder;
   if (data.skillGroups === undefined) delete data.skillGroups;
@@ -689,7 +715,7 @@ export function guardAiCv(input: AiCvResponse, ctx: GuardContext): { data: AiCvR
   const allowedInSummary = new Set<string>([String(years), String(years + 1), String(Math.max(0, years - 1))]);
   const fields: TextField[] = [];
   if (summary) fields.push({ where: 'résumé', kind: 'summary', text: summary });
-  for (const l of skillLines ?? []) fields.push({ where: `ligne de compétences « ${l.text.slice(0, 40)} »`, kind: 'description', text: l.text });
+  for (const k of cvSkills ?? []) fields.push({ where: `compétence « ${k.name} »`, kind: 'description', text: k.name });
   for (const e of visible) {
     const merge = mergeOf.get(e.entry.id);
     if (merge) {
@@ -783,7 +809,7 @@ export function guardAiCv(input: AiCvResponse, ctx: GuardContext): { data: AiCvR
     ].join('\n');
     const issues = checkTarget({
       target, fields, ownText, heldTitles, title, titleOverrides,
-      photoShown: Boolean(ctx.profile?.photoPath), french: language === 'fr',
+      photoShown: ctx.photoShown ?? Boolean(ctx.profile?.photoPath), french: language === 'fr',
     });
     for (const issue of issues) {
       warn({ code: issue.code, message: issue.message, entryId: issue.entryId });
@@ -808,7 +834,8 @@ export function guardAiCv(input: AiCvResponse, ctx: GuardContext): { data: AiCvR
   let visibleBullets = 0;
   let lines = 5; // en-tête (nom, intitulé, contacts)
   if (summary) lines += Math.ceil(summary.length / CHARS_PER_LINE);
-  if (skillLines && skillLines.length >= MIN_SKILL_LINES) lines += skillLines.length;
+  // Étiquettes : sur la ligne des compétences isolées, environ BADGES_PER_LINE par ligne.
+  if (cvSkills && cvSkills.length >= AI_SKILL_LIMITS.min) lines += Math.ceil(cvSkills.length / BADGES_PER_LINE);
   const badgeCounts = new Map<string, number>();
   const sectionsUsed = new Set<string>();
   const overridePatterns = new Set<string>();

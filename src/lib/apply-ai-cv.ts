@@ -1,8 +1,7 @@
 import type { AiCvResponse, SkillGroupPlan } from './ai-cv-response';
 import { aiEntryToOverrideData, planCvBlockOrder } from './ai-cv-response';
 import { isSectionHeader, isSubHeader, normalizeLabel } from './cv-sections';
-import { isSkillCategory } from './skill-lines';
-import { MIN_SKILL_LINES } from './ai-cv-guard';
+import { AI_SKILL_LIMITS, cleanSkillName, isAiSkillBlock, isSkillCategory, isSkillLineBlock } from './skill-lines';
 import { remapEntryOrder, resolveMergedGroup, type ResolvedMerge } from './merged-entries';
 import {
   decideLanguageSection,
@@ -75,8 +74,8 @@ export interface ApplyReport {
   cvLanguage: string;
   /** `applied` : sous-en-têtes créés ou mis à jour ; `skipped` : demandé mais écarté (voir `warnings`) ; `none` : non demandé. */
   skillGrouping: 'applied' | 'skipped' | 'none';
-  /** Lignes de compétences propres au CV : `applied` ; `skipped` : fournies mais pas appliquées (voir `warnings`) ; `none` : non demandées. */
-  skillLines: 'applied' | 'skipped' | 'none';
+  /** Compétences ajoutées par l'IA (étiquettes propres au CV) : `applied` ; `skipped` : fournies mais pas appliquées (voir `warnings`) ; `none` : non demandées. */
+  cvSkills: 'applied' | 'skipped' | 'none';
   /** Section Langues affichée ? `null` quand le profil n'a aucune langue. */
   languagesShown: boolean | null;
   /** Nombre de fusions d'expériences appliquées (`mergedEntries`). */
@@ -220,8 +219,8 @@ export async function applyAiCvToBlocks(
     }
   }
 
-  // 3b. Lignes de compétences reformulées (blocs `custom_text` propres au CV, jamais le profil maître).
-  const skillLinePlan = await applySkillLines(cvId, data, store, entryById, warnings);
+  // 3b. Compétences ajoutées par l'IA (étiquettes `custom_text` propres au CV, jamais le profil maître).
+  const skillPlan = await applyCvSkills(cvId, data, store, entryById, warnings);
 
   // 4. Re-order (entries + sections + skill grouping + ad language first) in a single pass.
   // `entryOrder` peut citer n'importe quel identifiant d'un groupe fusionné : il s'applique au bloc porteur.
@@ -230,7 +229,7 @@ export async function applyAiCvToBlocks(
     ? [languageFrontId, ...(orderedIds ?? []).filter(id => id !== languageFrontId)]
     : orderedIds;
   const needsReorder =
-    (entryOrder?.length ?? 0) > 0 || (data.sectionOrder?.length ?? 0) > 0 || groupPlans.length > 0 || skillLinePlan.lineIds.length > 0;
+    (entryOrder?.length ?? 0) > 0 || (data.sectionOrder?.length ?? 0) > 0 || groupPlans.length > 0 || skillPlan.ids.length > 0;
   if (needsReorder) {
     const order = planCvBlockOrder(store().currentCvBlocks, {
       entryOrder,
@@ -239,9 +238,9 @@ export async function applyAiCvToBlocks(
       skillsHeaderId,
       skillGroups: groupPlans.length > 0 ? groupPlans : undefined,
     });
-    // Les lignes de compétences viennent juste sous l'en-tête « Compétences », avant sous-en-têtes et entrées.
-    const placed = skillLinePlan.headerId && skillLinePlan.lineIds.length > 0
-      ? placeAfter(order, skillLinePlan.headerId, skillLinePlan.lineIds)
+    // Les compétences de l'IA viennent juste sous l'en-tête « Compétences », avant sous-en-têtes et entrées.
+    const placed = skillPlan.headerId && skillPlan.ids.length > 0
+      ? placeAfter(order, skillPlan.headerId, skillPlan.ids)
       : order;
     await store().reorderCvBlocks(cvId, placed);
   }
@@ -271,7 +270,7 @@ export async function applyAiCvToBlocks(
     await store().updateCvSettings(cvId, { cvLanguage: explicitLanguage });
   }
 
-  return { cvLanguage, skillGrouping, skillLines: skillLinePlan.status, languagesShown, merges: mergeResult.merges.length, warnings, ...(targetReport ? { target: targetReport } : {}) };
+  return { cvLanguage, skillGrouping, cvSkills: skillPlan.status, languagesShown, merges: mergeResult.merges.length, warnings, ...(targetReport ? { target: targetReport } : {}) };
 }
 
 /**
@@ -416,40 +415,40 @@ export function placeAfter(order: readonly string[], afterId: string, ids: reado
   return [...rest.slice(0, at + 1), ...ids, ...rest.slice(at + 1)];
 }
 
-const isSkillLine = (b: CVBlock): boolean => b.blockType === 'custom_text' && b.overrideData?.aiSkillLine === true;
-
 /**
- * Lignes de compétences reformulées (`cvSkillLines`) : blocs `custom_text` sous l'en-tête
- * « Compétences », marqués `overrideData.aiSkillLine` pour être retrouvés (idempotent : les blocs
- * existants sont mis à jour, les manquants créés, les en trop supprimés ; sans lignes, une application
- * précédente est défaite). À partir de `MIN_SKILL_LINES` lignes, les catégories de compétences du profil
- * ne restent visibles que si l'IA les liste en `visible: true` ; elles sont marquées `hiddenBySkillLines`
- * pour être rétablies quand les lignes disparaissent. En dessous du minimum, rien n'est masqué.
+ * Compétences ajoutées par l'IA (`cvSkills`) : un bloc `custom_text` par compétence sous l'en-tête
+ * « Compétences », marqué `overrideData.aiSkill` (lib/skill-lines.ts), rendu comme une compétence isolée.
+ * Idempotent : les blocs existants sont mis à jour, les manquants créés, les en trop supprimés ; les
+ * anciennes lignes de texte (`aiSkillLine`) sont remplacées ; sans compétences, une application
+ * précédente est défaite. À partir de `AI_SKILL_LIMITS.min` compétences, les catégories de compétences
+ * du profil ne restent visibles que si l'IA les liste en `visible: true` ; elles sont marquées
+ * `hiddenBySkillLines` pour être rétablies ensuite. En dessous du minimum, rien n'est masqué.
  */
-async function applySkillLines(
+async function applyCvSkills(
   cvId: string,
   data: AiCvResponse,
   store: () => CvBlockPort,
   entryById: Map<string, MasterEntry>,
   warnings: string[],
-): Promise<{ status: ApplyReport['skillLines']; headerId?: string; lineIds: string[] }> {
-  const requested = data.cvSkillLines ?? [];
-  const active = requested.length >= MIN_SKILL_LINES;
-  const existing = store().currentCvBlocks.filter(isSkillLine).sort((a, b) => a.sortOrder - b.sortOrder);
+): Promise<{ status: ApplyReport['cvSkills']; headerId?: string; ids: string[] }> {
+  const requested = data.cvSkills ?? [];
+  const active = requested.length >= AI_SKILL_LIMITS.min;
+  const existing = store().currentCvBlocks.filter(isAiSkillBlock).sort((a, b) => a.sortOrder - b.sortOrder);
+  const legacy = store().currentCvBlocks.filter(isSkillLineBlock);
   // Une catégorie que l'IA masque explicitement dans cette application le reste.
   const explicitHidden = new Set(data.entries.filter(e => !e.visible).map(e => e.id));
 
   // Rien de demandé, ou trop peu : on défait une application précédente et on garde les catégories.
   if (!active) {
-    for (const b of existing) await store().deleteCvBlock(b.id);
+    for (const b of [...existing, ...legacy]) await store().deleteCvBlock(b.id);
     for (const b of store().currentCvBlocks) {
       if (b.overrideData?.hiddenBySkillLines === true) {
         const { hiddenBySkillLines: _flag, ...rest } = b.overrideData;
         await store().updateCvBlock(b.id, { isVisible: !(b.entryId && explicitHidden.has(b.entryId)), overrideData: rest });
       }
     }
-    if (requested.length > 0) warnings.push(`Lignes de compétences ignorées : ${requested.length} ligne(s) valide(s), minimum ${MIN_SKILL_LINES}. Les catégories du profil sont conservées.`);
-    return { status: requested.length > 0 ? 'skipped' : 'none', lineIds: [] };
+    if (requested.length > 0) warnings.push(`Compétences ajoutées par l'IA ignorées : ${requested.length} compétence(s) valide(s), minimum ${AI_SKILL_LIMITS.min}. Les catégories du profil sont conservées.`);
+    return { status: requested.length > 0 ? 'skipped' : 'none', ids: [] };
   }
 
   // Section « Compétences » : l'en-tête qui précède le premier bloc de compétence.
@@ -461,28 +460,24 @@ async function applySkillLines(
     else if (b.blockType === 'entry_ref' && b.entryId && entryById.get(b.entryId)?.entryType === 'skill') { header = current; break; }
   }
   if (!header) {
-    warnings.push('Lignes de compétences ignorées : section « Compétences » introuvable.');
-    return { status: 'skipped', lineIds: [] };
+    warnings.push("Compétences ajoutées par l'IA ignorées : section « Compétences » introuvable.");
+    return { status: 'skipped', ids: [] };
   }
 
-  // Lignes : mise à jour des blocs existants, création des manquants, suppression des surplus.
+  // Étiquettes : mise à jour des blocs existants, création des manquants, suppression des surplus.
+  for (const b of legacy) await store().deleteCvBlock(b.id);
   const ids: string[] = [];
   const spare = [...existing];
   for (let i = 0; i < requested.length; i++) {
-    const line = requested[i];
-    const overrideData = { aiSkillLine: true, sources: line.sources };
+    const skill = requested[i];
+    const overrideData = { aiSkill: true, sources: skill.sources };
     const reuse = spare.shift();
     if (reuse) {
-      await store().updateCvBlock(reuse.id, { customContent: line.text, isVisible: true, overrideData });
+      await store().updateCvBlock(reuse.id, { customContent: skill.name, isVisible: true, overrideData });
       ids.push(reuse.id);
     } else {
-      const before = new Set(store().currentCvBlocks.map(b => b.id));
-      await store().createCvBlock({
-        cvId, entryId: null, blockType: 'custom_text', sectionName: null, customContent: line.text,
-        sortOrder: 200_000 + i, isVisible: true, overrideData,
-      });
-      const created = store().currentCvBlocks.find(b => !before.has(b.id));
-      if (created) ids.push(created.id);
+      const id = await createSkillBlock(store, cvId, skill.name, overrideData, 200_000 + i, true);
+      if (id) ids.push(id);
     }
   }
   for (const extra of spare) await store().deleteCvBlock(extra.id);
@@ -500,7 +495,53 @@ async function applySkillLines(
       await store().updateCvBlock(b.id, { isVisible: true, overrideData: rest });
     }
   }
-  return { status: 'applied', headerId: header.id, lineIds: ids };
+  return { status: 'applied', headerId: header.id, ids };
+}
+
+/** Crée un bloc de compétence propre au CV et renvoie son identifiant. */
+async function createSkillBlock(
+  store: () => CvBlockPort, cvId: string, name: string, overrideData: Record<string, unknown>, sortOrder: number, isVisible: boolean,
+): Promise<string | undefined> {
+  const before = new Set(store().currentCvBlocks.map(b => b.id));
+  await store().createCvBlock({
+    cvId, entryId: null, blockType: 'custom_text', sectionName: null, customContent: name, sortOrder, isVisible, overrideData,
+  });
+  return store().currentCvBlocks.find(b => !before.has(b.id))?.id;
+}
+
+/**
+ * « Convertir en étiquettes » : remplace une ancienne ligne de compétences (`aiSkillLine`) par les
+ * étiquettes que le candidat a validées, à la même place, avec les mêmes sources et la même visibilité.
+ * Libellés vides ou en double ignorés. Renvoie le nombre d'étiquettes créées (0 : rien n'a changé).
+ */
+export async function convertSkillLineToSkills(
+  cvId: string,
+  blockId: string,
+  names: readonly string[],
+  opts: { store?: () => CvBlockPort } = {},
+): Promise<number> {
+  const store = opts.store ?? realStorePort;
+  const line = store().currentCvBlocks.find(b => b.id === blockId);
+  if (!line || !isSkillLineBlock(line)) return 0;
+  const seen = new Set<string>();
+  const clean = names.map(cleanSkillName).filter(n => {
+    const key = n.toLowerCase();
+    if (!n || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  if (clean.length === 0) return 0;
+  const sources = Array.isArray(line.overrideData.sources) ? line.overrideData.sources : [];
+  const order = [...store().currentCvBlocks].sort((a, b) => a.sortOrder - b.sortOrder).map(b => b.id);
+  const ids: string[] = [];
+  for (const [i, name] of clean.entries()) {
+    const id = await createSkillBlock(store, cvId, name, { aiSkill: true, sources }, line.sortOrder + (i + 1) / 1000, line.isVisible);
+    if (id) ids.push(id);
+  }
+  await store().deleteCvBlock(line.id);
+  const at = order.indexOf(line.id);
+  await store().reorderCvBlocks(cvId, [...order.slice(0, at), ...ids, ...order.slice(at + 1)]);
+  return ids.length;
 }
 
 // ── Fusion d'expériences ────────────────────────────────────────────────────

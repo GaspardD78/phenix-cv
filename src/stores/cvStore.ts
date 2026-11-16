@@ -3,6 +3,7 @@ import { CVDocument, CVBlock } from '@/types/cv';
 import { getDb } from '@/lib/db';
 import { keysToCamelCase, keysToSnakeCase } from '@/lib/mapping';
 import { filterAllowedColumns } from '@/lib/validation';
+import { withShowPhoto } from '@/lib/cv-photo';
 import { EntryType, MasterEntry } from '@/types/profile';
 
 /**
@@ -37,6 +38,8 @@ interface CVState {
   updateCv: (id: string, updates: Partial<CVDocument>) => Promise<void>;
   /** Change le modèle du CV courant : l'aperçu suit tout de suite, puis le choix est enregistré. */
   setTemplate: (templateId: string) => Promise<void>;
+  /** Interrupteur « Afficher la photo » du CV courant (cv.settings) : l'aperçu suit tout de suite. La photo du profil n'est pas touchée. */
+  setShowPhoto: (shown: boolean) => Promise<void>;
   createCvBlock: (block: Omit<CVBlock, 'id' | 'createdAt'>) => Promise<void>;
   updateCvBlock: (id: string, updates: Partial<CVBlock>) => Promise<void>;
   deleteCvBlock: (id: string) => Promise<void>;
@@ -249,6 +252,14 @@ export const useCvStore = create<CVState>((set, get) => ({
     if (!cv || cv.templateId === templateId) return;
     set({ currentCv: { ...cv, templateId } });
     await get().updateCv(cv.id, { templateId });
+  },
+
+  setShowPhoto: async (shown) => {
+    const cv = get().currentCv;
+    if (!cv) return;
+    const settings = withShowPhoto(cv.settings, shown);
+    set({ currentCv: { ...cv, settings } });
+    await get().updateCv(cv.id, { settings });
   },
 
   updateCv: (id, updates) => enqueueWrite(async () => {

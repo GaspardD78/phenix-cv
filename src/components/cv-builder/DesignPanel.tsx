@@ -47,6 +47,10 @@ interface DesignPanelProps {
   dateFormat: DateFormat; setDateFormat: (v: DateFormat) => void;
   dateStyle: DateStyle; setDateStyle: (v: DateStyle) => void;
   showEducationYears: boolean; setShowEducationYears: (v: boolean) => void;
+  /** « Mon profil » contient-il une photo ? Sans photo, l'interrupteur est sans effet. */
+  hasProfilePhoto: boolean;
+  /** Interrupteur « Afficher la photo » de ce CV (cv.settings.showPhoto). */
+  showPhoto: boolean; setShowPhoto: (v: boolean) => void;
 }
 
 export function DesignPanel({
@@ -90,6 +94,8 @@ export function DesignPanel({
   dateFormat, setDateFormat,
   dateStyle, setDateStyle,
   showEducationYears, setShowEducationYears,
+  hasProfilePhoto,
+  showPhoto, setShowPhoto,
 }: DesignPanelProps) {
   const [isStandardOpen, setIsStandardOpen] = useState(true);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -525,7 +531,20 @@ export function DesignPanel({
             {/* Photo settings */}
             <div>
               <p className="text-xs font-semibold text-gray-700 dark:text-[var(--pc-muted)] mb-2 pb-1 border-b border-gray-100 dark:border-[var(--pc-border)]">Photo de profil</p>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="flex items-center gap-2 text-xs text-gray-700 dark:text-[var(--pc-muted)] cursor-pointer mb-1">
+                <input type="checkbox" role="switch" aria-checked={showPhoto} data-testid="design-show-photo"
+                  checked={showPhoto} onChange={e => setShowPhoto(e.target.checked)}
+                  className="accent-lagon-600" />
+                <span>Afficher la photo</span>
+              </label>
+              <p className="text-[11px] text-gray-500 dark:text-[var(--pc-muted)] mb-2">
+                {!hasProfilePhoto
+                  ? "Ajoutez d'abord une photo dans « Mon profil »."
+                  : showPhoto
+                    ? 'La photo apparaît sur ce CV, à l\'écran, en PDF et en Word.'
+                    : "Masquée sur ce CV seulement, y compris en PDF et en Word. Votre photo reste dans « Mon profil »."}
+              </p>
+              <fieldset disabled={!showPhoto || !hasProfilePhoto} className="grid grid-cols-2 gap-2 disabled:opacity-50">
                 <div>
                   <label className="block text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-0.5">Forme</label>
                   <select value={photoShape} onChange={e => setPhotoShape(e.target.value)}
@@ -558,7 +577,7 @@ export function DesignPanel({
                     <option value="shadow">Ombre portée</option>
                   </select>
                 </div>
-              </div>
+              </fieldset>
             </div>
 
             {/* CV header typography (name / title / contact) */}

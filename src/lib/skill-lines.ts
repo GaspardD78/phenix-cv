@@ -27,11 +27,65 @@ export interface BadgeBlockLike {
 }
 
 /**
- * Ligne de compétences reformulée, propre au CV (`cvSkillLines`) : bloc `custom_text` marqué
- * `overrideData.aiSkillLine`, rendu comme une ligne de compétences (jamais écrit dans le profil maître).
+ * Ancienne ligne de compétences reformulée (champ `cvSkillLines` d'avant les étiquettes) : bloc
+ * `custom_text` marqué `overrideData.aiSkillLine`, rendu comme une ligne de texte. Les CV existants la
+ * gardent telle quelle ; l'action « Convertir en étiquettes » la remplace par des `aiSkill`.
  */
 export function isSkillLineBlock(block: Pick<BadgeBlockLike, 'blockType' | 'overrideData'>): boolean {
   return block.blockType === 'custom_text' && block.overrideData?.aiSkillLine === true;
+}
+
+/**
+ * Compétence ajoutée par l'IA, propre au CV (`cvSkills`) : bloc `custom_text` marqué
+ * `overrideData.aiSkill`, dont le texte est le libellé. Rendue exactement comme une compétence isolée
+ * du profil (étiquette en format « Tags »). Jamais écrite dans le profil maître.
+ */
+export function isAiSkillBlock(block: Pick<BadgeBlockLike, 'blockType' | 'overrideData'>): boolean {
+  return block.blockType === 'custom_text' && block.overrideData?.aiSkill === true;
+}
+
+/** Bloc de compétences propre au CV (étiquette de l'IA ou ancienne ligne) : rendu dans le groupe de badges. */
+export function isCvSkillBlock(block: Pick<BadgeBlockLike, 'blockType' | 'overrideData'>): boolean {
+  return isAiSkillBlock(block) || isSkillLineBlock(block);
+}
+
+/** Limites des compétences ajoutées par l'IA (prompt et garde-fou partagent ces valeurs). */
+export const AI_SKILL_LIMITS = {
+  /** En dessous, les catégories du profil sont conservées et rien n'est ajouté. */
+  min: 3,
+  max: 12,
+  /** Une étiquette : quelques mots, pas une phrase. */
+  maxChars: 40,
+  maxWords: 5,
+} as const;
+
+/** `true` quand le libellé est trop long pour une étiquette (une phrase plutôt qu'une compétence). */
+export function skillNameTooLong(name: string): boolean {
+  const t = name.trim();
+  return t.length > AI_SKILL_LIMITS.maxChars || t.split(/\s+/).filter(Boolean).length > AI_SKILL_LIMITS.maxWords;
+}
+
+/** Libellé d'étiquette nettoyé : sans puce, sans ponctuation finale, espaces réduits. */
+export function cleanSkillName(raw: string): string {
+  return raw.replace(BULLET_RE, '').replace(/[\s.;:,]+$/, '').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Découpe une ancienne ligne de compétences en étiquettes : sur `,` `;` `·` `•` `/` `|` et les retours
+ * à la ligne. Doublons (sans tenir compte de la casse) et morceaux vides retirés. Une phrase sans
+ * séparateur reste entière : le candidat la raccourcit avant de valider.
+ */
+export function splitSkillLine(text: string): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const part of text.split(/[,;·•/|\n]+/)) {
+    const name = cleanSkillName(part);
+    const key = name.toLowerCase();
+    if (!name || seen.has(key)) continue;
+    seen.add(key);
+    out.push(name);
+  }
+  return out;
 }
 
 /** Un élément de ligne : libellé et, pour le format tableau, niveau (sous-titre). */
@@ -44,7 +98,7 @@ export interface BadgeItem {
 export interface BadgeRow {
   category: string | null;
   items: BadgeItem[];
-  /** Ligne de texte libre propre au CV (`cvSkillLines`) : ni catégorie ni élément libre. */
+  /** Ancienne ligne de texte libre propre au CV (`aiSkillLine`) : ni catégorie ni élément libre. */
   plain?: boolean;
 }
 
@@ -96,6 +150,12 @@ export function buildBadgeRows(blocks: readonly BadgeBlockLike[], entries: reado
   const rows: BadgeRow[] = [];
   const loose: BadgeItem[] = [];
   for (const block of blocks) {
+    if (isAiSkillBlock(block)) {
+      // Compétence de l'IA : un élément libre, comme une compétence isolée du profil.
+      const name = str(block.customContent);
+      if (name) loose.push({ name });
+      continue;
+    }
     if (isSkillLineBlock(block)) {
       const text = str(block.customContent);
       if (text) rows.push({ category: null, items: [{ name: text }], plain: true });

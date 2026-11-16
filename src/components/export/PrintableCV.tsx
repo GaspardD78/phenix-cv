@@ -4,11 +4,12 @@ import { MasterEntry, Profile } from '../../types/profile';
 import { CVTemplate } from '../../types/template';
 import { CVHeader } from './CVHeader';
 import { profileForHeader } from '../../lib/header-extras';
+import { isPhotoShown } from '../../lib/cv-photo';
 import { CVSectionHeader } from './CVSectionHeader';
 import { CVEntryBlock } from './CVEntryBlock';
 import { CVBadgeGroup } from './CVBadgeGroup';
 import { CVCustomText } from './CVCustomText';
-import { isSkillLineBlock } from '../../lib/skill-lines';
+import { isCvSkillBlock } from '../../lib/skill-lines';
 import { CVSidebar, type SidebarGroup, type SidebarSection } from './CVSidebar';
 import { safeCssValue, type CssValueKind } from '../../lib/css-sanitize';
 import { readDateSettings } from '../../lib/entry-dates';
@@ -199,7 +200,8 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       return { v: `${py ? parseInt(py[1]) * 4 : 40}px`, h: `${px ? parseInt(px[1]) * 4 : 48}px` };
     })();
     const heroPhotoSize = settings.photoSize || '96px';
-    const heroHasPhoto = Boolean(profile.photoPath);
+    // Interrupteur « Afficher la photo » du CV (lib/cv-photo.ts) : même règle partout.
+    const hasPhoto = isPhotoShown(profile, cv.settings);
     const entryStyle = structure.entry;
     /** Une seule couleur d'accent : teintes claires dérivées par mélange avec le blanc (pas de dégradé). */
     const accentTint = (pct: number) => `color-mix(in srgb, ${accentColor} ${pct}%, white)`;
@@ -380,7 +382,7 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       structure.header === 'monogram' ? `#printable-cv .cv-monogram { font-family: Georgia, serif` + ' }' : '',
       structure.header === 'monogram' ? '#printable-cv .cv-monogram::before { content: attr(data-initials); }' : '',
       // ── Grand en-tête : bloc clair pleine largeur, photo ronde à cheval sur son bord ──
-      isHero ? `#printable-cv .cv-header-hero { margin: -${screenPad.v} -${screenPad.h} ${heroHasPhoto ? `calc(${heroPhotoSize} / 2 + 24px)` : '24px'} !important; padding: 30px ${screenPad.h} ${heroHasPhoto ? '0' : '26px'} !important; background-color: ${accentTint(11)}; }` : '',
+      isHero ? `#printable-cv .cv-header-hero { margin: -${screenPad.v} -${screenPad.h} ${hasPhoto ? `calc(${heroPhotoSize} / 2 + 24px)` : '24px'} !important; padding: 30px ${screenPad.h} ${hasPhoto ? '0' : '26px'} !important; background-color: ${accentTint(11)}; }` : '',
       isHero ? `@media print { #printable-cv .cv-header-hero { margin-top: -${(pageMargin ? screenPad.v : '8px')} !important; margin-left: -${(pageMargin ? screenPad.h : '10px')} !important; margin-right: -${(pageMargin ? screenPad.h : '10px')} !important; padding-left: 24px !important; padding-right: 24px !important; } }` : '',
       isHero ? '#printable-cv .cv-hero-photo { margin-top: 18px; transform: translateY(50%); border: 4px solid #ffffff; box-sizing: border-box; }' : '',
       isHero ? '#printable-cv .cv-header-hero .cv-contact-info > div { justify-content: center; }' : '',
@@ -425,8 +427,6 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       entryStyle === 'card' ? `#printable-cv .cv-entry-card { border: 1px solid ${accentTint(28)}; border-left: 3px solid ${accentColor}; border-radius: 6px; padding: 8px 12px 9px; background: #ffffff; }` : '',
     ].filter(Boolean).join('\n');
 
-    const hasPhoto = Boolean(profile.photoPath);
-
     // Pre-process blocks to group badge entries
     type RenderItem =
       | { type: 'block'; block: CVBlock }
@@ -438,19 +438,19 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       const block = sortedBlocks[i];
       if (!block.isVisible) { i++; continue; }
 
-      const startsGroup = isSkillLineBlock(block) || (() => {
+      const startsGroup = isCvSkillBlock(block) || (() => {
         if (block.blockType !== 'entry_ref' || !block.entryId) return false;
         const entry = entries.find(e => e.id === block.entryId);
         return Boolean(entry && BADGE_ENTRY_TYPES.includes(entry.entryType));
       })();
       if (startsGroup) {
-        // Lignes de compétences propres au CV et éléments badges consécutifs : un seul groupe.
+        // Compétences propres au CV (étiquettes de l'IA, anciennes lignes) et éléments badges consécutifs : un seul groupe.
         const badgeGroup: CVBlock[] = [block];
         let j = i + 1;
         while (j < sortedBlocks.length) {
           const next = sortedBlocks[j];
           if (!next.isVisible) { j++; continue; }
-          if (isSkillLineBlock(next)) { badgeGroup.push(next); j++; continue; }
+          if (isCvSkillBlock(next)) { badgeGroup.push(next); j++; continue; }
           if (next.blockType !== 'entry_ref' || !next.entryId) break;
           const nextEntry = entries.find(e => e.id === next.entryId);
           if (!nextEntry || !BADGE_ENTRY_TYPES.includes(nextEntry.entryType)) break;

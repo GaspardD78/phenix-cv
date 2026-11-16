@@ -9,6 +9,7 @@ import { BlockList } from './BlockList';
 import { getTemplate } from '@/templates';
 import { DENSITY_PRESETS, type DensityId } from '@/theme/tokens';
 import { useProfileStore } from '@/stores/profileStore';
+import { readShowPhoto } from '@/lib/cv-photo';
 import { usePromptStore } from '@/stores/promptStore';
 import { isTauri } from '@/lib/platform';
 import { fitToPage, readEffectiveValues, type FitSettingKey } from '@/lib/fit-to-page';
@@ -578,6 +579,9 @@ export function LeftPanel({
             dateFormat={dateFormat} setDateFormat={setDateFormat}
             dateStyle={dateStyle} setDateStyle={setDateStyle}
             showEducationYears={showEducationYears} setShowEducationYears={setShowEducationYears}
+            hasProfilePhoto={Boolean(masterProfile?.photoPath)}
+            showPhoto={readShowPhoto(currentCv?.settings)}
+            setShowPhoto={shown => { void useCvStore.getState().setShowPhoto(shown); }}
           />
         </div>
       )}

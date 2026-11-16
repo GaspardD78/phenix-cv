@@ -13,9 +13,21 @@ Le CV standard est le choix conseillé pour un premier CV ou pour une candidatur
 
 1. Dans **Mes CV**, cliquez sur **Nouveau CV**, puis choisissez **CV standard** (il est sélectionné par défaut).
 2. Donnez un nom au CV, par exemple « CV assistante commerciale – standard ».
-3. Répondez aux questions : le poste visé, le secteur, votre niveau, ce que vous voulez mettre en avant, les expériences à privilégier ou à laisser de côté, la longueur (une ou deux pages) et la langue.
+3. Répondez aux questions : le poste ou les missions que vous recherchez, l'environnement où vous vous épanouissez, ce que vous faites avec aisance, vos réalisations, ce que l'on doit retenir de vous, votre niveau et ce que vous ne voulez plus faire. Choisissez aussi les expériences à privilégier ou à laisser de côté, la longueur (une ou deux pages) et la langue. Seul le poste est obligatoire. Vos réponses sont enregistrées avec ce CV.
 4. Cliquez sur **Voir ma proposition**. Relisez le titre, l'accroche et la liste des expériences et compétences retenues.
 5. Cochez ou décochez les éléments, puis cliquez sur **Appliquer à mon CV**.
+
+## Faire affiner par une IA (facultatif)
+
+Depuis votre proposition, **Faire affiner par une IA** prépare un texte à copier dans l'IA de votre choix. L'IA joue le rôle d'un coach de carrière : elle part de ce que vous recherchez et reformule votre profil pour mieux vous présenter, sans rien inventer. Ce que vous écrivez dans vos réponses compte comme une source : un chiffre que vous donnez peut être repris tel quel.
+
+Le **niveau d'affirmation** règle le ton :
+
+- **Sobre** : vos faits présentés simplement.
+- **Équilibré** (par défaut) : vos réalisations en premier, avec des verbes d'action concrets.
+- **Affirmé** : vos points forts assumés, avec des mots plus forts.
+
+Le ton change, jamais les faits : une participation reste une participation. Collez ensuite la réponse de l'IA, lisez le rapport de contrôle, puis appliquez.
 
 ## Les années d'expérience
 
