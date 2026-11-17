@@ -14,6 +14,7 @@ import {
 import { DEFAULT_BULLET_FOCUS, DEFAULT_VERB_TENSE } from './cv-focus-rules';
 import { resolveTarget } from './cv-targets';
 import { parseHeaderExtras } from './header-extras';
+import { IMPACT_WRITING_RULES, buildImpactData } from './cv-impact-blocks';
 import {
   ASSERTIVENESS_LABELS, HIGHLIGHT_LABELS, INTENT_QUESTIONS, LEVEL_LABELS, type Assertiveness, type CvIntent,
 } from './cv-intent';
@@ -118,11 +119,14 @@ export function buildGenericCvPrompt(input: GenericCvPromptInput): string {
     buildHeaderMentions(profile),
     buildExtraContext(undefined),
     buildGenericTarget(intent),
+    ...(options.impact ? buildImpactData(options.impact) : []),
     buildAssertiveness(intent.assertiveness),
     buildAnalysisStep({ alertesCap: personal, mode: 'cible', cibleAxes: [] }),
     rules,
+    options.impact ? IMPACT_WRITING_RULES : '',
     buildClarify(input.clarify),
     buildOutputSchema({
+      impact: Boolean(options.impact),
       alertesCap: personal,
       header: Boolean(profile.drivingLicense?.trim()) || parseHeaderExtras(profile.headerExtras).length > 0,
       bulletFocus: options.bulletFocus ?? DEFAULT_BULLET_FOCUS,

@@ -25,6 +25,7 @@ import { atsRule, buildTargetBlock, cibleAnalysisLine, cibleAxesToAsk, cibleSche
 import { AI_SKILL_LIMITS, bulletItems, isSkillCategory } from './skill-lines';
 import { buildAngle, buildAngleChoice } from './cv-angle-prompt';
 import type { AngleSpec } from './cv-angles';
+import { IMPACT_SCHEMA_FIELDS, IMPACT_WRITING_RULES, buildImpactData, type ImpactInput } from './cv-impact-blocks';
 
 /** Nombre de puces d'un CV d'une page (base du budget de volume du prompt et du garde-fou). */
 export const BULLETS_PER_PAGE = 18;
@@ -83,6 +84,8 @@ export interface CvPromptOptions {
   target?: ResolvedTarget;
   /** Axes proposés par l'IA dans analyse.cible ; défaut : ceux encore par défaut (`[]` : aucune demande). */
   cibleAxes?: readonly CibleAxis[];
+  /** CV à vrai impact : fiche cible validée, analyse d'écart et réponses. Absent : prompt habituel, inchangé. */
+  impact?: ImpactInput;
 }
 
 export interface CvPromptInput {
@@ -427,6 +430,8 @@ export interface OutputSchemaOptions {
   verbTense?: VerbTense;
   /** Axes du ciblage que l'IA doit proposer dans analyse.cible. */
   cibleAxes?: readonly CibleAxis[];
+  /** Schéma v3 : décisions, rapport de positionnement, suggestions, attentes par entrée. */
+  impact?: boolean;
 }
 
 export function buildOutputSchema(opts: OutputSchemaOptions = {}): string {
@@ -446,7 +451,7 @@ ${JSON_RULES}
 Schéma (les valeurs entre parenthèses décrivent le contenu attendu ; les champs marqués "optionnel" s'omettent s'ils ne servent pas) :
 
 {
-  "schemaVersion": 2,
+  "schemaVersion": ${opts.impact ? 3 : 2},
   "analyse": {
     "langue_annonce": "(code ISO : fr, en...)",
     "indispensables": ["(exigence, formulation exacte de l'annonce)"],
@@ -460,7 +465,7 @@ Schéma (les valeurs entre parenthèses décrivent le contenu attendu ; les cham
     {
       "id": "[ID EXACT DE L'ENTRÉE]",
       "visible": true,
-      "description": "${schemaDescriptionExample(focus, opts.verbTense ?? DEFAULT_VERB_TENSE)}",
+      "description": "${schemaDescriptionExample(focus, opts.verbTense ?? DEFAULT_VERB_TENSE)}",${opts.impact ? '\n      "attentes": ["(IDs de la fiche cible que cette expérience illustre : c1, v2…)"],\n      "condensee": false,' : ''}
       "titleOverride": "(optionnel) libellé principal à afficher",
       "subtitleOverride": "(optionnel) libellé secondaire : entreprise, école, niveau de langue traduit, émetteur",
       "datesOverride": "(optionnel, à éviter) période à afficher telle quelle"
@@ -483,7 +488,7 @@ Schéma (les valeurs entre parenthèses décrivent le contenu attendu ; les cham
       "description": "- point clé issu du contexte",
       "reason": "(optionnel) pourquoi c'est pertinent pour l'annonce"
     }
-  ],
+  ],${opts.impact ? `\n${IMPACT_SCHEMA_FIELDS}` : ''}
   "warnings": ["${schemaWarningsHint(focus)}"]
 }`, opts.mode);
 }
@@ -514,11 +519,14 @@ export function buildCvPrompt(input: CvPromptInput): string {
     buildHeaderMentions(input.profile),
     buildExtraContext(input.extraContext),
     buildTargetBlock(target, { mode }),
+    ...(input.options?.impact ? buildImpactData(input.options.impact) : []),
     buildAnalysisStep({ alertesCap: hasPersonalRules(input), mode, cibleAxes: input.options?.cibleAxes ?? cibleAxesToAsk(target) }),
     buildAngleBlock(input),
     buildRules(input),
+    input.options?.impact ? IMPACT_WRITING_RULES : '',
     buildClarify(input.clarify),
     buildOutputSchema({
+      impact: Boolean(input.options?.impact),
       angleChoice: !input.options?.angle && (input.options?.angleChoices?.length ?? 0) > 0,
       alertesCap: hasPersonalRules(input),
       header: hasHeaderMentions(input.profile),

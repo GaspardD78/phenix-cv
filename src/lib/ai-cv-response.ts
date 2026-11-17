@@ -62,6 +62,33 @@ export interface AiCvEntry {
   subtitleOverride?: string;
   /** Non-destructive verbatim override of the displayed dates. */
   datesOverride?: string;
+  /** Schéma v3 : identifiants de la fiche cible (c1, v2…) que cette expérience illustre. */
+  attentes?: string[];
+  /** Schéma v3 : expérience volontairement condensée (aucune attente de la fiche ne la concerne). */
+  condensee?: boolean;
+}
+
+/** Décision de positionnement (schéma v3) : intitulé, accroche, ordre, compétences. */
+export interface AiCvDecision {
+  sujet: string;
+  choix: string;
+  justification?: string;
+  /** IDs d'entrées du profil ou d'éléments de la fiche qui appuient la décision. */
+  appui: string[];
+}
+
+/** Rapport de positionnement (schéma v3) : affiché à la personne, jamais écrit dans le CV. */
+export interface AiCvRapport {
+  intitule?: string;
+  competences?: string;
+  reformule: { avant: string; apres: string; pourquoi?: string }[];
+  ecarte: string[];
+}
+
+/** Suggestions non retenues dans le CV (schéma v3) : à accepter ou refuser un par un. */
+export interface AiCvSuggestions {
+  motsCles: { terme: string; raison?: string }[];
+  formations: { libelle: string; raison?: string }[];
 }
 
 /** A thematic grouping of skill entries proposed by the LLM (restructuration). */
@@ -190,6 +217,12 @@ export interface AiCvResponse {
    * L'ancien champ `cvSkillLines` (lignes de texte) est lu et découpé en compétences.
    */
   cvSkills?: AiCvSkill[];
+  /** Schéma v3 : décisions de positionnement. */
+  decisions?: AiCvDecision[];
+  /** Schéma v3 : rapport de positionnement. */
+  rapport?: AiCvRapport;
+  /** Schéma v3 : mots-clés non prouvés et formations à envisager. */
+  suggestions?: AiCvSuggestions;
 }
 
 /** Returns a trimmed non-empty string, or `undefined`. */
@@ -225,6 +258,10 @@ function parseEntry(raw: unknown): AiCvEntry | null {
 
   const datesOverride = cleanString(record.datesOverride);
   if (datesOverride) entry.datesOverride = datesOverride;
+
+  const attentes = parseStringList(record.attentes);
+  if (attentes) entry.attentes = attentes;
+  if (record.condensee === true) entry.condensee = true;
 
   return entry;
 }
@@ -533,7 +570,66 @@ export function parseAiCvResponse(raw: string): AiCvResponse {
   const cvSkills = parseCvSkills(obj.cvSkills) ?? parseLegacySkillLines(obj.cvSkillLines);
   if (cvSkills) response.cvSkills = cvSkills;
 
+  const decisions = parseDecisions(obj.decisions);
+  if (decisions) response.decisions = decisions;
+  const rapport = parseRapport(obj.rapport);
+  if (rapport) response.rapport = rapport;
+  const suggestions = parseSuggestions(obj.suggestions);
+  if (suggestions) response.suggestions = suggestions;
+
   return response;
+}
+
+const MAX_V3_ITEMS = 12;
+const short = (v: unknown, max = 300): string | undefined => {
+  const s = cleanString(v);
+  return s ? s.slice(0, max) : undefined;
+};
+const objects = (v: unknown): Record<string, unknown>[] =>
+  (Array.isArray(v) ? v : []).filter((x): x is Record<string, unknown> => x !== null && typeof x === 'object' && !Array.isArray(x)).slice(0, MAX_V3_ITEMS);
+
+function parseDecisions(raw: unknown): AiCvDecision[] | undefined {
+  const out: AiCvDecision[] = [];
+  for (const r of objects(raw)) {
+    const sujet = short(r.sujet, 60);
+    const choix = short(r.choix);
+    if (!sujet || !choix) continue;
+    const justification = short(r.justification);
+    out.push({ sujet, choix, ...(justification ? { justification } : {}), appui: parseStringList(r.appui) ?? [] });
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+function parseRapport(raw: unknown): AiCvRapport | undefined {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+  const r = raw as Record<string, unknown>;
+  const reformule = objects(r.reformule).flatMap(x => {
+    const avant = short(x.avant, 120);
+    const apres = short(x.apres, 120);
+    const pourquoi = short(x.pourquoi);
+    return avant && apres ? [{ avant, apres, ...(pourquoi ? { pourquoi } : {}) }] : [];
+  });
+  const ecarte = (parseStringList(r.ecarte) ?? []).slice(0, MAX_V3_ITEMS).map(x => x.slice(0, 300));
+  const intitule = short(r.intitule, 500);
+  const competences = short(r.competences, 500);
+  if (!intitule && !competences && reformule.length === 0 && ecarte.length === 0) return undefined;
+  return { ...(intitule ? { intitule } : {}), ...(competences ? { competences } : {}), reformule, ecarte };
+}
+
+function parseSuggestions(raw: unknown): AiCvSuggestions | undefined {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+  const r = raw as Record<string, unknown>;
+  const motsCles = objects(r.motsCles).flatMap(x => {
+    const terme = short(x.terme, 120);
+    const raison = short(x.raison);
+    return terme ? [{ terme, ...(raison ? { raison } : {}) }] : [];
+  });
+  const formations = objects(r.formations).flatMap(x => {
+    const libelle = short(x.libelle, 200);
+    const raison = short(x.raison);
+    return libelle ? [{ libelle, ...(raison ? { raison } : {}) }] : [];
+  });
+  return motsCles.length > 0 || formations.length > 0 ? { motsCles, formations } : undefined;
 }
 
 /**

@@ -148,6 +148,12 @@ export const HELP = {
     example: '« resumeforge_backup_2026-11-15.cvmaker » : profil, expériences, CV et candidatures de Camille Martin.',
     page: 'recuperer-cvmaker',
   },
+  'marche-attend': {
+    title: 'Ce que le marché attend',
+    summary: 'Votre IA cherche l\'intitulé, les compétences et les mots de votre métier, avec leurs sources. Vous relisez la fiche, puis votre CV est rédigé avec ces mots, sans rien inventer sur vous. Vous pouvez passer cette étape.',
+    example: 'Le marché dit « gestion des commandes clients » là où Camille Martin écrivait « suivre les commandes » : le fait reste, le mot change.',
+    page: 'ce-que-le-marche-attend',
+  },
   'import-suivi': {
     title: 'Importer mon suivi',
     summary: 'Collez votre tableau de candidatures (Excel, Google Sheets, LibreOffice) ou choisissez un fichier .xlsx ou .csv. Avec ou sans IA, vous vérifiez un aperçu avant l\'import, et vous pouvez l\'annuler juste après.',
