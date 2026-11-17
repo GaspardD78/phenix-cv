@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Application, ApplicationSource } from '@/types/application';
 import { isMobilePlatform } from '@/lib/platform';
 import { HelpButton } from '@/components/help/HelpButton';
+import { LastImportBanner } from './import/LastImportBanner';
 
 const SOURCE_FILTERS: { id: ApplicationSource | 'all'; label: string }[] = [
   { id: 'all', label: 'Toutes' },
@@ -134,6 +135,8 @@ export function TrackerPage() {
           </button>
         </div>
       </div>
+
+      <LastImportBanner />
 
       {/* Stats bar */}
       <div style={{
