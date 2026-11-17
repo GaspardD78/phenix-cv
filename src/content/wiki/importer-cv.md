@@ -19,6 +19,8 @@ Si vous avez déjà un CV en PDF ou en Word, l'import en extrait les information
 
 Vous pouvez aussi remplir votre profil vous-même : choisissez « Je préfère remplir moi-même ».
 
+Vous utilisiez CVmaker ? Choisissez « J'ai utilisé CVmaker » : voir [Récupérer mes données CVmaker](/aide/recuperer-cvmaker).
+
 ## Ce qu'un recruteur cherche
 
 Les informations doivent être exactes et complètes : les dates et les intitulés de poste sont ce qu'il vérifie en premier. Un import ne remplace pas votre relecture.

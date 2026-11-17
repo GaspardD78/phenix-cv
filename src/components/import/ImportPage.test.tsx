@@ -12,6 +12,7 @@ describe('écran d\'import', () => {
     expect(html).toContain('Choisir un fichier');
     expect(html).toContain('J&#x27;ai un export LinkedIn');
     expect(html).toContain('Je préfère remplir moi-même');
+    expect(html).toContain('J&#x27;ai utilisé CVmaker : récupérer mes données (fichier .cvmaker)');
   });
 
   it('vocabulaire simple : ni « LLM » ni « JSON » à l\'écran', () => {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowRightLeft, CheckCircle2, Info, X } from 'lucide-react';
+import { HelpButton } from '@/components/help/HelpButton';
 import { useProfileStore } from '@/stores/profileStore';
 import { useCvStore } from '@/stores/cvStore';
 import { useApplicationStore } from '@/stores/applicationStore';
@@ -21,7 +22,12 @@ const shorten = (v: string) => (v.startsWith('data:image/') ? 'une photo' : v.le
  * si Phénix CV contient déjà des données, choix Fusionner (sans doublon, profil au choix) ou Remplacer ;
  * puis rapport. Une sauvegarde automatique est faite avant toute écriture (lib/backup.ts).
  */
-export function CvmakerImportDialog({ backup: source, onClose }: { backup: BackupData; onClose: () => void }) {
+export function CvmakerImportDialog({ backup: source, onClose, onImported }: {
+  backup: BackupData;
+  onClose: () => void;
+  /** Appelé une fois l'import réussi (ex. le guide de démarrage passe à l'étape suivante). */
+  onImported?: () => void;
+}) {
   const navigate = useNavigate();
   const { profile, entries } = useProfileStore();
   const cvs = useCvStore(s => s.cvs);
@@ -72,6 +78,7 @@ export function CvmakerImportDialog({ backup: source, onClose }: { backup: Backu
       await useCvStore.getState().fetchCvs();
       await useApplicationStore.getState().fetchApplications();
       setStep('done');
+      onImported?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'L\'import n\'a pas pu aller au bout.');
     } finally {
@@ -91,7 +98,7 @@ export function CvmakerImportDialog({ backup: source, onClose }: { backup: Backu
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--pc-border)] bg-[var(--pc-card)] p-6 shadow-2xl text-[var(--pc-text)] space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 id="cvmaker-import-title" className="text-lg font-bold">Récupérer mes données CVmaker</h2>
+            <h2 id="cvmaker-import-title" className="text-lg font-bold flex items-center gap-2">Récupérer mes données CVmaker <HelpButton id="import-cvmaker" /></h2>
             <p className="text-sm text-[var(--pc-muted)]">{describeOrigin(origin)}</p>
           </div>
           <button type="button" onClick={onClose} aria-label="Fermer" className="text-[var(--pc-muted)] hover:text-[var(--pc-text)]"><X size={20} /></button>
