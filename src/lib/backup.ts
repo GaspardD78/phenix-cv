@@ -67,6 +67,10 @@ export type ImportStrategy = 'replace' | 'merge' | 'ignore';
 export interface BackupData {
   __cvmaker_backup: true;
   version: string;
+  /** Application qui a écrit le fichier (Phénix CV depuis le format 2 ; absent chez CVmaker). */
+  app?: 'phenix-cv';
+  /** Format Phénix CV : 2 = signé `app`, sans secret. Absent dans les fichiers plus anciens et ceux de CVmaker. */
+  formatVersion?: number;
   exportDate: string;
   modules: Partial<Record<string, Record<string, unknown>[]>>;
   /** Record count per module for display */
@@ -127,6 +131,8 @@ export async function buildBackupData(selectedModules: ModuleId[]): Promise<Back
   return {
     __cvmaker_backup: true,
     version: '1.0',
+    app: 'phenix-cv',
+    formatVersion: BACKUP_FORMAT_VERSION,
     exportDate: new Date().toISOString(),
     modules,
     counts,
@@ -159,6 +165,9 @@ export async function pickAndParseBackup(): Promise<BackupData | null> {
 
   return parseBackupText(await readTextFile(filePath as string));
 }
+
+/** Format des sauvegardes écrites par Phénix CV (le champ `version` reste « 1.0 » pour CVmaker). */
+export const BACKUP_FORMAT_VERSION = 2;
 
 export const DAMAGED_BACKUP_MESSAGE =
   'Ce fichier est abîmé ou incomplet : il ne peut pas être lu. Enregistrez à nouveau votre sauvegarde, puis réessayez.';
