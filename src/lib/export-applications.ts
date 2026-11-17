@@ -2,24 +2,12 @@ import JSZip from 'jszip';
 import { save } from '@tauri-apps/plugin-dialog';
 import { readFile, writeFile } from '@tauri-apps/plugin-fs';
 import { getDb } from '@/lib/db';
+import { STATUS_LABELS } from '@/lib/application-labels';
 import { keysToCamelCase } from '@/lib/mapping';
 import { Application, ApplicationEvent, ApplicationAttachment, ApplicationStatus, EventType, AttachmentLabel } from '@/types/application';
 
 // ─── French labels ──────────────────────────────────────────────────────────
 
-const STATUS_LABELS: Record<ApplicationStatus, string> = {
-  draft: 'Brouillon',
-  applied: 'Postulé',
-  acknowledged: 'Accusé de réception',
-  phone_screen: 'Pré-qualification',
-  interview: 'Entretien',
-  technical_test: 'Test technique',
-  offer: 'Offre reçue',
-  accepted: 'Accepté',
-  rejected: 'Refusé',
-  withdrawn: 'Retiré',
-  ghosted: 'Sans réponse',
-};
 
 const STATUS_COLORS: Record<ApplicationStatus, string> = {
   draft: '#94a3b8',

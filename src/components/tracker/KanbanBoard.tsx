@@ -19,14 +19,8 @@ import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
 import { toast } from 'sonner';
 
-export const KANBAN_COLUMNS = [
-  { id: 'draft', title: 'Brouillon', statuses: ['draft'] },
-  { id: 'applied', title: 'Postulé', statuses: ['applied', 'acknowledged'] },
-  { id: 'in_progress', title: 'En cours', statuses: ['phone_screen', 'technical_test'] },
-  { id: 'interview', title: 'Entretien', statuses: ['interview'] },
-  { id: 'offer', title: 'Offre', statuses: ['offer'] },
-  { id: 'done', title: 'Terminé', statuses: ['accepted', 'rejected', 'withdrawn', 'ghosted'] },
-];
+import { KANBAN_COLUMNS } from '@/lib/application-labels';
+export { KANBAN_COLUMNS };
 
 interface KanbanBoardProps {
   searchTerm?: string;
