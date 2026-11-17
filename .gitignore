@@ -13,6 +13,8 @@ Thumbs.db
 *.pdf
 *.docx
 *.cvmaker
+# Exception : sauvegardes d'exemple fictives (Camille Martin) des tests d'import CVmaker.
+!tests/fixtures/cvmaker/*.cvmaker
 .portable
 
 # Clés de signature
