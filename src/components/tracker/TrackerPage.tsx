@@ -10,6 +10,7 @@ import { Application, ApplicationSource } from '@/types/application';
 import { isMobilePlatform } from '@/lib/platform';
 import { HelpButton } from '@/components/help/HelpButton';
 import { LastImportBanner } from './import/LastImportBanner';
+import { TrackerImportDialog } from './import/TrackerImportDialog';
 
 const SOURCE_FILTERS: { id: ApplicationSource | 'all'; label: string }[] = [
   { id: 'all', label: 'Toutes' },
@@ -24,6 +25,7 @@ export function TrackerPage() {
   const { applications, fetchApplications, isLoading, error } = useApplicationStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sourceFilter, setSourceFilter] = useState<ApplicationSource | 'all'>('all');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
@@ -118,6 +120,12 @@ export function TrackerPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="pc-btn-secondary" onClick={() => setIsImportOpen(true)} data-testid="tracker-import-open">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Importer
+          </button>
           <button
             className="pc-btn-secondary"
             onClick={() => setIsExportOpen(true)}
@@ -244,6 +252,7 @@ export function TrackerPage() {
       </div>
 
       <ExportApplicationsModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} />
+      {isImportOpen && <TrackerImportDialog onClose={() => setIsImportOpen(false)} />}
 
       <ApplicationFormModal
         isOpen={isModalOpen}

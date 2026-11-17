@@ -57,7 +57,7 @@ export interface PlanItem {
   row: NewApplicationRow | null;
   /** Raison pour laquelle la ligne ne peut pas être importée. */
   error: string | null;
-  /** Remarques sur des valeurs converties ou laissées vides. */
+  /** Remarques sur des valeurs converties ou laissées vides (affichées avec l'erreur pour une ligne en erreur). */
   alerts: string[];
   duplicateOf: DuplicateOf | null;
   /** Choix pour un doublon (par défaut : ignorer). Sans doublon : toujours « add ». */
@@ -229,7 +229,8 @@ export function summarizePlan(plan: ImportPlan): PlanSummary {
     ignored: plan.items.length - errors - added.length - merged.length,
     errors,
     duplicates: plan.items.filter(i => i.duplicateOf).length,
-    alerts: plan.items.reduce((n, i) => n + i.alerts.length, 0),
+    // Points à vérifier sur les lignes importées (ceux des lignes en erreur s'affichent avec l'erreur).
+    alerts: plan.items.reduce((n, i) => n + (i.row ? i.alerts.length : 0), 0),
     byColumn: KANBAN_COLUMNS.map(c => ({ title: c.title, count: counts.get(c.title) ?? 0 })).filter(c => c.count > 0),
   };
 }

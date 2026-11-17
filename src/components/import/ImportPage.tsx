@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { open } from '@tauri-apps/plugin-dialog';
-import { readFile } from '@tauri-apps/plugin-fs';
+import { readFile, readTextFile } from '@tauri-apps/plugin-fs';
 import { toast } from 'sonner';
 import { FileUp, ExternalLink, ClipboardPaste, ArrowLeft, ArrowRight, Check, Copy, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { openUrl } from '@tauri-apps/plugin-opener';
@@ -20,6 +20,9 @@ import { classifyDroppedPaths, SCANNED_PDF_MESSAGE } from '@/lib/import/file-kin
 import { HelpButton } from '@/components/help/HelpButton';
 import { applyImport } from '@/lib/import/apply-import';
 import { AI_SITES } from '@/components/shared/AiSiteLinks';
+import { CvmakerImportDialog } from '@/components/settings/CvmakerImportDialog';
+import { parseBackupText, type BackupData } from '@/lib/backup';
+import { EMPTY_BACKUP_MESSAGE, detectBackupOrigin } from '@/lib/cvmaker-import/detect';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Step indicators
@@ -100,18 +103,45 @@ async function loadImportFile(path: string, format: ImportFormat): Promise<{ pay
   return { payload: null, text };
 }
 
+export const PHENIX_BACKUP_IN_IMPORT_MESSAGE =
+  'Ce fichier est une sauvegarde Phénix CV. Pour la restaurer, ouvrez Paramètres › Mes données › Restauration.';
+
 export function StepSource({
   onNext,
   onManual,
   showIntro = true,
+  onCvmakerImported,
 }: {
   onNext: (format: ImportFormat, payload: ImportPayload | null, rawText?: string) => void;
   onManual: () => void;
   /** Phrase d'explication sous le titre (masquée quand l'écran la porte déjà, ex. le guide). */
   showIntro?: boolean;
+  /** Après la récupération des données CVmaker (fenêtre fermée). */
+  onCvmakerImported?: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cvmaker, setCvmaker] = useState<BackupData | null>(null);
+  const [cvmakerDone, setCvmakerDone] = useState(false);
+
+  /** « J'ai utilisé CVmaker » : sauvegarde lue, vérifiée, puis aperçu dans la fenêtre dédiée. */
+  const pickCvmaker = async () => {
+    setError(null);
+    const filePath = await open({ filters: [{ name: 'Sauvegarde CVmaker (.cvmaker)', extensions: ['cvmaker', 'json'] }], multiple: false });
+    if (!filePath || typeof filePath !== 'string') return;
+    setLoading(true);
+    try {
+      const backup = parseBackupText(await readTextFile(filePath));
+      const origin = detectBackupOrigin(backup);
+      if (origin.empty) setError(EMPTY_BACKUP_MESSAGE);
+      else if (origin.app === 'phenix') setError(PHENIX_BACKUP_IN_IMPORT_MESSAGE);
+      else { setCvmakerDone(false); setCvmaker(backup); }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
   const dragging = useImportDropStore(s => s.dragging);
   const pending = useImportDropStore(s => s.pending);
 
@@ -191,10 +221,21 @@ export function StepSource({
         <button onClick={() => onNext('json', null)} disabled={loading} className="text-left text-lagon-600 dark:text-lagon-400 hover:underline">
           J'ai déjà la réponse d'une IA à coller
         </button>
+        <button onClick={() => void pickCvmaker()} disabled={loading} className="text-left text-lagon-600 dark:text-lagon-400 hover:underline" data-testid="import-cvmaker">
+          J'ai utilisé CVmaker : récupérer mes données (fichier .cvmaker)
+        </button>
         <button onClick={onManual} disabled={loading} className="text-left text-lagon-600 dark:text-lagon-400 hover:underline">
           Je préfère remplir moi-même
         </button>
       </div>
+
+      {cvmaker && (
+        <CvmakerImportDialog
+          backup={cvmaker}
+          onImported={() => setCvmakerDone(true)}
+          onClose={() => { setCvmaker(null); if (cvmakerDone) onCvmakerImported?.(); }}
+        />
+      )}
     </div>
   );
 }
@@ -705,7 +746,7 @@ export function ImportPage() {
       <div className="bg-white dark:bg-[var(--pc-card)] rounded-2xl shadow-sm border border-gray-200 dark:border-[var(--pc-border)] p-6">
         <StepBar current={step} />
 
-        {step === 'source' && <StepSource onNext={handleSourceNext} onManual={() => navigate('/profile')} />}
+        {step === 'source' && <StepSource onNext={handleSourceNext} onManual={() => navigate('/profile')} onCvmakerImported={() => navigate('/profile')} />}
 
         {step === 'process' && format && (
           <StepProcess

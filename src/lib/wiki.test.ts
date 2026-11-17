@@ -26,7 +26,7 @@ describe('chargement du wiki', () => {
   it('toutes les pages du dépôt se chargent sans erreur, identifiants uniques', () => {
     const { pages, errors } = loadWiki(wikiFiles());
     expect(errors).toEqual([]);
-    expect(pages.length).toBe(18);
+    expect(pages.length).toBe(19);
     expect(new Set(pages.map(p => p.id)).size).toBe(pages.length);
   });
   it('identifiant invalide, doublon ou titre manquant : signalé', () => {
@@ -101,5 +101,21 @@ describe('IA en premier, sans IA toujours possible', () => {
   });
   it('offre : le recours sans IA renvoie vers le CV standard', () => {
     expect(page('adapter-offre')).toContain('**Composer un CV standard sans IA**');
+  });
+});
+
+describe('récupérer mes données CVmaker', () => {
+  const page = (id: string) => readFileSync(join(WIKI_DIR, `${id}.md`), 'utf8');
+  it('page rangée dans « Démarrer », juste après l\'import d\'un CV', () => {
+    const { pages } = loadWiki(wikiFiles());
+    const demarrer = pages.filter(p => p.group === 'Démarrer').map(p => p.id);
+    expect(demarrer.indexOf('recuperer-cvmaker')).toBe(demarrer.indexOf('importer-cv') + 1);
+  });
+  it('décrit l\'export depuis CVmaker, les choix, ce qui n\'est pas repris et la sauvegarde automatique', () => {
+    const text = page('recuperer-cvmaker');
+    for (const t of ['**Télécharger la sauvegarde**', '**Fusionner** (conseillé)', '**Remplacer**', '**Annuler**', 'La veille emploi', 'ne sont jamais repris', 'copie de vos données actuelles']) {
+      expect(text).toContain(t);
+    }
+    expect(page('importer-cv')).toContain('(/aide/recuperer-cvmaker)');
   });
 });

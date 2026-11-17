@@ -30,6 +30,9 @@ export function classifyDroppedPaths(paths: readonly string[]): DroppedFile {
   }
   const first = paths[0];
   const ext = extensionOf(first);
+  if (ext === 'cvmaker') {
+    return { ok: false, message: CVMAKER_DROPPED_MESSAGE };
+  }
   if (ext === 'doc') {
     return { ok: false, message: `« ${fileName(first)} » est un ancien document Word (.doc). Ouvrez-le dans Word, puis enregistrez-le au format .docx avant de le déposer ici.` };
   }
@@ -41,6 +44,10 @@ export function classifyDroppedPaths(paths: readonly string[]): DroppedFile {
   }
   return { ok: false, message: `« ${fileName(first)} » n'est pas un fichier pris en charge. Déposez un CV en PDF ou en Word (.docx), ou un export LinkedIn (.zip).` };
 }
+
+/** Un fichier de sauvegarde déposé : il se récupère par son propre parcours. */
+export const CVMAKER_DROPPED_MESSAGE =
+  "C'est un fichier de sauvegarde (.cvmaker). Pour récupérer vos données CVmaker, choisissez « J'ai utilisé CVmaker » sur l'écran d'import. Pour restaurer une sauvegarde Phénix CV, ouvrez Paramètres › Mes données › Restauration.";
 
 /** Message affiché quand un PDF ne contient aucun texte (document scanné). */
 export const SCANNED_PDF_MESSAGE =

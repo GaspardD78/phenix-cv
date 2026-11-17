@@ -48,7 +48,7 @@ export function WizardImportStep({ onManual, onDone, showIntro = true }: { onMan
     }
   };
 
-  if (sub === 'source') return <StepSource onNext={handleSource} onManual={onManual} showIntro={showIntro} />;
+  if (sub === 'source') return <StepSource onNext={handleSource} onManual={onManual} showIntro={showIntro} onCvmakerImported={onDone} />;
   if (sub === 'process' && format) {
     return (
       <StepProcess

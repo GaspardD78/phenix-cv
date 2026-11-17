@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Download, Upload, AlertCircle, CheckCircle2, Loader2, Sparkles, Sun, Moon, Monitor, FileText, ClipboardList } from 'lucide-react';
 import { MODULES, ModuleId, BackupData, exportBackup, pickAndParseBackup } from '@/lib/backup';
 import { ImportConflictModal } from './ImportConflictModal';
+import { CvmakerImportDialog } from './CvmakerImportDialog';
+import { EMPTY_BACKUP_MESSAGE, detectBackupOrigin } from '@/lib/cvmaker-import/detect';
 import { GoogleDriveSync } from './GoogleDriveSync';
 import { WizardSettings } from './WizardSettings';
 import { AdvancedOptions } from './AdvancedOptions';
@@ -90,6 +92,7 @@ export function SettingsPage() {
   const [isParsing, setIsParsing] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [pendingBackup, setPendingBackup] = useState<BackupData | null>(null);
+  const [pendingCvmaker, setPendingCvmaker] = useState<BackupData | null>(null);
 
   // ── Module toggle ─────────────────────────────────────────────────────────
   const toggleModule = (id: ModuleId) => {
@@ -130,7 +133,11 @@ export function SettingsPage() {
     setImportError(null);
     try {
       const backup = await pickAndParseBackup();
-      if (backup) setPendingBackup(backup);
+      if (!backup) return;
+      const origin = detectBackupOrigin(backup);
+      if (origin.empty) setImportError(EMPTY_BACKUP_MESSAGE);
+      else if (origin.app === 'cvmaker') setPendingCvmaker(backup);
+      else setPendingBackup(backup);
     } catch (err) {
       setImportError(err instanceof Error ? err.message : 'Impossible de lire le fichier.');
     } finally {
@@ -541,6 +548,7 @@ export function SettingsPage() {
       </div>
       </div>
      </div>
+      {pendingCvmaker && <CvmakerImportDialog backup={pendingCvmaker} onClose={() => setPendingCvmaker(null)} />}
       {/* Conflict resolution modal */}
       {pendingBackup && (
         <ImportConflictModal

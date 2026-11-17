@@ -31,3 +31,14 @@ describe('aperçu avant import', () => {
     expect(html).toContain('Importer 2 candidatures');
   });
 });
+
+describe('aperçu : alertes d\'une ligne en erreur', () => {
+  it('affichées sous la raison de l\'erreur, et pas comptées dans les points à vérifier', () => {
+    const plan = buildImportPlan([{ line: 5, values: { companyName: 'Biscuiterie des Monts' } }], []);
+    plan.items[0].alerts.push('Poste « Responsable administrative » ne figure pas dans votre tableau : ignoré.');
+    const html = render(plan);
+    expect(html).toContain('Ligne 5 : Pas d\'intitulé de poste : ligne ignorée.');
+    expect(html).toContain('Poste « Responsable administrative » ne figure pas dans votre tableau : ignoré.');
+    expect(html).not.toContain('point à vérifier');
+  });
+});

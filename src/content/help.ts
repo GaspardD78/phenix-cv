@@ -142,6 +142,12 @@ export const HELP = {
     example: '« phenixcv_sauvegarde_2026-11-15.cvmaker » sur une clé USB.',
     page: 'sauvegarder',
   },
+  'import-cvmaker': {
+    title: 'Récupérer mes données CVmaker',
+    summary: 'Dans CVmaker, téléchargez une sauvegarde (fichier .cvmaker), puis ouvrez-la ici. Vous voyez ce qui sera repris avant l\'import, et rien de ce que vous avez déjà n\'est remplacé sans votre accord.',
+    example: '« resumeforge_backup_2026-11-15.cvmaker » : profil, expériences, CV et candidatures de Camille Martin.',
+    page: 'recuperer-cvmaker',
+  },
 } as const satisfies Record<string, HelpEntry>;
 
 export type HelpId = keyof typeof HELP;

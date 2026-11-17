@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { classifyDroppedPaths, extensionOf, fileName } from './file-kind';
+import { CVMAKER_DROPPED_MESSAGE, classifyDroppedPaths, extensionOf, fileName } from './file-kind';
 
 describe('classifyDroppedPaths', () => {
   it('PDF, Word, export LinkedIn', () => {
@@ -24,5 +24,13 @@ describe('classifyDroppedPaths', () => {
     expect(extensionOf('/a/b/.gitignore')).toBe('');
     expect(extensionOf('archive.tar.GZ')).toBe('gz');
     expect(fileName('C:\\x\\y.pdf')).toBe('y.pdf');
+  });
+});
+
+describe('fichier de sauvegarde déposé', () => {
+  it('.cvmaker : pas lu comme un CV, message qui indique où le récupérer', () => {
+    const r = classifyDroppedPaths(['C:\\Users\\camille\\Documents\\resumeforge_backup_2026-11-15.cvmaker']);
+    expect(r).toEqual({ ok: false, message: CVMAKER_DROPPED_MESSAGE });
+    expect(CVMAKER_DROPPED_MESSAGE).toContain('« J\'ai utilisé CVmaker »');
   });
 });
