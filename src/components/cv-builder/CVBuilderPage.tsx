@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { parseNewCvMode } from '@/lib/new-cv';
+import { parseNewCvMode, aiStartTabFromParams } from '@/lib/new-cv';
 import { useCvStore } from '@/stores/cvStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { LeftPanel } from './LeftPanel';
@@ -46,6 +46,8 @@ export function CVBuilderPage() {
   // Un CV créé depuis « Nouveau CV » s'ouvre directement sur son parcours (?mode=standard | offer).
   const [searchParams] = useSearchParams();
   const startMode = parseNewCvMode(searchParams.get('mode'));
+  // ?ia=1 : le CV standard reprend directement le parcours IA avec les réponses enregistrées (guide).
+  const aiStartTab = aiStartTabFromParams(searchParams);
   const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab | null>(startMode ? 'ia' : 'blocs');
 
   // Détection mobile via matchMedia (évite d'appliquer panelWidth sur petit écran)
@@ -369,7 +371,7 @@ export function CVBuilderPage() {
                     cvId={id!}
                     activeTab={activeSidebarTab!}
                     onRequestTabChange={setActiveSidebarTab}
-                    aiStartTab={startMode === 'offer' ? 'full' : 'intent'}
+                    aiStartTab={aiStartTab}
                   />
                 </div>
                 {/* Splitter draggable */}
@@ -388,7 +390,7 @@ export function CVBuilderPage() {
                     cvId={id!}
                     activeTab={activeSidebarTab || 'blocs'}
                     onRequestTabChange={setActiveSidebarTab}
-                    aiStartTab={startMode === 'offer' ? 'full' : 'intent'}
+                    aiStartTab={aiStartTab}
                   />
                 </div>
                 <SidebarNav

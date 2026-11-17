@@ -54,13 +54,13 @@ export const HELP = {
   },
   'cv-standard': {
     title: 'CV standard',
-    summary: 'Répondez à quelques questions simples : le poste visé, votre niveau, ce que vous voulez mettre en avant. Nous composons une proposition, sans IA.',
+    summary: 'Répondez à quelques questions simples : le poste visé, votre niveau, ce que vous voulez mettre en avant. Une IA rédige ensuite votre CV, sans rien inventer. Vous pouvez aussi le composer sans IA.',
     example: 'Poste visé : « Assistante commerciale » ; mettre en avant : « Relation client ».',
     page: 'creer-cv-standard',
   },
   'cv-offre': {
     title: 'Adapter à une offre',
-    summary: 'Collez l\'annonce, faites-la analyser par une IA de votre choix, puis relisez ce qu\'elle propose. Rien n\'est appliqué sans votre accord.',
+    summary: 'Collez l\'annonce, faites-la analyser par une IA de votre choix, puis relisez ce qu\'elle propose. Rien n\'est appliqué sans votre accord. Sans IA, passez par le CV standard.',
     example: 'L\'annonce demande « gestion de portefeuille clients » : votre expérience le montre, vous le reprenez.',
     page: 'adapter-offre',
   },

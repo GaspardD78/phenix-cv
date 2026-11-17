@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Check, FileText, Sparkles } from 'lucide-react';
 import { useCvStore } from '@/stores/cvStore';
 import { useProfileStore } from '@/stores/profileStore';
-import { DEFAULT_NEW_CV_MODE, NEW_CV_MODES, NEW_CV_MODE_INFO, newCvRecord, suggestCvName, type NewCvMode } from '@/lib/new-cv';
+import { DEFAULT_MODE_BADGE, DEFAULT_NEW_CV_MODE, NEW_CV_MODES, NEW_CV_MODE_INFO, newCvRecord, suggestCvName, type NewCvMode } from '@/lib/new-cv';
 
 /**
  * « Nouveau CV » : on choisit d'abord le parcours (« CV standard » par défaut, ou « Adapter à une offre »),
@@ -65,7 +65,7 @@ export function NewCvDialog({ initialMode = DEFAULT_NEW_CV_MODE, onClose }: { in
                 <span className="flex items-center gap-2 font-semibold">
                   <Icon className="w-4 h-4 text-[var(--pc-accent)]" aria-hidden="true" />
                   {NEW_CV_MODE_INFO[m].label}
-                  {m === DEFAULT_NEW_CV_MODE && <span className="text-xs font-medium rounded-full px-2 py-0.5 bg-[var(--pc-accent)] text-white">Conseillé</span>}
+                  {m === DEFAULT_NEW_CV_MODE && <span className="text-xs font-medium rounded-full px-2 py-0.5 bg-[var(--pc-accent)] text-white">{DEFAULT_MODE_BADGE}</span>}
                   {active && <Check className="w-4 h-4 ml-auto text-[var(--pc-accent)]" aria-hidden="true" />}
                 </span>
                 <span className="block text-sm text-[var(--pc-muted)] mt-1">{NEW_CV_MODE_INFO[m].description}</span>

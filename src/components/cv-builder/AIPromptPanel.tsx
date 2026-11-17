@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Copy, Check, Sparkles } from 'lucide-react';
 import { usePromptStore } from '@/stores/promptStore';
 import { useProfileStore } from '@/stores/profileStore';
@@ -12,6 +12,9 @@ import { TargetStatusLine } from './TargetStatusLine';
 import { SuggestedEntriesReview } from './SuggestedEntriesReview';
 import { IntentPanel } from './IntentPanel';
 import { ASSERTIVENESS_LABELS, candidateAnswersText, intentToTarget, withCvIntent, type CvIntent } from '@/lib/cv-intent';
+import { intentToResume, type AiStartTab } from '@/lib/new-cv';
+import { AiSiteLinks } from '@/components/shared/AiSiteLinks';
+import { currentAiStep, stepButtonClass } from '@/lib/ai-step-buttons';
 import { buildGenericCvPrompt } from '@/lib/cv-generic-prompt';
 import {
   buildFollowUpPrompt, collectFollowUps, followUpSourceText, readFollowUpAnswers, toSchemaJson, withFollowUpAnswers, type FollowUpAnswers,
@@ -29,7 +32,11 @@ import { HelpButton } from '@/components/help/HelpButton';
 interface AIPromptPanelProps {
   cvId: string;
   onClose: () => void;
-  initialTab?: 'intent' | 'full';
+  /**
+   * Onglet d'ouverture. `intent-ai` : reprise du parcours IA du CV standard avec les réponses
+   * enregistrées dans le CV (guide de démarrage, bouton « Rédiger avec l'IA »).
+   */
+  initialTab?: AiStartTab;
 }
 
 export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelProps) {
@@ -55,7 +62,9 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
   const [contactName, setContactName] = useState('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'intent' | 'standard' | 'full'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'intent' | 'standard' | 'full'>(initialTab === 'intent-ai' ? 'intent' : initialTab);
+  // Questionnaire ouvert depuis « Adapter à une offre » par le lien sans IA.
+  const [intentFromOffer, setIntentFromOffer] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
   const [fullPromptCopied, setFullPromptCopied] = useState(false);
   const [clarify, setClarify] = useState(false);
@@ -257,6 +266,29 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
     }
   };
 
+  /** CV standard confié à l'IA : les réponses deviennent la cible du texte préparé pour l'IA. */
+  function startGenericAi(intent: CvIntent) {
+    setChoice(intentToTarget(intent));
+    setGenericIntent(intent);
+    setIntentFromOffer(false);
+    void savePages(intent.pages);
+    // Une seule écriture : langue du CV et réponses (retrouvées à la réouverture, source du garde-fou).
+    const cv = useCvStore.getState().currentCv;
+    if (cv) void useCvStore.getState().updateCv(cv.id, { settings: withCvIntent({ ...(cv.settings ?? {}), cvLanguage: intent.language }, intent) });
+    setActiveTab('full');
+    toast.message('Vos réponses sont prêtes : copiez le texte pour l\'IA, puis collez sa réponse.');
+  }
+
+  // Reprise depuis le guide : une seule fois, dès que le CV et ses réponses sont chargés.
+  const resumedRef = useRef(false);
+  useEffect(() => {
+    if (initialTab !== 'intent-ai' || resumedRef.current || !currentCv) return;
+    resumedRef.current = true;
+    const saved = intentToResume(initialTab, currentCv.settings);
+    if (saved) startGenericAi(saved);
+    // startGenericAi lit l'état courant des stores : pas de dépendance supplémentaire.
+  }, [initialTab, currentCv?.id]);
+
   return (
     <div className="flex flex-col h-full overflow-hidden bg-white dark:bg-[var(--pc-card)]">
       {/* Header */}
@@ -278,7 +310,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               key={id}
               role="tab"
               aria-selected={activeTab === id}
-              onClick={() => setActiveTab(id)}
+              onClick={() => { setActiveTab(id); setIntentFromOffer(false); }}
               className={`py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === id ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 dark:text-[var(--pc-muted)] hover:text-gray-700'
               }`}
@@ -292,19 +324,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {activeTab === 'intent' ? (
-          <IntentPanel
-            onApplied={onClose}
-            onUseAi={(intent: CvIntent) => {
-              setChoice(intentToTarget(intent));
-              setGenericIntent(intent);
-              void savePages(intent.pages);
-              // Une seule écriture : langue du CV et réponses (retrouvées à la réouverture, source du garde-fou).
-              const cv = useCvStore.getState().currentCv;
-              if (cv) void useCvStore.getState().updateCv(cv.id, { settings: withCvIntent({ ...(cv.settings ?? {}), cvLanguage: intent.language }, intent) });
-              setActiveTab('full');
-              toast.message('Vos réponses sont prêtes : copiez le texte pour l\'IA, puis collez sa réponse.');
-            }}
-          />
+          <IntentPanel onApplied={onClose} onUseAi={startGenericAi} fromOffer={intentFromOffer} />
         ) : activeTab === 'standard' ? (
           <>
             {/* 1. Job offer textarea */}
@@ -493,15 +513,27 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
 
             <button
               onClick={() => handleCopyFullPrompt()}
+              data-testid="ai-step-copy"
               className={`w-full py-2 flex items-center justify-center gap-2 text-sm font-semibold rounded-md transition-colors border ${
-                fullPromptCopied
-                  ? 'bg-green-50 text-green-700 border-green-300'
-                  : 'bg-white dark:bg-[var(--pc-card)] text-gray-700 dark:text-[var(--pc-text)] border-gray-300 dark:border-[var(--pc-border)] hover:bg-gray-50'
+                stepButtonClass('copy', currentAiStep(jsonInput), { copied: fullPromptCopied })
               }`}
             >
               {fullPromptCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {fullPromptCopied ? 'Prompt copié !' : genericIntent ? '1. Copier le texte pour l\'IA' : '1. Copier le texte d\'analyse'}
             </button>
+
+            <AiSiteLinks />
+
+            {!genericIntent && (
+              <p className="text-xs text-gray-600 dark:text-[var(--pc-muted)]" data-testid="offer-without-ai">
+                Sans IA ?{' '}
+                <button type="button" onClick={() => { setIntentFromOffer(true); setActiveTab('intent'); }}
+                  className="font-semibold text-amber-700 dark:text-amber-400 hover:underline">
+                  Composer un CV standard sans IA
+                </button>
+                {' '}: vous indiquez l'intitulé du poste de l'offre, et l'application choisit vos expériences.
+              </p>
+            )}
 
             <div className="pt-4 border-t border-gray-200 dark:border-[var(--pc-border)]">
               <label className="block text-xs font-semibold text-gray-700 dark:text-[var(--pc-text)] mb-1">
@@ -571,8 +603,9 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
 
             {!followUpOpen && <button
               onClick={handleApplyFullCV}
-              className={`w-full py-2.5 text-white text-sm font-semibold rounded-md transition-colors shadow-sm flex items-center justify-center gap-2 ${
-                hasBlockingIssues ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600'
+              data-testid="ai-step-apply"
+              className={`w-full py-2.5 text-sm font-semibold rounded-md transition-colors border flex items-center justify-center gap-2 ${
+                stepButtonClass('apply', currentAiStep(jsonInput), { blocking: hasBlockingIssues })
               }`}
             >
               <Sparkles className="w-4 h-4" />

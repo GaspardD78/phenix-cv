@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Check, Sparkles, ArrowLeft, Wand2 } from 'lucide-react';
+import { Check, ArrowLeft, Wand2, Calculator } from 'lucide-react';
+import { AiSiteLinks } from '@/components/shared/AiSiteLinks';
 import { useProfileStore } from '@/stores/profileStore';
 import { useCvStore } from '@/stores/cvStore';
 import { applyAiCvToBlocks } from '@/lib/apply-ai-cv';
@@ -33,16 +34,31 @@ function OpenQuestion({ id, n, question, hint, value, onChange }: {
 const field = 'w-full p-2 border border-gray-300 dark:border-[var(--pc-border)] rounded-md text-sm focus:ring-2 focus:ring-amber-200 focus:border-amber-400 bg-white dark:bg-[var(--pc-card)]';
 
 /**
- * « CV standard » : quelques questions, puis une proposition calculée sur votre ordinateur (sans IA).
- * Rien n'est appliqué sans votre accord ; une IA peut ensuite affiner (facultatif).
+ * « CV standard » : quelques questions, puis deux façons de rédiger.
+ * Action principale : « Rédiger avec l'IA » (les réponses partent dans le texte préparé pour l'IA).
+ * Action secondaire : « Composer sans IA », une proposition calculée sur l'ordinateur (`proposeCv`).
+ * Rien n'est appliqué sans votre accord.
+ *
+ * `fromOffer` : ouvert depuis « Adapter à une offre » par le lien « sans IA » ; on invite à
+ * reprendre l'intitulé du poste de l'offre dans la première question.
  */
-export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent) => void; onApplied: () => void }) {
+export function IntentPanel({ onUseAi, onApplied, fromOffer = false }: {
+  onUseAi: (intent: CvIntent) => void; onApplied: () => void; fromOffer?: boolean;
+}) {
   const { profile, entries } = useProfileStore();
   const { currentCv } = useCvStore();
   // Réponses déjà données pour ce CV (cv.settings.cvIntent), sinon le titre du profil comme poste visé.
   const [intent, setIntent] = useState<CvIntent>(() => readCvIntent(currentCv?.settings) ?? { ...DEFAULT_INTENT, role: profile?.title ?? '' });
   const [proposal, setProposal] = useState<CvProposal | null>(null);
   const [applying, setApplying] = useState(false);
+
+  // Depuis l'offre : la question du poste reste préremplie, mais sélectionnée (la première frappe la remplace).
+  const roleRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!fromOffer) return;
+    roleRef.current?.focus();
+    roleRef.current?.select();
+  }, [fromOffer]);
 
   const experiences = useMemo(() => entries.filter(e => e.entryType === 'experience'), [entries]);
   const set = <K extends keyof CvIntent>(key: K, value: CvIntent[K]) => setIntent(prev => ({ ...prev, [key]: value }));
@@ -58,11 +74,22 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
     if (cv) await useCvStore.getState().updateCv(cv.id, { settings: withCvIntent(cv.settings, intent) });
   };
 
+  const roleMissing = () => {
+    if (intent.role.trim()) return false;
+    toast.error('Indiquez d\'abord le poste que vous visez.');
+    return true;
+  };
+
+  /** Action principale : les réponses sont enregistrées, puis confiées au parcours IA. */
+  const useAi = async () => {
+    if (roleMissing()) return;
+    await saveIntent();
+    onUseAi(intent);
+  };
+
+  /** Action secondaire : proposition calculée sur l'ordinateur, sans IA. */
   const propose = () => {
-    if (!intent.role.trim()) {
-      toast.error('Indiquez d\'abord le poste que vous visez.');
-      return;
-    }
+    if (roleMissing()) return;
     void saveIntent();
     setProposal(proposeCv(intent, entries, profile, new Date()));
   };
@@ -163,7 +190,7 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
             onClick={() => onUseAi(intent)}
             className="w-full py-2 border border-gray-300 dark:border-[var(--pc-border)] text-gray-700 dark:text-[var(--pc-text)] text-sm rounded-md hover:bg-gray-50 flex items-center justify-center gap-2"
           >
-            <Wand2 className="w-4 h-4" /> Faire affiner par une IA (facultatif)
+            <Wand2 className="w-4 h-4" /> Rédiger plutôt avec l'IA
           </button>
         </div>
       </div>
@@ -175,12 +202,18 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
     <div className="space-y-5" data-testid="intent-form">
       <div>
         <h3 className="text-base font-semibold text-gray-900 dark:text-[var(--pc-text)]">Créer un CV standard</h3>
-        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">Répondez à quelques questions : nous choisissons et ordonnons le contenu de votre profil. Aucune IA n'est nécessaire. Vos réponses sont enregistrées avec ce CV.</p>
+        <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)]">Répondez à quelques questions : une IA s'en sert pour rédiger votre CV avec les mots de votre métier, sans rien inventer. Vous pouvez aussi le composer sans IA. Vos réponses sont enregistrées avec ce CV.</p>
       </div>
+
+      {fromOffer && (
+        <p className="rounded-md border border-sky-200 bg-sky-50 p-2.5 text-sm text-sky-900 dark:bg-[var(--pc-accent-subtle)] dark:text-[var(--pc-text)] dark:border-[var(--pc-border)]" data-testid="intent-from-offer">
+          Pour adapter votre CV sans IA, indiquez l'intitulé du poste de l'offre à la première question, puis cliquez sur « Composer sans IA ».
+        </p>
+      )}
 
       <div>
         <label htmlFor="intent-role" className={label}>1. {INTENT_QUESTIONS.role}</label>
-        <input id="intent-role" className={field} value={intent.role} onChange={e => set('role', e.target.value)} />
+        <input id="intent-role" ref={roleRef} className={field} value={intent.role} onChange={e => set('role', e.target.value)} />
       </div>
       <div>
         <label htmlFor="intent-sector" className={label}>Dans quel secteur ? <span className="font-normal text-gray-500">(facultatif)</span></label>
@@ -253,13 +286,13 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
             <option value="fr">Français</option>
             <option value="en">Anglais</option>
           </select>
-          {intent.language === 'en' && <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">Pour traduire le contenu, utilisez ensuite l'IA (facultatif).</p>}
+          {intent.language === 'en' && <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mt-1">L'IA traduit le contenu. Sans IA, il reste dans la langue de votre profil.</p>}
         </div>
       </div>
 
       <fieldset data-testid="intent-assertiveness">
         <legend className={label}>Niveau d'affirmation</legend>
-        <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-1.5">Utilisé si vous faites affiner votre CV par une IA. Le ton change, jamais les faits.</p>
+        <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] mb-1.5">Le ton que l'IA donnera à votre CV. Le ton change, jamais les faits.</p>
         <div className="grid grid-cols-3 gap-1.5" role="radiogroup">
           {ASSERTIVENESS.map(a => (
             <label key={a} className={`flex flex-col gap-0.5 rounded-md border p-2 cursor-pointer text-xs ${intent.assertiveness === a
@@ -276,9 +309,18 @@ export function IntentPanel({ onUseAi, onApplied }: { onUseAi: (intent: CvIntent
         </div>
       </fieldset>
 
-      <button onClick={propose} className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md flex items-center justify-center gap-2">
-        <Sparkles className="w-4 h-4" /> Voir ma proposition
-      </button>
+      <div className="space-y-2" data-testid="intent-actions">
+        <button onClick={() => void useAi()} data-testid="intent-use-ai"
+          className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md flex items-center justify-center gap-2">
+          <Wand2 className="w-4 h-4" /> Rédiger avec l'IA
+        </button>
+        <AiSiteLinks />
+        <button onClick={propose} data-testid="intent-without-ai"
+          className="w-full py-2 text-sm text-gray-700 dark:text-[var(--pc-text)] border border-gray-300 dark:border-[var(--pc-border)] rounded-md hover:bg-gray-50 flex items-center justify-center gap-2">
+          <Calculator className="w-4 h-4" /> Composer sans IA
+        </button>
+        <p className="text-xs text-center text-gray-500 dark:text-[var(--pc-muted)]">Sans IA, la proposition est calculée sur votre ordinateur à partir de votre profil.</p>
+      </div>
     </div>
   );
 }

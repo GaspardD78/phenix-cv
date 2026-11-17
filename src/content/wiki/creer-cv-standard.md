@@ -7,19 +7,19 @@ order: 8
 
 ## À quoi sert le CV standard
 
-Le CV standard est le choix conseillé pour un premier CV ou pour une candidature sans offre précise. Vous répondez à quelques questions simples, et l'application compose votre CV à partir de votre profil. Aucune IA n'est nécessaire.
+Le CV standard est le choix conseillé pour un premier CV ou pour une candidature sans offre précise. Vous répondez à quelques questions simples, puis une IA rédige votre CV avec les mots de votre métier, à partir de votre profil et sans rien inventer. Si vous préférez, l'application peut aussi composer votre CV sans IA.
 
 ## Comment faire
 
 1. Dans **Mes CV**, cliquez sur **Nouveau CV**, puis choisissez **CV standard** (il est sélectionné par défaut).
 2. Donnez un nom au CV, par exemple « CV assistante commerciale – standard ».
 3. Répondez aux questions : le poste ou les missions que vous recherchez, l'environnement où vous vous épanouissez, ce que vous faites avec aisance, vos réalisations, ce que l'on doit retenir de vous, votre niveau et ce que vous ne voulez plus faire. Choisissez aussi les expériences à privilégier ou à laisser de côté, la longueur (une ou deux pages) et la langue. Seul le poste est obligatoire. Vos réponses sont enregistrées avec ce CV.
-4. Cliquez sur **Voir ma proposition**. Relisez le titre, l'accroche et la liste des expériences et compétences retenues.
-5. Cochez ou décochez les éléments, puis cliquez sur **Appliquer à mon CV**.
+4. Cliquez sur **Rédiger avec l'IA**. L'application prépare un texte à copier : collez-le dans l'IA de votre choix (ChatGPT, Claude, Gemini…), puis recollez sa réponse.
+5. Lisez le rapport de contrôle, puis cliquez sur **Appliquer au CV**.
 
-## Faire affiner par une IA (facultatif)
+## Rédiger avec l'IA
 
-Depuis votre proposition, **Faire affiner par une IA** prépare un texte à copier dans l'IA de votre choix. L'IA joue le rôle d'un coach de carrière : elle part de ce que vous recherchez et reformule votre profil pour mieux vous présenter, sans rien inventer. Ce que vous écrivez dans vos réponses compte comme une source : un chiffre que vous donnez peut être repris tel quel.
+L'IA joue le rôle d'un coach de carrière : elle part de ce que vous recherchez et reformule votre profil pour mieux vous présenter, sans rien inventer. Ce que vous écrivez dans vos réponses compte comme une source : un chiffre que vous donnez peut être repris tel quel. Vous n'avez pas encore d'IA ? Les boutons **Ouvrir ChatGPT**, **Ouvrir Claude** et **Ouvrir Gemini** ouvrent le site dans votre navigateur.
 
 Le **niveau d'affirmation** règle le ton :
 
@@ -27,7 +27,11 @@ Le **niveau d'affirmation** règle le ton :
 - **Équilibré** (par défaut) : vos réalisations en premier, avec des verbes d'action concrets.
 - **Affirmé** : vos points forts assumés, avec des mots plus forts.
 
-Le ton change, jamais les faits : une participation reste une participation. Collez ensuite la réponse de l'IA, lisez le rapport de contrôle, puis appliquez.
+Le ton change, jamais les faits : une participation reste une participation.
+
+## Composer sans IA
+
+Sous le bouton principal, **Composer sans IA** calcule une proposition sur votre ordinateur, à partir de votre profil et de vos réponses. Relisez le titre, l'accroche et la liste des expériences et compétences retenues, cochez ou décochez les éléments, puis cliquez sur **Appliquer à mon CV**. Depuis cette proposition, **Rédiger plutôt avec l'IA** reprend vos réponses pour l'IA.
 
 ## Les années d'expérience
 

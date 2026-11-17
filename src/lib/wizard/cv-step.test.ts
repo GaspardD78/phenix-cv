@@ -2,7 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { completeStep, initialWizardState, parseWizardState, restartWizard, serializeWizardState, setWizardCv, WIZARD_KEY } from './state';
 import { makeWizardStore, type WizardStorage } from '@/stores/wizardStore';
-import { newCvRecord, suggestCvName, validateCvName } from '@/lib/new-cv';
+import { aiStartTabFromParams, intentToResume, newCvRecord, suggestCvName, validateCvName, wizardAiRoute } from '@/lib/new-cv';
+import { DEFAULT_INTENT, readCvIntent, withCvIntent } from '@/lib/cv-intent';
 import { missingHelpIds, HELP } from '@/content/help';
 
 describe('CV créé par le guide (cvId)', () => {
@@ -72,5 +73,43 @@ describe('aide « ? » de l\'écran 7', () => {
     expect(page).toContain("step === 'cv' ? 'cv-standard'");
     expect(missingHelpIds(['cv-standard'])).toEqual([]);
     expect(HELP['cv-standard'].page).toBe('creer-cv-standard');
+  });
+});
+
+describe('guide de démarrage : « Rédiger avec l\'IA » ouvre l\'éditeur sur le parcours IA', () => {
+  const intent = { ...DEFAULT_INTENT, role: 'Assistante commerciale', sector: 'Négoce de matériaux', assertiveness: 'affirme' as const };
+
+  it('adresse de l\'éditeur, onglet IA, réponses enregistrées reprises telles quelles', () => {
+    // 1. Les réponses sont enregistrées dans le CV avant de quitter le guide.
+    const settings = withCvIntent({}, intent);
+    // 2. Le guide ouvre l'éditeur du CV sur le parcours IA.
+    const route = wizardAiRoute('cv-42');
+    expect(route.startsWith('/cv/cv-42?')).toBe(true);
+    const params = new URL(route, 'http://local').searchParams;
+    // 3. L'éditeur ouvre le panneau sur le parcours IA du CV standard.
+    const tab = aiStartTabFromParams(params);
+    expect(tab).toBe('intent-ai');
+    // 4. Le panneau reprend les réponses enregistrées.
+    expect(intentToResume(tab, settings)).toEqual(readCvIntent(settings));
+    expect(intentToResume(tab, settings)?.role).toBe('Assistante commerciale');
+    expect(intentToResume(tab, settings)?.assertiveness).toBe('affirme');
+  });
+
+  it('sans réponse enregistrée, ou hors parcours IA : rien n\'est repris', () => {
+    expect(intentToResume('intent-ai', {})).toBeNull();
+    expect(intentToResume('intent-ai', withCvIntent({}, { ...intent, role: '  ' }))).toBeNull();
+    expect(intentToResume('intent', withCvIntent({}, intent))).toBeNull();
+    expect(aiStartTabFromParams(new URLSearchParams('mode=standard'))).toBe('intent');
+    expect(aiStartTabFromParams(new URLSearchParams('mode=offer&ia=1'))).toBe('full');
+  });
+
+  it('branchements : le guide, l\'éditeur et le panneau utilisent ces fonctions', () => {
+    const read = (p: string) => readFileSync(new URL(`../../components/${p}`, import.meta.url), 'utf8');
+    expect(read('wizard/WizardCvStep.tsx')).toContain('navigate(wizardAiRoute(cvId))');
+    expect(read('cv-builder/CVBuilderPage.tsx')).toContain('aiStartTabFromParams(searchParams)');
+    expect(read('cv-builder/AIPromptPanel.tsx')).toContain('intentToResume(initialTab, currentCv.settings)');
+    // Les réponses sont enregistrées AVANT de passer la main au parcours IA.
+    const panel = read('cv-builder/IntentPanel.tsx');
+    expect(panel).toMatch(/await saveIntent\(\);\s*onUseAi\(intent\);/);
   });
 });
