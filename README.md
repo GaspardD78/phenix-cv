@@ -14,7 +14,7 @@ Version 0.1, en développement actif.
   - **Adapter à une offre** : vous collez une annonce, une IA adapte votre CV à cette offre. Un contrôle signale tout ce qui n'est pas prouvé par votre profil, et vous pouvez répondre à ses remarques.
   - 26 modèles (sobres, adaptés aux logiciels de tri des recruteurs, ou graphiques), aperçu en direct, ajustement à une page, CV en français ou en anglais.
 - **Export** : PDF ou Word, avec un nom de fichier proposé.
-- **Candidatures** : un tableau de suivi par étapes, avec l'historique et les pièces jointes de chaque candidature, et un export en archive ZIP. Vous pouvez y importer votre suivi tenu dans Excel, Google Sheets ou LibreOffice, avec une IA ou en associant vous-même les colonnes : vous vérifiez un aperçu avant l'import, et vous pouvez l'annuler en un clic juste après.
+- **Candidatures** : un tableau de suivi par étapes, avec l'historique et les pièces jointes de chaque candidature, et un export en archive ZIP. Vous pouvez y importer votre suivi tenu dans Excel, Google Sheets ou LibreOffice (copier-coller, fichier `.xlsx` ou `.csv`), avec une IA ou en associant vous-même les colonnes : vous vérifiez un aperçu avant l'import, et vous pouvez l'annuler en un clic juste après.
 - **Sauvegarde** : un fichier de sauvegarde (`.cvmaker`) enregistré où vous voulez, et une synchronisation Google Drive facultative. Avant chaque restauration, une copie de vos données actuelles est faite automatiquement. Une sauvegarde ne contient jamais vos identifiants (Google Drive…).
 - **Aide** : une bulle « ? » sur chaque écran, un guide intégré, et la touche **F1** pour ouvrir l'aide de l'écran en cours.
 

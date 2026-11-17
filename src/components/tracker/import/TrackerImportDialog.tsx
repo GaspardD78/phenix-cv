@@ -1,10 +1,11 @@
 import { useMemo, useState, type ClipboardEvent } from 'react';
 import { toast } from 'sonner';
-import { AlertTriangle, Check, Copy, FileUp, Lock, Table2, Wand2, X } from 'lucide-react';
+import { AlertTriangle, Check, Copy, FileSpreadsheet, FileUp, Lock, Table2, Wand2, X } from 'lucide-react';
 import { AiSiteLinks } from '@/components/shared/AiSiteLinks';
 import { useApplicationStore } from '@/stores/applicationStore';
 import { useTrackerImportStore } from '@/stores/trackerImportStore';
 import { readPastedTable, type Table } from '@/lib/tracker-import/table';
+import { ODS_MESSAGE, XLSX_OLD_FORMAT_MESSAGE, readXlsx, trackerFileKind, type XlsxSheet } from '@/lib/tracker-import/xlsx';
 import { IMPORT_FIELDS, describeColumns, detectHeaderRow, type ColumnInfo } from '@/lib/tracker-import/fields';
 import { buildAiImportPlan, buildTrackerPrompts, parseAiResponse, type AiParseResult, type AiPartResult } from '@/lib/tracker-import/ai';
 import { buildImportPlan, type ExistingApplication, type ImportPlan } from '@/lib/tracker-import/plan';
@@ -25,7 +26,7 @@ const contactFields = new Set(IMPORT_FIELDS.filter(f => f.contact).map(f => f.id
 const sample = (c: ColumnInfo) => c.values.filter(v => v.trim()).slice(0, 2).map(v => v.replace(/\n/g, ' ')).join(' · ');
 
 /**
- * « Importer mon suivi » : tableau collé depuis Excel (ou fichier .csv), puis
+ * « Importer mon suivi » : tableau collé depuis Excel (ou fichier .xlsx ou .csv), puis
  * - avec l'IA (action principale) : choix des colonnes envoyées, texte à copier, réponse à coller ;
  * - sans IA : la personne associe les colonnes aux champs, puis les statuts aux colonnes du kanban ;
  * puis aperçu avant écriture (commun aux deux parcours).
@@ -34,6 +35,9 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
   const applications = useApplicationStore(s => s.applications);
   const [step, setStep] = useState<Step>('paste');
   const [paste, setPaste] = useState<{ html: string | null; text: string }>({ html: null, text: '' });
+  /** Classeur .xlsx choisi : ses feuilles, et celle à importer. */
+  const [workbook, setWorkbook] = useState<{ fileName: string; sheets: XlsxSheet[]; sheet: number } | null>(null);
+  const [reading, setReading] = useState(false);
   const [rows, setRows] = useState<Table>([]);
   const [hasHeader, setHasHeader] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,13 +68,33 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
     const text = e.clipboardData.getData('text/plain');
     if (html || text) {
       e.preventDefault();
+      setWorkbook(null);
       setPaste({ html: html || null, text });
       setError(null);
     }
   };
 
-  const onFile = (file: File | undefined) => {
+  const onFile = async (file: File | undefined) => {
     if (!file) return;
+    const kind = trackerFileKind(file.name);
+    if (kind === 'ods') { setError(ODS_MESSAGE); return; }
+    if (kind === 'xls') { setError(XLSX_OLD_FORMAT_MESSAGE); return; }
+    if (kind === 'xlsx') {
+      setReading(true);
+      try {
+        const r = await readXlsx(await file.arrayBuffer());
+        if (!r.ok) { setError(r.message); return; }
+        setWorkbook({ fileName: file.name, sheets: r.sheets, sheet: 0 });
+        setPaste({ html: null, text: '' });
+        setError(null);
+      } catch {
+        setError('Impossible de lire ce fichier. Ouvrez-le dans votre tableur, copiez les cellules, puis collez-les ici.');
+      } finally {
+        setReading(false);
+      }
+      return;
+    }
+    setWorkbook(null);
     const reader = new FileReader();
     reader.onload = () => { setPaste({ html: null, text: String(reader.result ?? '') }); setError(null); };
     reader.onerror = () => setError('Impossible de lire ce fichier. Ouvrez-le dans votre tableur, copiez les cellules, puis collez-les ici.');
@@ -79,7 +103,7 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
 
   /** Lecture du tableau collé ; `null` (et un message) s'il est illisible. */
   const readTable = () => {
-    const r = readPastedTable(paste);
+    const r = readPastedTable(workbook ? { table: workbook.sheets[workbook.sheet].rows } : paste);
     if (!r.ok) { setError(r.message); return null; }
     const header = detectHeaderRow(r.rows);
     setRows(r.rows);
@@ -194,22 +218,47 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
 
         {step === 'paste' && (
           <div className="space-y-4" data-testid="step-paste">
-            <label htmlFor="tracker-paste" className="block text-sm font-semibold">1. Collez votre tableau</label>
+            <label htmlFor="tracker-paste" className="block text-sm font-semibold">1. Collez votre tableau, ou choisissez un fichier</label>
             <p className="text-xs text-[var(--pc-muted)] -mt-3">Dans votre tableur, sélectionnez les cellules, titres compris, copiez-les (Ctrl+C), puis collez-les ici (Ctrl+V).</p>
-            <textarea id="tracker-paste" rows={7} value={paste.text} onPaste={onPaste}
-              onChange={e => { setPaste({ html: null, text: e.target.value }); setError(null); }}
-              className="w-full rounded-lg border border-[var(--pc-border)] bg-[var(--pc-surface)] p-2 text-xs font-mono"
-              placeholder="Collez ici les cellules de votre tableau…" />
+            {workbook ? (
+              <div className="rounded-lg border border-[var(--pc-border)] bg-[var(--pc-surface)] p-3 space-y-2 text-sm" data-testid="workbook-loaded">
+                <p className="flex items-start gap-2">
+                  <FileSpreadsheet className="w-4 h-4 mt-0.5 shrink-0 text-[var(--pc-accent)]" aria-hidden />
+                  <span>
+                    Fichier <strong>{workbook.fileName}</strong> lu :{' '}
+                    {workbook.sheets.length > 1 ? `${workbook.sheets.length} feuilles avec des données.` : `feuille « ${workbook.sheets[0].name} ».`}
+                  </span>
+                </p>
+                {workbook.sheets.length > 1 && (
+                  <label className="flex items-center gap-2">
+                    <span>Feuille à importer :</span>
+                    <select value={workbook.sheet} onChange={e => { setWorkbook({ ...workbook, sheet: Number(e.target.value) }); setError(null); }}
+                      className="rounded-md border border-[var(--pc-border)] bg-[var(--pc-surface)] px-2 py-1" data-testid="workbook-sheet">
+                      {workbook.sheets.map((sh, k) => <option key={k} value={k}>{sh.name}</option>)}
+                    </select>
+                  </label>
+                )}
+                <button type="button" className="text-xs text-[var(--pc-muted)] hover:underline" onClick={() => { setWorkbook(null); setError(null); }}>
+                  Retirer ce fichier et coller un tableau à la place
+                </button>
+              </div>
+            ) : (
+              <textarea id="tracker-paste" rows={7} value={paste.text} onPaste={onPaste}
+                onChange={e => { setPaste({ html: null, text: e.target.value }); setError(null); }}
+                className="w-full rounded-lg border border-[var(--pc-border)] bg-[var(--pc-surface)] p-2 text-xs font-mono"
+                placeholder="Collez ici les cellules de votre tableau…" />
+            )}
             <label className="inline-flex items-center gap-1.5 text-sm cursor-pointer text-[var(--pc-accent)] hover:underline">
-              <FileUp className="w-4 h-4" aria-hidden /> ou choisissez un fichier .csv
-              <input type="file" accept=".csv,.tsv,.txt,text/csv" className="hidden" onChange={e => onFile(e.target.files?.[0])} />
+              <FileUp className="w-4 h-4" aria-hidden /> {reading ? 'Lecture du fichier…' : 'ou choisissez un fichier Excel (.xlsx) ou .csv'}
+              <input type="file" accept=".xlsx,.xlsm,.csv,.tsv,.txt,.ods,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden"
+                onChange={e => { void onFile(e.target.files?.[0]); e.target.value = ''; }} />
             </label>
             {error && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-2">{error}</p>}
-            <button type="button" className="pc-btn-primary w-full justify-center" onClick={startAi} disabled={!paste.text.trim() && !paste.html} data-testid="import-with-ai">
+            <button type="button" className="pc-btn-primary w-full justify-center" onClick={startAi} disabled={!workbook && !paste.text.trim() && !paste.html} data-testid="import-with-ai">
               <Wand2 className="w-4 h-4" aria-hidden /> Importer avec l'IA
             </button>
             <AiSiteLinks />
-            <button type="button" className="pc-btn-secondary w-full justify-center" onClick={startManual} disabled={!paste.text.trim() && !paste.html} data-testid="import-without-ai">
+            <button type="button" className="pc-btn-secondary w-full justify-center" onClick={startManual} disabled={!workbook && !paste.text.trim() && !paste.html} data-testid="import-without-ai">
               <Table2 className="w-4 h-4" aria-hidden /> Importer sans IA
             </button>
             <p className="text-xs text-center text-[var(--pc-muted)] -mt-2">Sans IA, vous indiquez vous-même à quoi correspond chaque colonne.</p>

@@ -127,17 +127,24 @@ export interface PastedContent {
   html?: string | null;
   /** Version texte (ou contenu d'un fichier .csv). */
   text?: string | null;
+  /** Cellules déjà lues (feuille d'un classeur .xlsx) : utilisées en priorité. */
+  table?: Table | null;
 }
 
 export type ReadTableResult =
-  | { ok: true; rows: Table; from: 'html' | 'tabulations' | 'point-virgule' | 'virgule' }
+  | { ok: true; rows: Table; from: 'classeur' | 'html' | 'tabulations' | 'point-virgule' | 'virgule' }
   | { ok: false; message: string };
 
 export const EMPTY_PASTE_MESSAGE = 'Rien à lire : copiez les cellules de votre tableau (titres compris), puis collez-les ici.';
 export const TOO_MANY_ROWS_MESSAGE = `Votre tableau dépasse ${MAX_ROWS} lignes. Importez-le en plusieurs fois.`;
 
-/** Lecture d'un collage ou d'un fichier : HTML d'abord, sinon texte. */
+/** Lecture d'un collage ou d'un fichier : classeur déjà lu, sinon HTML, sinon texte. */
 export function readPastedTable(content: PastedContent): ReadTableResult {
+  if (content.table) {
+    const rows = tidyTable(content.table);
+    if (rows.length === 0) return { ok: false, message: EMPTY_PASTE_MESSAGE };
+    return rows.length > MAX_ROWS + 1 ? { ok: false, message: TOO_MANY_ROWS_MESSAGE } : { ok: true, rows, from: 'classeur' };
+  }
   const fromHtml = content.html ? parseHtmlTable(content.html) : null;
   if (fromHtml) {
     const rows = tidyTable(fromHtml);
