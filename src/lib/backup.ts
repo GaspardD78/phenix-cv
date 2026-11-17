@@ -6,10 +6,11 @@
  */
 
 import { save, open } from '@tauri-apps/plugin-dialog';
-import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
+import { writeTextFile, readTextFile, mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { getDb } from '@/lib/db';
 import { filterAllowedColumns } from './validation';
 import { PROFILE_SETTING_NAMES } from './profile-settings';
+import { isImportableSettingKey, splitImportSettings, withoutSecretSettings } from './backup-settings';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -114,7 +115,9 @@ export async function buildBackupData(selectedModules: ModuleId[]): Promise<Back
     const meta = MODULES.find(m => m.id === moduleId)!;
     let totalRows = 0;
     for (const table of meta.tables) {
-      const rows = await db.select<Record<string, unknown>[]>(`SELECT * FROM ${table}`);
+      const all = await db.select<Record<string, unknown>[]>(`SELECT * FROM ${table}`);
+      // Aucun secret ne sort de l'ordinateur (jetons Google Drive, identifiants OAuth…).
+      const rows = table === 'settings' ? withoutSecretSettings(all) : all;
       modules[table] = rows;
       totalRows += rows.length;
     }
@@ -154,14 +157,26 @@ export async function pickAndParseBackup(): Promise<BackupData | null> {
 
   if (!filePath || Array.isArray(filePath)) return null;
 
-  const raw = await readTextFile(filePath as string);
-  const parsed = JSON.parse(raw) as BackupData;
+  return parseBackupText(await readTextFile(filePath as string));
+}
 
-  if (!parsed.__cvmaker_backup || !parsed.modules) {
-    throw new Error('Fichier invalide : ce n\'est pas une sauvegarde Phénix CV.');
+export const DAMAGED_BACKUP_MESSAGE =
+  'Ce fichier est abîmé ou incomplet : il ne peut pas être lu. Enregistrez à nouveau votre sauvegarde, puis réessayez.';
+export const NOT_A_BACKUP_MESSAGE =
+  'Ce fichier n\'est pas une sauvegarde Phénix CV ou CVmaker. Choisissez un fichier .cvmaker.';
+
+/** Lecture d'un fichier de sauvegarde (Phénix CV ou CVmaker), avec des messages compréhensibles. */
+export function parseBackupText(raw: string): BackupData {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error(DAMAGED_BACKUP_MESSAGE);
   }
-
-  return parsed;
+  const data = parsed as Partial<BackupData> | null;
+  if (!data || typeof data !== 'object' || data.__cvmaker_backup !== true) throw new Error(NOT_A_BACKUP_MESSAGE);
+  if (!data.modules || typeof data.modules !== 'object' || Array.isArray(data.modules)) throw new Error(DAMAGED_BACKUP_MESSAGE);
+  return data as BackupData;
 }
 
 /** Returns which module IDs are present in a backup */
@@ -187,21 +202,31 @@ export interface ImportPlan {
   settings?: ImportStrategy;
 }
 
+/** Clé primaire de chaque table restaurée (cible des mises à jour). */
+export const PRIMARY_KEYS: Readonly<Record<string, string>> = { settings: 'key' };
+const primaryKeyOf = (table: string) => PRIMARY_KEYS[table] ?? 'id';
+
 /**
  * Inserts rows into a table using the given strategy.
- * - replace: DELETE all then INSERT
- * - merge: INSERT OR REPLACE (upsert by primary key)
- * - ignore: INSERT OR IGNORE (skip existing by primary key)
+ * - replace_insert : INSERT OR IGNORE, après la suppression faite par `importBackup`.
+ * - merge : ajoute, ou met à jour la ligne de même clé SANS la supprimer. Jamais `INSERT OR REPLACE` :
+ *   il supprime la ligne existante, et avec les clés étrangères, tout ce qui en dépend (expériences,
+ *   CV, blocs). Une valeur vide de la sauvegarde n'efface jamais une valeur existante.
+ * - overwrite : comme merge, mais les valeurs de la sauvegarde remplacent tout, y compris par du vide
+ *   (« Remplacer » appliqué au profil, qui n'est jamais supprimé).
+ * - ignore : INSERT OR IGNORE (rien n'est modifié).
+ * Une autre contrainte d'unicité en conflit (ex. angle de même nom) : la ligne est laissée de côté.
  */
 export async function applyRows(
   db: Awaited<ReturnType<typeof getDb>>,
   table: string,
   rows: Record<string, unknown>[],
-  strategy: 'replace_insert' | 'merge' | 'ignore',
+  strategy: 'replace_insert' | 'merge' | 'overwrite' | 'ignore',
 ): Promise<void> {
   if (rows.length === 0) return;
 
-  const keyword = strategy === 'merge' ? 'OR REPLACE' : 'OR IGNORE';
+  const upsert = strategy === 'merge' || strategy === 'overwrite';
+  const keyword = upsert ? '' : 'OR IGNORE ';
 
   // Validate and filter columns based on the first row to ensure they're all allowed.
   // This prevents SQL injection from malicious backup files while maintaining schema compatibility.
@@ -210,6 +235,16 @@ export async function applyRows(
   if (columns.length === 0) return;
 
   const colStr = columns.join(', ');
+  const pk = primaryKeyOf(table);
+  const updated = columns.filter(c => c !== pk);
+  const setClause = updated
+    .map(c => (strategy === 'overwrite' ? `${c} = excluded.${c}` : `${c} = COALESCE(excluded.${c}, ${table}.${c})`))
+    .join(', ');
+  const onConflict = !upsert
+    ? ''
+    : updated.length > 0 && columns.includes(pk)
+      ? ` ON CONFLICT(${pk}) DO UPDATE SET ${setClause} ON CONFLICT DO NOTHING`
+      : ' ON CONFLICT DO NOTHING';
 
   // SQLite has a limit on the number of parameters (?1, ?2) in a single query (often 999).
   // We chunk the insertions to stay safe.
@@ -233,7 +268,7 @@ export async function applyRows(
       }
     }
 
-    const query = `INSERT ${keyword} INTO ${table} (${colStr}) VALUES ${allPlaceholders.join(', ')}`;
+    const query = `INSERT ${keyword}INTO ${table} (${colStr}) VALUES ${allPlaceholders.join(', ')}${onConflict}`;
     await db.execute(query, allValues);
   }
 }
@@ -397,12 +432,52 @@ export function selectBackupProfile(backup: BackupData, sourceId: string, target
   return { ...backup, modules };
 }
 
+// ─── Sauvegarde automatique avant restauration ────────────────────────────────
+
+/** Dossier des sauvegardes automatiques, dans le dossier de données de l'application. */
+export const AUTO_BACKUP_DIR = 'sauvegardes-automatiques';
+
+/** Nom de fichier daté : `avant-restauration_2026-11-17_10-42-05.cvmaker` (heure locale). */
+export function autoBackupFileName(now: Date = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  const date = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+  const time = `${p(now.getHours())}-${p(now.getMinutes())}-${p(now.getSeconds())}`;
+  return `avant-restauration_${date}_${time}.cvmaker`;
+}
+
+/**
+ * Copie complète des données actuelles (sans secrets) dans le dossier de données de l'application.
+ * Renvoie le chemin relatif du fichier écrit.
+ */
+export async function createAutoBackup(now: Date = new Date()): Promise<string> {
+  const backup = await buildBackupData(MODULES.map(m => m.id));
+  await mkdir(AUTO_BACKUP_DIR, { baseDir: BaseDirectory.AppData, recursive: true });
+  const path = `${AUTO_BACKUP_DIR}/${autoBackupFileName(now)}`;
+  await writeTextFile(path, JSON.stringify(backup, null, 2), { baseDir: BaseDirectory.AppData });
+  return path;
+}
+
+export const AUTO_BACKUP_FAILED_MESSAGE =
+  'La sauvegarde automatique de vos données actuelles a échoué : rien n\'a été modifié. Enregistrez une sauvegarde vous-même, puis réessayez.';
+
 export interface ImportOptions {
   /** Profil de la sauvegarde à restaurer, quand elle en contient plusieurs (choix de l'utilisateur). */
   sourceProfileId?: string | null;
+  /**
+   * Sauvegarde des données actuelles faite AVANT toute écriture (défaut : `createAutoBackup`).
+   * `false` seulement dans les tests. Si elle échoue, rien n'est importé.
+   */
+  autoBackup?: (() => Promise<string>) | false;
 }
 
-export async function importBackup(backup: BackupData, plan: ImportPlan, opts: ImportOptions = {}): Promise<void> {
+export interface ImportResult {
+  /** Fichier de la sauvegarde automatique (chemin relatif au dossier de données), `null` si désactivée. */
+  autoBackupPath: string | null;
+  /** Réglages de la sauvegarde laissés de côté : secrets (jamais repris) et réglages propres à l'installation. */
+  skippedSettings: { secretCount: number; ignoredKeys: string[] };
+}
+
+export async function importBackup(backup: BackupData, plan: ImportPlan, opts: ImportOptions = {}): Promise<ImportResult> {
   const db = await getDb();
 
   // ── Profil à restaurer ─────────────────────────────────────────────────
@@ -414,6 +489,20 @@ export async function importBackup(backup: BackupData, plan: ImportPlan, opts: I
   if (currentUserId) {
     const sourceId = resolveSourceProfileId(backup, currentUserId, opts.sourceProfileId);
     if (sourceId) backup = selectBackupProfile(backup, sourceId, currentUserId);
+  }
+
+  // Réglages : liste blanche. Les secrets ne sont jamais repris, même présents dans le fichier.
+  const settingsSplit = splitImportSettings(backup.modules['settings'] ?? []);
+  backup = { ...backup, modules: { ...backup.modules, settings: settingsSplit.kept } };
+
+  // Sauvegarde automatique AVANT toute écriture ; en cas d'échec, rien n'est modifié.
+  let autoBackupPath: string | null = null;
+  if (opts.autoBackup !== false) {
+    try {
+      autoBackupPath = await (opts.autoBackup ?? createAutoBackup)();
+    } catch {
+      throw new Error(AUTO_BACKUP_FAILED_MESSAGE);
+    }
   }
 
   // Build list of (table, strategy) to process, in safe insert order
@@ -432,8 +521,14 @@ export async function importBackup(backup: BackupData, plan: ImportPlan, opts: I
     for (const table of DELETE_ORDER) {
       if (!tablesToDelete.has(table)) continue;
 
-      if (currentUserId && table === 'profiles') {
-        await db.execute('DELETE FROM profiles WHERE id = ?1', [currentUserId]);
+      if (table === 'profiles') {
+        // Jamais supprimé : la suppression emporterait en cascade expériences, CV et candidatures.
+        // Ses informations sont remplacées plus bas (overwrite).
+        continue;
+      } else if (table === 'settings') {
+        // Seuls les réglages qu'une sauvegarde peut apporter ; ceux de l'installation restent.
+        const keys = (await db.select<{ key: string }[]>('SELECT key FROM settings')).map(r => r.key).filter(isImportableSettingKey);
+        for (const key of keys) await db.execute('DELETE FROM settings WHERE key = ?1', [key]);
       } else if (currentUserId && TABLES_WITH_PROFILE_ID.includes(table)) {
         await db.execute(`DELETE FROM ${table} WHERE profile_id = ?1`, [currentUserId]);
       } else {
@@ -452,15 +547,22 @@ export async function importBackup(backup: BackupData, plan: ImportPlan, opts: I
     if (!meta) continue;
 
     const strategy = plan[meta.id as ModuleId];
-    if (!strategy || strategy === 'ignore') {
+    // Module sans choix : rien n'est importé (l'écran de restauration donne un choix à chaque module).
+    if (!strategy) continue;
+    if (strategy === 'ignore') {
       // ignore: skip if already exists
       await applyRows(db, table, rows, 'ignore');
     } else if (strategy === 'replace') {
-      // Already deleted above, now plain insert
-      await applyRows(db, table, rows, 'replace_insert');
+      // Already deleted above, now plain insert ; le profil, conservé, est réécrit.
+      await applyRows(db, table, rows, table === 'profiles' ? 'overwrite' : 'replace_insert');
     } else {
       // merge: upsert
       await applyRows(db, table, rows, 'merge');
     }
   }
+
+  return {
+    autoBackupPath,
+    skippedSettings: { secretCount: settingsSplit.secretCount, ignoredKeys: settingsSplit.ignoredKeys },
+  };
 }

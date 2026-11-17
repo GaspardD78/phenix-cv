@@ -10,7 +10,7 @@ import {
   isConnected, clearTokens, isDriveConfigured, listDriveBackups, uploadToDrive, downloadFromDrive,
   type DriveFile,
 } from '@/lib/gdrive';
-import { buildBackupData, importBackup, redactTargetPeople, MODULES, BackupProfileChoiceRequired, type BackupData, type ImportPlan } from '@/lib/backup';
+import { buildBackupData, importBackup, parseBackupText, redactTargetPeople, MODULES, BackupProfileChoiceRequired, type BackupData, type ImportPlan } from '@/lib/backup';
 import { ImportConflictModal } from './ImportConflictModal';
 import { CUSTOM_CLIENT_ID_KEY, CUSTOM_CLIENT_SECRET_KEY } from '@/lib/gdrive-config';
 import { getSetting, setSetting } from '@/lib/db';
@@ -121,11 +121,12 @@ export function GoogleDriveSync() {
     let backup: BackupData | null = null;
     try {
       const raw = await downloadFromDrive(file.id, profileId);
-      backup = JSON.parse(raw) as BackupData;
-      if (!backup.__cvmaker_backup) throw new Error('Fichier invalide.');
+      backup = parseBackupText(raw);
       const plan: ImportPlan = Object.fromEntries(MODULES.map(m => [m.id, 'merge'])) as ImportPlan;
-      await importBackup(backup, plan);
-      toast.success(`Données restaurées depuis "${file.name}"`);
+      const result = await importBackup(backup, plan);
+      toast.success(`Données restaurées depuis "${file.name}"`, result.autoBackupPath
+        ? { description: `Vos données d'avant sont enregistrées dans le dossier de données de Phénix CV : ${result.autoBackupPath}` }
+        : undefined);
     } catch (e) {
       if (e instanceof BackupProfileChoiceRequired && backup) {
         toast.info(e.message);

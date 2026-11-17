@@ -28,9 +28,9 @@ const STRATEGY_LABELS: Record<ImportStrategy, string> = {
 };
 
 const STRATEGY_HINTS: Record<ImportStrategy, string> = {
-  replace: 'Supprime toutes les données existantes pour ce module, puis importe celles de la sauvegarde.',
-  merge: 'Ajoute ou met à jour les entrées par identifiant. Les données non présentes dans la sauvegarde sont conservées.',
-  ignore: 'Importe uniquement les entrées dont l\'identifiant n\'existe pas encore. Rien n\'est écrasé.',
+  replace: 'Supprime vos données actuelles de ce module, puis importe celles de la sauvegarde. Votre profil n\'est jamais supprimé : ses informations sont remplacées.',
+  merge: 'Ajoute ce qui manque et met à jour les éléments présents dans la sauvegarde. Rien n\'est supprimé, et une information vide de la sauvegarde n\'efface jamais la vôtre.',
+  ignore: 'Ajoute seulement ce qui n\'existe pas encore. Rien de ce que vous avez n\'est modifié.',
 };
 
 /**
@@ -81,6 +81,7 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [autoBackupPath, setAutoBackupPath] = useState<string | null>(null);
 
   const hasReplace = Object.values(plan).some(s => s === 'replace');
 
@@ -92,7 +93,8 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
     setIsImporting(true);
     setError(null);
     try {
-      await importBackup(backup, plan, { sourceProfileId: sourceProfileId || undefined });
+      const result = await importBackup(backup, plan, { sourceProfileId: sourceProfileId || undefined });
+      setAutoBackupPath(result.autoBackupPath);
 
       // Refresh stores so the UI reflects imported data immediately
       const { useProfileStore } = await import('@/stores/profileStore');
@@ -124,6 +126,12 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
           <p className="text-sm text-gray-500 dark:text-[var(--pc-muted)] mb-6">
             Les données ont été importées avec succès.
           </p>
+          {autoBackupPath && (
+            <p className="text-xs text-gray-500 dark:text-[var(--pc-muted)] -mt-4 mb-6" data-testid="auto-backup-path">
+              Vos données d'avant l'import sont enregistrées dans le dossier de données de Phénix CV :
+              <span className="block font-mono mt-1 break-all">{autoBackupPath}</span>
+            </p>
+          )}
           <button
             onClick={onDone}
             className="px-5 py-2 bg-lagon-600 text-white rounded-md hover:bg-lagon-700 transition-colors text-sm"
@@ -157,6 +165,11 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
         <div className="overflow-y-auto flex-1 p-6 min-h-0">
           <p className="text-sm text-gray-600 dark:text-[var(--pc-muted)] mb-4">
             Pour chaque module présent dans la sauvegarde, choisissez comment gérer les conflits avec vos données actuelles.
+          </p>
+
+          <p className="mb-4 flex items-start gap-2 p-3 rounded-md border border-lagon-200 bg-lagon-50 dark:bg-[var(--pc-accent-subtle)] dark:border-[var(--pc-border)] text-sm text-gray-700 dark:text-[var(--pc-text)]" data-testid="auto-backup-notice">
+            <Info size={15} className="mt-0.5 flex-shrink-0" />
+            <span>Avant toute modification, Phénix CV enregistre automatiquement une copie de vos données actuelles. Les connexions et identifiants (Google Drive…) ne sont jamais repris d'un fichier.</span>
           </p>
 
           <BackupProfilePicker
@@ -215,8 +228,8 @@ export function ImportConflictModal({ backup, onClose, onDone }: Props) {
             <div className="mt-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
               <AlertTriangle size={15} className="mt-0.5 flex-shrink-0" />
               <span>
-                Le mode <strong>Remplacer</strong> supprime définitivement toutes les données existantes du module concerné avant d'importer.
-                Cette action est irréversible.
+                Le mode <strong>Remplacer</strong> supprime vos données actuelles du module concerné avant d'importer.
+                Pour revenir en arrière, restaurez la sauvegarde automatique enregistrée juste avant.
               </span>
             </div>
           )}
