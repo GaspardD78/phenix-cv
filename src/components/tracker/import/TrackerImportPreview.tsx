@@ -49,7 +49,12 @@ export function TrackerImportPreview({ plan, onChange, onConfirm, onBack, busy =
         <section className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200" data-testid="preview-errors">
           <p className="font-semibold flex items-center gap-1.5"><XCircle className="w-4 h-4" aria-hidden /> Lignes qui ne seront pas importées</p>
           <ul className="mt-1 space-y-0.5">
-            {errors.map(i => <li key={i.line}>Ligne {i.line} : {i.error}</li>)}
+            {errors.map(i => (
+              <li key={i.line}>
+                Ligne {i.line} : {i.error}
+                {i.alerts.length > 0 && <ul className="ml-4 list-disc text-xs">{i.alerts.map((a, k) => <li key={k}>{a}</li>)}</ul>}
+              </li>
+            ))}
           </ul>
         </section>
       )}

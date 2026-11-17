@@ -16,7 +16,7 @@ export type ImportResponseResult =
 const ASK_AGAIN = 'Retournez dans la conversation avec l\'IA et écrivez : « Renvoie uniquement le JSON complet, sans aucun texte autour. » Puis copiez sa nouvelle réponse en entier.';
 
 /** Remplace les guillemets typographiques par des guillemets droits et retire BOM et espaces insécables. */
-function normalizeChars(text: string): string {
+export function normalizeChars(text: string): string {
   return text
     .replace(/^\uFEFF/, '')
     .replace(/[\u201C\u201D\u201E\u201F\u00AB\u00BB]/g, '"')
@@ -26,7 +26,7 @@ function normalizeChars(text: string): string {
 }
 
 /** Retire commentaires de ligne, virgules finales et séparateurs de milliers d'un JSON presque valide. */
-function repairJson(text: string): string {
+export function repairJson(text: string): string {
   let out = '';
   let inString = false;
   for (let i = 0; i < text.length; i++) {
