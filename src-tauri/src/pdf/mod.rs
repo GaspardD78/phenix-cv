@@ -96,7 +96,11 @@ fn now_unix() -> u64 {
 }
 
 fn log_path(app: &AppHandle) -> Option<PathBuf> {
-    let dir = app.path().app_data_dir().ok()?;
+    // Mode portable : le journal reste dans `data/`, à côté de l'application.
+    let dir = match crate::mode().data_dir() {
+        Some(dir) => dir.to_path_buf(),
+        None => app.path().app_data_dir().ok()?,
+    };
     std::fs::create_dir_all(&dir).ok()?;
     Some(dir.join(LOG_FILE))
 }

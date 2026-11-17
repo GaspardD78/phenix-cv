@@ -22,3 +22,5 @@ Thumbs.db
 key.properties
 tests/golden/.out/
 selftest-out/
+portable-out/
+eval-out/

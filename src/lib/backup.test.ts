@@ -6,17 +6,19 @@ mock.module('@tauri-apps/plugin-dialog', () => ({
   save: () => {},
   open: () => {}
 }));
-// Fichiers écrits (sauvegarde automatique) : chemin relatif et contenu.
-const written: { path: string; data: string; baseDir?: unknown }[] = [];
+// Sauvegarde automatique : écrite par la commande Rust `write_auto_backup` (dossier de données, ou `data` en mode portable).
+const written: { command: string; fileName: string; data: string }[] = [];
 let failWrites = false;
-mock.module('@tauri-apps/plugin-fs', () => ({
-  writeTextFile: async (path: string, data: string, opts?: { baseDir?: unknown }) => {
+mock.module('@tauri-apps/api/core', () => ({
+  invoke: async (command: string, args: { fileName: string; content: string }) => {
     if (failWrites) throw new Error('disque plein');
-    written.push({ path, data, baseDir: opts?.baseDir });
+    written.push({ command, fileName: args.fileName, data: args.content });
+    return `C:\\Donnees\\Phenix\\sauvegardes-automatiques\\${args.fileName}`;
   },
+}));
+mock.module('@tauri-apps/plugin-fs', () => ({
+  writeTextFile: async () => {},
   readTextFile: () => {},
-  mkdir: async () => {},
-  BaseDirectory: { AppData: 14 },
 }));
 // Base factice remplaçable par test (défaut : objet vide, comme avant).
 let fakeDb: any = {};
@@ -311,7 +313,7 @@ import { Database } from 'bun:sqlite';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  AUTO_BACKUP_DIR, AUTO_BACKUP_FAILED_MESSAGE, DAMAGED_BACKUP_MESSAGE, NOT_A_BACKUP_MESSAGE, autoBackupFileName, createAutoBackup, parseBackupText,
+  AUTO_BACKUP_FAILED_MESSAGE, DAMAGED_BACKUP_MESSAGE, NOT_A_BACKUP_MESSAGE, autoBackupFileName, createAutoBackup, parseBackupText,
 } from './backup';
 
 const MIGRATIONS = join(import.meta.dir, '..', '..', 'src-tauri', 'migrations');
@@ -453,10 +455,10 @@ describe('restauration sans perte (vraie base, clés étrangères activées)', (
       },
     });
     expect(entriesAtBackupTime).toBe(1); // rien n'était encore importé
-    expect(result.autoBackupPath).toBe(`${AUTO_BACKUP_DIR}/avant-restauration_2026-11-17_10-42-05.cvmaker`);
+    expect(result.autoBackupPath).toBe('C:\\Donnees\\Phenix\\sauvegardes-automatiques\\avant-restauration_2026-11-17_10-42-05.cvmaker');
     expect(written).toHaveLength(1);
-    expect(written[0].path).toBe(result.autoBackupPath!);
-    expect(written[0].baseDir).toBe(14); // BaseDirectory.AppData
+    expect(written[0].command).toBe('write_auto_backup');
+    expect(written[0].fileName).toBe('avant-restauration_2026-11-17_10-42-05.cvmaker');
     const saved = parseBackupText(written[0].data);
     expect(saved.modules.master_entries!.map(r => r.id)).toEqual(['p-exp']);
     expect(saved.modules.cv_blocks!.map(r => r.id)).toEqual(['p-bloc']);

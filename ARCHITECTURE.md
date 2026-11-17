@@ -3,7 +3,7 @@
 ## Vue d'ensemble
 
 - **Frontend** : React 19, Vite, Tailwind 4, Zustand. Routes : `/` (accueil), `/profile`, `/cv`, `/cv/:id`, `/tracker`, `/import`, `/settings`, `/aide`, `/print` (rendu d'impression).
-- **Backend Tauri** (`src-tauri/src/lib.rs`) : `get_db_uri` (base locale, mode portable si un fichier `.portable` est à côté de l'exécutable), `generate_pdf` (export PDF vectoriel, voir ci-dessous), `start_oauth_server` (retour OAuth local pour Google Drive).
+- **Backend Tauri** (`src-tauri/src/lib.rs`) : `get_db_uri` (base locale), `get_app_mode` et `write_auto_backup` (où sont les données, sauvegarde automatique avant restauration ou import), le mode portable (`src-tauri/src/portable.rs` : si un fichier `.portable` est à côté de l'exécutable, base, sauvegardes, journal PDF et données de WebView2 vont dans `data/`), `generate_pdf` (export PDF vectoriel, voir ci-dessous), `start_oauth_server` (retour OAuth local pour Google Drive).
 - **Base** : SQLite, un schéma initial (`001_init.sql`). Réglages par profil dans la table `settings` (clés `nom:{profileId}`, voir `src/lib/profile-settings.ts`).
 
 ## Données

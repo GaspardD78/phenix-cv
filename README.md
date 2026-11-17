@@ -30,7 +30,7 @@ Pour rédiger ou adapter un CV, l'IA est proposée en premier. L'application pr�
 
 Tout est enregistré dans une base locale, dans le dossier de données de l'application.
 
-**Mode portable** : si un fichier nommé `.portable` se trouve à côté de l'application, les données sont enregistrées dans un dossier `data` à côté d'elle, par exemple sur une clé USB.
+**Version portable (sans installation, pour clé USB)** : un dossier à copier où vous voulez, avec l'application, un fichier `.portable` et un dossier `data` qui se crée au premier lancement. Toutes les données y restent (base, sauvegardes automatiques, données du moteur d'affichage) : rien n'est écrit sur l'ordinateur d'accueil. Voir la page d'aide « Utiliser Phénix CV sans installation » et la section Développement pour la fabriquer.
 
 ## Développement
 
@@ -43,13 +43,16 @@ bunx tsc --noEmit      # typage strict
 bun test               # tests
 cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 bun run tauri build    # installateurs Windows .exe et .msi (sur une machine Windows)
+./scripts/make-portable.ps1   # puis la version portable : portable-out/Phenix-CV-portable.zip
 ```
 
 **Rendu des CV** : `bun run test:golden` compare le PDF de chaque modèle à des références. Il demande Chromium et quelques polices, et ne tourne pas en CI : voir [tests/golden/README.md](tests/golden/README.md).
 
+**Évaluation du CV « à vrai impact »** : `bun scripts/impact-eval.ts` prépare, pour cinq profils fictifs, les textes à copier dans votre IA (avec et sans étude du marché), contrôle les CV collés avec le garde-fou de l'application, et fabrique une grille de notation à l'aveugle (X et Y). C'est vous qui jugez ; rien n'est envoyé par le script.
+
 **Données de test** : exemples, fichiers d'essai et tests utilisent uniquement une personne fictive, Camille Martin, et des entreprises fictives.
 
-**Intégration continue** : le workflow `.github/workflows/ci.yml` vérifie le typage, lance les tests TypeScript et Rust, clippy, construit l'application Windows et teste l'export PDF (WebView2, mode automatique, Edge, Chrome). L'installateur et les PDF d'essai sont conservés trois jours en tant qu'artefacts, sans publication de Release.
+**Intégration continue** : le workflow `.github/workflows/ci.yml` vérifie le typage, lance les tests TypeScript et Rust, clippy, construit l'application Windows et teste l'export PDF (WebView2, mode automatique, Edge, Chrome). L'installateur, la version portable (ZIP) et les PDF d'essai sont conservés trois jours en tant qu'artefacts, sans publication de Release. La version portable est aussi essayée pour de vrai : copiée dans un autre dossier, lancée, elle doit écrire ses données dans `data` et rien dans le dossier de l'application installée.
 
 ### Synchronisation Google Drive (facultative)
 

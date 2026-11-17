@@ -26,7 +26,7 @@ describe('chargement du wiki', () => {
   it('toutes les pages du dépôt se chargent sans erreur, identifiants uniques', () => {
     const { pages, errors } = loadWiki(wikiFiles());
     expect(errors).toEqual([]);
-    expect(pages.length).toBe(20);
+    expect(pages.length).toBe(22);
     expect(new Set(pages.map(p => p.id)).size).toBe(pages.length);
   });
   it('identifiant invalide, doublon ou titre manquant : signalé', () => {
