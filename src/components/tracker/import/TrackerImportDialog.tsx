@@ -1,24 +1,34 @@
 import { useMemo, useState, type ClipboardEvent } from 'react';
 import { toast } from 'sonner';
-import { Check, Copy, FileUp, Lock, Wand2, X } from 'lucide-react';
+import { AlertTriangle, Check, Copy, FileUp, Lock, Table2, Wand2, X } from 'lucide-react';
 import { AiSiteLinks } from '@/components/shared/AiSiteLinks';
 import { useApplicationStore } from '@/stores/applicationStore';
 import { useTrackerImportStore } from '@/stores/trackerImportStore';
 import { readPastedTable, type Table } from '@/lib/tracker-import/table';
 import { IMPORT_FIELDS, describeColumns, detectHeaderRow, type ColumnInfo } from '@/lib/tracker-import/fields';
 import { buildAiImportPlan, buildTrackerPrompts, parseAiResponse, type AiParseResult, type AiPartResult } from '@/lib/tracker-import/ai';
-import type { ExistingApplication, ImportPlan } from '@/lib/tracker-import/plan';
+import { buildImportPlan, type ExistingApplication, type ImportPlan } from '@/lib/tracker-import/plan';
+import {
+  MISSING_REQUIRED_MESSAGE, initialMapping, initialStatusMap, mappedRows, missingRequired, setColumnField, statusValues, suggestedDateOrder,
+  type ColumnMapping,
+} from '@/lib/tracker-import/manual';
+import type { DateOrder } from '@/lib/tracker-import/values';
+import type { FieldId } from '@/lib/tracker-import/fields';
+import { APPLICATION_STATUSES, STATUS_LABELS, kanbanColumnOf } from '@/lib/application-labels';
+import type { ApplicationStatus } from '@/types/application';
 import { TrackerImportPreview } from './TrackerImportPreview';
 import { notifyImportDone } from './LastImportBanner';
 
-type Step = 'paste' | 'columns' | 'ai' | 'preview';
+type Step = 'paste' | 'columns' | 'ai' | 'mapping' | 'statuses' | 'preview';
 
 const contactFields = new Set(IMPORT_FIELDS.filter(f => f.contact).map(f => f.id));
 const sample = (c: ColumnInfo) => c.values.filter(v => v.trim()).slice(0, 2).map(v => v.replace(/\n/g, ' ')).join(' · ');
 
 /**
- * « Importer mon suivi » : tableau collé depuis Excel (ou fichier .csv), puis import avec l'IA
- * (choix des colonnes envoyées, texte à copier, réponse à coller), puis aperçu avant écriture.
+ * « Importer mon suivi » : tableau collé depuis Excel (ou fichier .csv), puis
+ * - avec l'IA (action principale) : choix des colonnes envoyées, texte à copier, réponse à coller ;
+ * - sans IA : la personne associe les colonnes aux champs, puis les statuts aux colonnes du kanban ;
+ * puis aperçu avant écriture (commun aux deux parcours).
  */
 export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
   const applications = useApplicationStore(s => s.applications);
@@ -33,6 +43,12 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
   const [copied, setCopied] = useState<number | null>(null);
   const [plan, setPlan] = useState<ImportPlan | null>(null);
   const [busy, setBusy] = useState(false);
+  // Parcours sans IA.
+  const [mapping, setMapping] = useState<ColumnMapping>({});
+  const [statusMap, setStatusMap] = useState<Record<string, ApplicationStatus>>({});
+  const [dateOrder, setDateOrder] = useState<DateOrder>('dmy');
+  const [mappingError, setMappingError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'ai' | 'manual'>('ai');
 
   const columns = useMemo(() => (rows.length ? describeColumns(rows, hasHeader) : []), [rows, hasHeader]);
   const sentColumns = useMemo(() => columns.filter(c => sent.has(c.index)).map(c => ({ index: c.index, header: c.header })), [columns, sent]);
@@ -61,14 +77,61 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
     reader.readAsText(file);
   };
 
-  /** Lecture du tableau, puis choix des colonnes à envoyer (coordonnées décochées par défaut). */
-  const startAi = () => {
+  /** Lecture du tableau collé ; `null` (et un message) s'il est illisible. */
+  const readTable = () => {
     const r = readPastedTable(paste);
-    if (!r.ok) { setError(r.message); return; }
+    if (!r.ok) { setError(r.message); return null; }
     const header = detectHeaderRow(r.rows);
-    const cols = describeColumns(r.rows, header);
     setRows(r.rows);
     setHasHeader(header);
+    return { rows: r.rows, header, cols: describeColumns(r.rows, header) };
+  };
+
+  /** Parcours sans IA : propositions de correspondance d'après les titres et le contenu. */
+  const startManual = () => {
+    const t = readTable();
+    if (!t) return;
+    setMapping(initialMapping(t.cols));
+    setDateOrder(suggestedDateOrder(t.rows, t.header, initialMapping(t.cols)).order);
+    setMappingError(null);
+    setMode('manual');
+    setStep('mapping');
+  };
+
+  const changeHeader = (value: boolean) => {
+    setHasHeader(value);
+    if (step === 'mapping') setMapping(initialMapping(describeColumns(rows, value)));
+  };
+
+  const manualStatuses = useMemo(() => (step === 'mapping' || step === 'statuses' ? statusValues(rows, hasHeader, mapping) : []), [step, rows, hasHeader, mapping]);
+  const dateInfo = useMemo(() => suggestedDateOrder(rows, hasHeader, mapping), [rows, hasHeader, mapping]);
+
+  const manualPreview = (map: Record<string, ApplicationStatus>) => {
+    setPlan(buildImportPlan(mappedRows(rows, hasHeader, mapping), applications, { statusMap: map, dateOrder }));
+    setStep('preview');
+  };
+
+  const afterMapping = () => {
+    const missing = missingRequired(mapping);
+    if (missing.length) {
+      setMappingError(MISSING_REQUIRED_MESSAGE(missing.map(id => IMPORT_FIELDS.find(f => f.id === id)!.label)));
+      return;
+    }
+    setMappingError(null);
+    if (manualStatuses.length) {
+      setStatusMap(initialStatusMap(manualStatuses));
+      setStep('statuses');
+    } else {
+      manualPreview({});
+    }
+  };
+
+  /** Lecture du tableau, puis choix des colonnes à envoyer (coordonnées décochées par défaut). */
+  const startAi = () => {
+    const t = readTable();
+    if (!t) return;
+    const cols = t.cols;
+    setMode('ai');
     setSent(new Set(cols.filter(c => !c.contact).map(c => c.index)));
     setKeepLocal(new Set(cols.filter(c => c.contact && c.suggested && contactFields.has(c.suggested)).map(c => c.index)));
     setAnswers([]);
@@ -146,6 +209,82 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
               <Wand2 className="w-4 h-4" aria-hidden /> Importer avec l'IA
             </button>
             <AiSiteLinks />
+            <button type="button" className="pc-btn-secondary w-full justify-center" onClick={startManual} disabled={!paste.text.trim() && !paste.html} data-testid="import-without-ai">
+              <Table2 className="w-4 h-4" aria-hidden /> Importer sans IA
+            </button>
+            <p className="text-xs text-center text-[var(--pc-muted)] -mt-2">Sans IA, vous indiquez vous-même à quoi correspond chaque colonne.</p>
+          </div>
+        )}
+
+        {step === 'mapping' && (
+          <div className="space-y-4" data-testid="step-mapping">
+            <div>
+              <h3 className="text-base font-semibold">2. À quoi correspond chaque colonne ?</h3>
+              <p className="text-sm text-[var(--pc-muted)]">{dataRows} ligne{dataRows > 1 ? 's' : ''} lue{dataRows > 1 ? 's' : ''}. Nous avons fait des propositions d'après vos titres : vérifiez-les.</p>
+            </div>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" checked={hasHeader} onChange={e => changeHeader(e.target.checked)} /> Ma première ligne contient les titres des colonnes
+            </label>
+            <ul className="divide-y divide-[var(--pc-border)] rounded-lg border border-[var(--pc-border)]">
+              {columns.map(c => (
+                <li key={c.index} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm" data-testid={`mapping-${c.index}`}>
+                  <span className="min-w-0 flex-1">
+                    <span className="font-medium">{c.header}</span>
+                    <span className="block text-xs text-[var(--pc-muted)] truncate">{sample(c) || '(vide)'}</span>
+                  </span>
+                  <select aria-label={`Champ pour la colonne ${c.header}`} value={mapping[c.index] ?? ''}
+                    onChange={e => setMapping(m => setColumnField(m, c.index, (e.target.value || null) as FieldId | null))}
+                    className="rounded-md border border-[var(--pc-border)] bg-[var(--pc-surface)] p-1.5 text-sm">
+                    <option value="">Ne pas importer</option>
+                    {IMPORT_FIELDS.map(f => <option key={f.id} value={f.id}>{f.label}{f.required ? ' (obligatoire)' : ''}</option>)}
+                  </select>
+                </li>
+              ))}
+            </ul>
+            {dateInfo.hasDates && (
+              <fieldset className="text-sm" data-testid="date-order">
+                <legend className="font-semibold mb-1">Format des dates</legend>
+                {(['dmy', 'mdy'] as const).map(o => (
+                  <label key={o} className="mr-4 inline-flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" name="date-order" checked={dateOrder === o} onChange={() => setDateOrder(o)} />
+                    {o === 'dmy' ? 'Jour/mois/année (12/03/2026 = 12 mars)' : 'Mois/jour/année (03/12/2026 = 12 mars)'}
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {mappingError && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-2">{mappingError}</p>}
+            <div className="flex justify-end gap-2">
+              <button type="button" className="pc-btn-secondary" onClick={() => setStep('paste')}>Retour</button>
+              <button type="button" className="pc-btn-primary" onClick={afterMapping} data-testid="mapping-continue">Continuer</button>
+            </div>
+          </div>
+        )}
+
+        {step === 'statuses' && (
+          <div className="space-y-4" data-testid="step-statuses">
+            <div>
+              <h3 className="text-base font-semibold">3. Dans quelle colonne du suivi ranger chaque statut ?</h3>
+              <p className="text-sm text-[var(--pc-muted)]">Vérifiez nos propositions. Un statut que nous ne reconnaissons pas va dans « Brouillon » : changez-le si besoin.</p>
+            </div>
+            <ul className="divide-y divide-[var(--pc-border)] rounded-lg border border-[var(--pc-border)]">
+              {manualStatuses.map(v => (
+                <li key={v.key} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+                  <span className="min-w-0 flex-1">
+                    « {v.value} » <span className="text-xs text-[var(--pc-muted)]">({v.count} ligne{v.count > 1 ? 's' : ''})</span>
+                    {!v.suggested && <span className="ml-2 inline-flex items-center gap-1 text-xs text-amber-700"><AlertTriangle className="w-3 h-3" aria-hidden /> non reconnu</span>}
+                  </span>
+                  <select aria-label={`Statut pour « ${v.value} »`} value={statusMap[v.key] ?? 'draft'}
+                    onChange={e => setStatusMap(m => ({ ...m, [v.key]: e.target.value as ApplicationStatus }))}
+                    className="rounded-md border border-[var(--pc-border)] bg-[var(--pc-surface)] p-1.5 text-sm">
+                    {APPLICATION_STATUSES.map(st => <option key={st} value={st}>{STATUS_LABELS[st]} (colonne {kanbanColumnOf(st).title})</option>)}
+                  </select>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-end gap-2">
+              <button type="button" className="pc-btn-secondary" onClick={() => setStep('mapping')}>Retour</button>
+              <button type="button" className="pc-btn-primary" onClick={() => manualPreview(statusMap)} data-testid="statuses-continue">Voir l'aperçu</button>
+            </div>
           </div>
         )}
 
@@ -229,7 +368,7 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
         )}
 
         {step === 'preview' && plan && (
-          <TrackerImportPreview plan={plan} onChange={setPlan} onConfirm={() => void confirm()} onBack={() => setStep('ai')} busy={busy} />
+          <TrackerImportPreview plan={plan} onChange={setPlan} onConfirm={() => void confirm()} onBack={() => setStep(mode === 'ai' ? 'ai' : statusValues(rows, hasHeader, mapping).length ? 'statuses' : 'mapping')} busy={busy} />
         )}
       </div>
     </div>
