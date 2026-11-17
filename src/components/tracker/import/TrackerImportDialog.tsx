@@ -2,6 +2,7 @@ import { useMemo, useState, type ClipboardEvent } from 'react';
 import { toast } from 'sonner';
 import { AlertTriangle, Check, Copy, FileSpreadsheet, FileUp, Lock, Table2, Wand2, X } from 'lucide-react';
 import { AiSiteLinks } from '@/components/shared/AiSiteLinks';
+import { HelpButton } from '@/components/help/HelpButton';
 import { useApplicationStore } from '@/stores/applicationStore';
 import { useTrackerImportStore } from '@/stores/trackerImportStore';
 import { readPastedTable, type Table } from '@/lib/tracker-import/table';
@@ -210,7 +211,7 @@ export function TrackerImportDialog({ onClose }: { onClose: () => void }) {
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--pc-border)] bg-[var(--pc-card)] p-6 shadow-2xl text-[var(--pc-text)]">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h2 id="tracker-import-title" className="text-lg font-bold">Importer mon suivi</h2>
+            <h2 id="tracker-import-title" className="text-lg font-bold flex items-center gap-2">Importer mon suivi <HelpButton id="import-suivi" /></h2>
             <p className="text-sm text-[var(--pc-muted)]">Depuis Excel, Google Sheets ou LibreOffice. Rien n'est enregistré avant l'aperçu.</p>
           </div>
           <button type="button" onClick={onClose} aria-label="Fermer" className="text-[var(--pc-muted)] hover:text-[var(--pc-text)]"><X size={20} /></button>

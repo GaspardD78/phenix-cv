@@ -18,6 +18,8 @@ Le suivi garde la trace de chaque candidature : entreprise, poste, date d'envoi,
 
 Le tableau de bord affiche les relances à faire et le nombre de candidatures actives.
 
+Vous suiviez déjà vos candidatures dans un tableau ? Reprenez-les avec **Importer** : voir [Importer mon suivi depuis Excel](/aide/importer-suivi).
+
 ## Ce qu'un recruteur cherche
 
 Rien de ce suivi : il vous sert à vous organiser. Il vous aide surtout à relancer au bon moment, et à ne pas postuler deux fois au même endroit.
