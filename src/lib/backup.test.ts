@@ -517,3 +517,59 @@ describe('lecture d\'un fichier de sauvegarde', () => {
     expect(backup.modules.master_entries).toHaveLength(1);
   });
 });
+
+// ─── Import d'un fichier CVmaker de bout en bout (lot B) ─────────────────────────────────────
+
+import { convertCvmakerBackup } from './cvmaker-import/convert';
+import { detectBackupOrigin } from './cvmaker-import/detect';
+
+describe('fichier CVmaker converti puis restauré dans un Phénix déjà rempli', () => {
+  const fixture = () => parseBackupText(readFileSync(join(import.meta.dir, '..', '..', 'tests', 'fixtures', 'cvmaker', 'camille-martin-recent.cvmaker'), 'utf8'));
+
+  it('tout est ajouté, rien n\'est perdu, aucun secret n\'est stocké', async () => {
+    const db = filledPhenix();
+    fakeDb = db;
+    currentUserId = 'phx';
+    const { backup, report } = convertCvmakerBackup(fixture());
+    expect(report.origin.app).toBe('cvmaker');
+    await importBackup(backup, { ...ALL_MERGE, applications: 'merge' }, { autoBackup: false });
+
+    // Données Phénix existantes conservées, données CVmaker ajoutées.
+    expect(rowsOf(db, 'SELECT id FROM master_entries ORDER BY id').map(r => r.id)).toEqual(['e-adv', 'e-cab', 'f-bts', 'l-en', 'p-exp', 's-cmd', 's-xls']);
+    expect(rowsOf(db, 'SELECT id, template_id FROM cv_documents ORDER BY id')).toEqual([{ id: 'cv-adv', template_id: 'sidebar-modern' }, { id: 'p-cv', template_id: 'ats-classic' }]);
+    expect(rowsOf(db, 'SELECT id FROM cv_blocks ORDER BY id').map(r => r.id)).toEqual(['b-adv', 'b-cab', 'b-skl', 'p-bloc']);
+    expect(rowsOf(db, 'SELECT company_name, profile_id FROM applications')).toEqual([{ company_name: 'Laiterie du Val', profile_id: 'phx' }]);
+    // Profil : lien personnel déjà présent conservé ; photo, permis et dates repris.
+    expect(rowsOf(db, 'SELECT other_url, driving_license, substr(photo_path, 1, 15) AS photo FROM profiles')).toEqual([
+      { other_url: 'https://camille-martin.example', driving_license: 'B', photo: 'data:image/png;' },
+    ]);
+    expect(rowsOf(db, "SELECT start_date, end_date FROM master_entries WHERE id = 'e-cab'")).toEqual([{ start_date: '2015-09', end_date: '2018-02' }]);
+    // Aucun secret, ni de CVmaker ni écrasant ceux de cette installation.
+    const settings = rowsOf(db, 'SELECT key, value FROM settings');
+    expect(JSON.stringify(settings)).not.toContain('FAUX');
+    expect(settings.find(r => r.key === 'gdrive_tokens_phx')?.value).toBe('{"refreshToken":"jeton-de-phenix"}');
+    expect(settings.find(r => r.key === 'cv_personal_rules:phx')?.value).toBe('Pas de poste à plus de 45 minutes de Lyon.');
+    fakeDb = {};
+    currentUserId = null;
+  });
+
+  it('importer deux fois le même fichier ne crée pas de doublon', async () => {
+    const db = filledPhenix();
+    fakeDb = db;
+    currentUserId = 'phx';
+    for (let i = 0; i < 2; i++) await importBackup(convertCvmakerBackup(fixture()).backup, { ...ALL_MERGE, applications: 'merge' }, { autoBackup: false });
+    expect(rowsOf(db, 'SELECT COUNT(*) AS n FROM master_entries')[0].n).toBe(7);
+    expect(rowsOf(db, 'SELECT COUNT(*) AS n FROM cv_documents')[0].n).toBe(2);
+    expect(rowsOf(db, 'SELECT COUNT(*) AS n FROM applications')[0].n).toBe(1);
+    fakeDb = {};
+    currentUserId = null;
+  });
+
+  it('les sauvegardes de Phénix CV sont signées : jamais prises pour un fichier CVmaker', async () => {
+    fakeDb = filledPhenix();
+    const own = await buildBackupData(MODULES.map(m => m.id));
+    expect(own).toMatchObject({ app: 'phenix-cv', formatVersion: 2, version: '1.0' });
+    expect(detectBackupOrigin(own).app).toBe('phenix');
+    fakeDb = {};
+  });
+});
