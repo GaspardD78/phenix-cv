@@ -1,0 +1,454 @@
+{
+  "__cvmaker_backup": true,
+  "version": "1.0",
+  "exportDate": "2026-11-15T10:00:00.000Z",
+  "modules": {
+    "profiles": [
+      {
+        "id": "cvm-recent",
+        "first_name": "Camille",
+        "last_name": "Martin",
+        "email": "camille.martin@example.com",
+        "phone": "06 00 00 00 00",
+        "address": null,
+        "city": "Lyon",
+        "postal_code": null,
+        "country": "France",
+        "linkedin_url": "https://www.linkedin.com/in/camille-martin-exemple",
+        "github_url": "https://github.com/camille-martin-exemple",
+        "portfolio_url": "https://camille-martin.example",
+        "photo_path": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "title": "Assistante commerciale",
+        "summary": "Assistante commerciale, 8 ans dans le négoce de matériaux.",
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06",
+        "driving_license": "B",
+        "header_extras": "[\"Disponible immédiatement\"]"
+      }
+    ],
+    "master_entries": [
+      {
+        "id": "e-adv",
+        "profile_id": "cvm-recent",
+        "entry_type": "experience",
+        "title": "Assistante commerciale",
+        "subtitle": "Négoce Rhône Matériaux",
+        "location": null,
+        "start_date": "2018-03",
+        "end_date": null,
+        "is_current": 1,
+        "description": "- Suivi de 45 comptes clients\n- Saisie et suivi des commandes",
+        "metadata": "{}",
+        "sort_order": 0,
+        "tags": "[]",
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06"
+      },
+      {
+        "id": "e-cab",
+        "profile_id": "cvm-recent",
+        "entry_type": "experience",
+        "title": "Assistante administrative",
+        "subtitle": "Cabinet Durand",
+        "location": null,
+        "start_date": "09/2015",
+        "end_date": "02/2018",
+        "is_current": 0,
+        "description": "- Accueil téléphonique\n- Facturation",
+        "metadata": "{}",
+        "sort_order": 0,
+        "tags": "[]",
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06"
+      },
+      {
+        "id": "f-bts",
+        "profile_id": "cvm-recent",
+        "entry_type": "education",
+        "title": "BTS Négociation et relation client",
+        "subtitle": "Lycée du Parc",
+        "location": null,
+        "start_date": "2013",
+        "end_date": "2015",
+        "is_current": 0,
+        "description": null,
+        "metadata": "{}",
+        "sort_order": 0,
+        "tags": "[]",
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06"
+      },
+      {
+        "id": "s-cmd",
+        "profile_id": "cvm-recent",
+        "entry_type": "skill",
+        "title": "Gestion des commandes",
+        "subtitle": null,
+        "location": null,
+        "start_date": null,
+        "end_date": null,
+        "is_current": 0,
+        "description": null,
+        "metadata": "{}",
+        "sort_order": 0,
+        "tags": "[]",
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06"
+      },
+      {
+        "id": "s-xls",
+        "profile_id": "cvm-recent",
+        "entry_type": "skill",
+        "title": "Excel",
+        "subtitle": null,
+        "location": null,
+        "start_date": null,
+        "end_date": null,
+        "is_current": 0,
+        "description": null,
+        "metadata": "{}",
+        "sort_order": 0,
+        "tags": "[]",
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06"
+      },
+      {
+        "id": "l-en",
+        "profile_id": "cvm-recent",
+        "entry_type": "language",
+        "title": "Anglais",
+        "subtitle": "B2",
+        "location": null,
+        "start_date": null,
+        "end_date": null,
+        "is_current": 0,
+        "description": null,
+        "metadata": "{}",
+        "sort_order": 0,
+        "tags": "[]",
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06"
+      }
+    ],
+    "cv_angles": [],
+    "cv_documents": [
+      {
+        "id": "cv-adv",
+        "profile_id": "cvm-recent",
+        "name": "CV ADV",
+        "template_id": "sidebar-modern",
+        "target_job": "Assistante ADV",
+        "target_company": null,
+        "custom_summary": null,
+        "settings": "{\"cvLanguage\":\"fr\",\"dateFormat\":\"short\",\"photoShape\":\"circle\"}",
+        "is_favorite": 0,
+        "last_exported": null,
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06",
+        "markdown_content": null,
+        "markdown_mode": 0
+      }
+    ],
+    "cv_blocks": [
+      {
+        "id": "b-adv",
+        "cv_id": "cv-adv",
+        "entry_id": "e-adv",
+        "block_type": "entry_ref",
+        "section_name": null,
+        "custom_content": null,
+        "sort_order": 0,
+        "is_visible": 1,
+        "override_data": "{}",
+        "created_at": "2026-11-17 10:43:06"
+      },
+      {
+        "id": "b-cab",
+        "cv_id": "cv-adv",
+        "entry_id": "e-cab",
+        "block_type": "entry_ref",
+        "section_name": null,
+        "custom_content": null,
+        "sort_order": 1,
+        "is_visible": 1,
+        "override_data": "{}",
+        "created_at": "2026-11-17 10:43:06"
+      },
+      {
+        "id": "b-skl",
+        "cv_id": "cv-adv",
+        "entry_id": null,
+        "block_type": "custom_text",
+        "section_name": null,
+        "custom_content": "Relation client, gestion des commandes, ADV",
+        "sort_order": 2,
+        "is_visible": 1,
+        "override_data": "{\"aiSkillLine\":true}",
+        "created_at": "2026-11-17 10:43:06"
+      }
+    ],
+    "applications": [
+      {
+        "id": "a-val",
+        "profile_id": "cvm-recent",
+        "cv_id": "cv-adv",
+        "company_name": "Laiterie du Val",
+        "job_title": "Assistante ADV",
+        "job_url": null,
+        "source": null,
+        "source_detail": null,
+        "contact_name": null,
+        "contact_email": null,
+        "contact_phone": null,
+        "status": "applied",
+        "salary_min": null,
+        "salary_max": null,
+        "location": null,
+        "remote_policy": null,
+        "priority": 2,
+        "notes": null,
+        "applied_at": "2026-03-12T09:00:00.000Z",
+        "next_action": null,
+        "next_action_date": null,
+        "created_at": "2026-11-17 10:43:06",
+        "updated_at": "2026-11-17 10:43:06",
+        "job_description": null,
+        "rejection_reason": null,
+        "rejection_email": null
+      }
+    ],
+    "application_events": [
+      {
+        "id": "ev-1",
+        "application_id": "a-val",
+        "event_type": "email_sent",
+        "event_date": "2026-11-17 10:43:06",
+        "title": "Candidature envoyée",
+        "description": null,
+        "old_status": null,
+        "new_status": null,
+        "calendar_id": null,
+        "created_at": "2026-11-17 10:43:06"
+      }
+    ],
+    "application_attachments": [
+      {
+        "id": "at-1",
+        "application_id": "a-val",
+        "file_name": "CV-Camille-Martin.pdf",
+        "file_path": "C:\\Users\\camille\\Documents\\CV-Camille-Martin.pdf",
+        "file_type": null,
+        "file_size": null,
+        "label": "cv",
+        "created_at": "2026-11-17 10:43:06"
+      }
+    ],
+    "settings": [
+      {
+        "key": "app_version",
+        "value": "1.0.0"
+      },
+      {
+        "key": "default_template",
+        "value": "ats-classic"
+      },
+      {
+        "key": "default_language",
+        "value": "fr"
+      },
+      {
+        "key": "theme",
+        "value": "light"
+      },
+      {
+        "key": "cv_target_pages",
+        "value": "1"
+      },
+      {
+        "key": "cv_personal_rules:cvm-recent",
+        "value": "Pas de poste à plus de 45 minutes de Lyon."
+      },
+      {
+        "key": "gdrive_tokens_cvm-recent",
+        "value": "{\"accessToken\":\"FAUX-JETON-ACCES\",\"refreshToken\":\"FAUX-JETON-RENOUVELLEMENT\",\"expiresAt\":1}"
+      }
+    ],
+    "job_watch_config": [
+      {
+        "id": "w-1",
+        "source": "france_travail",
+        "keywords": "[]",
+        "location": null,
+        "radius_km": 50,
+        "contract_types": "[]",
+        "rss_url": null,
+        "ft_dept_code": null,
+        "enabled": 1,
+        "last_fetched_at": null,
+        "created_at": "2026-11-17 10:43:06",
+        "exclude_keywords": "[]",
+        "profile_id": null,
+        "alert_id": null
+      }
+    ],
+    "job_watch_settings": [
+      {
+        "key": "fetch_interval_hours",
+        "profile_id": "",
+        "value": "4"
+      },
+      {
+        "key": "email_digest_enabled",
+        "profile_id": "",
+        "value": "1"
+      },
+      {
+        "key": "email_digest_time",
+        "profile_id": "",
+        "value": "08:00"
+      },
+      {
+        "key": "email_smtp_host",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "email_smtp_port",
+        "profile_id": "",
+        "value": "587"
+      },
+      {
+        "key": "email_smtp_user",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "email_smtp_password",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "email_to",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "positive_keywords",
+        "profile_id": "",
+        "value": "[]"
+      },
+      {
+        "key": "negative_keywords",
+        "profile_id": "",
+        "value": "[]"
+      },
+      {
+        "key": "navitia_api_key",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "commute_origin_address",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "commute_departure_time",
+        "profile_id": "",
+        "value": "09:00"
+      },
+      {
+        "key": "commute_max_minutes",
+        "profile_id": "",
+        "value": "75"
+      },
+      {
+        "key": "ft_client_id",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "ft_client_secret",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "ft_access_token",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "ft_token_expires_at",
+        "profile_id": "",
+        "value": ""
+      },
+      {
+        "key": "search_intent",
+        "profile_id": "",
+        "value": "{\"role\":{\"primary\":[],\"mustExclude\":[]},\"domain\":{\"required\":[],\"preferred\":[],\"excluded\":[]},\"salary\":{\"target\":null,\"hideIfBelow\":null}}"
+      },
+      {
+        "key": "search_profile",
+        "profile_id": "",
+        "value": "{\"name\":\"Ma recherche\",\"jobTitles\":[],\"skills\":[],\"domains\":[],\"excludeTitles\":[],\"excludeDomains\":[],\"location\":{\"label\":\"\",\"city\":\"\",\"inseeCode\":\"\",\"departmentCodes\":[],\"radiusKm\":30},\"contractTypes\":[\"CDI\"],\"salary\":{\"min\":null,\"target\":null},\"scoring\":{\"mode\":\"balanced\"},\"blacklistedCompanies\":[]}"
+      },
+      {
+        "key": "emailSmtpPassword",
+        "profile_id": "cvm-recent",
+        "value": "FAUX-MOT-DE-PASSE"
+      },
+      {
+        "key": "ftClientSecret",
+        "profile_id": "cvm-recent",
+        "value": "FAUX-SECRET-FT"
+      },
+      {
+        "key": "navitiaApiKey",
+        "profile_id": "cvm-recent",
+        "value": "FAUX-CLE-NAVITIA"
+      }
+    ],
+    "job_offers": [
+      {
+        "id": "o-1",
+        "source": "france_travail",
+        "url": "https://offres.example/assistante-adv",
+        "hash": "h-1",
+        "title": "Assistante ADV – Laiterie du Val",
+        "company": null,
+        "location": null,
+        "location_lat": null,
+        "location_lon": null,
+        "contract_type": null,
+        "description_snippet": null,
+        "published_at": null,
+        "fetched_at": "2026-11-17 10:43:06",
+        "score": 0,
+        "commute_minutes": null,
+        "commute_status": "pending",
+        "salary_min": null,
+        "salary_max": null,
+        "salary_raw": null,
+        "is_read": 0,
+        "is_archived": 0,
+        "kanban_id": null,
+        "archived_at": null,
+        "profile_id": null,
+        "score_version": 1,
+        "origin": null,
+        "reference": null,
+        "employer_type": null
+      }
+    ],
+    "job_watch_fetch_log": [],
+    "job_offer_feedback": []
+  },
+  "counts": {
+    "profile": 1,
+    "masterEntries": 6,
+    "cvDocuments": 4,
+    "applications": 3,
+    "settings": 7,
+    "jobWatch": 25
+  }
+}
