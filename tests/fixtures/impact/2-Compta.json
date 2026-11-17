@@ -1,0 +1,84 @@
+{
+  "label": "2-Compta",
+  "scenario": "Sans offre : comptable PME vers comptable générale dans le BTP",
+  "role": "Comptable générale",
+  "sector": "bâtiment et travaux publics",
+  "intent": {
+    "role": "Comptable générale",
+    "sector": "bâtiment et travaux publics",
+    "environment": "Une entreprise de taille moyenne avec des chantiers",
+    "ease": "La tenue des comptes et les clôtures mensuelles",
+    "achievements": "Clôtures mensuelles tenues à J+5 depuis 2021",
+    "highlights": [
+      "expertise"
+    ],
+    "level": "confirme",
+    "avoid": ""
+  },
+  "profile": {
+    "title": "Comptable",
+    "summary": "Comptable en PME depuis douze ans."
+  },
+  "entries": [
+    {
+      "id": "e1",
+      "type": "experience",
+      "title": "Comptable",
+      "subtitle": "Menuiserie Exemple",
+      "start": "2014-06",
+      "end": null,
+      "current": true,
+      "description": "- Tenir la comptabilité générale et auxiliaire\n- Préparer les déclarations de TVA\n- Réaliser les clôtures mensuelles et annuelles avec l'expert-comptable"
+    },
+    {
+      "id": "e2",
+      "type": "experience",
+      "title": "Aide-comptable",
+      "subtitle": "Atelier Dupré",
+      "start": "2011-09",
+      "end": "2014-05",
+      "current": "",
+      "description": "- Saisir les écritures de banque\n- Lettrer les comptes clients"
+    },
+    {
+      "id": "f1",
+      "type": "education",
+      "title": "BTS Comptabilité et gestion",
+      "subtitle": "Lycée Exemple",
+      "start": "2009",
+      "end": "2011",
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s1",
+      "type": "skill",
+      "title": "Comptabilité générale",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s2",
+      "type": "skill",
+      "title": "Déclarations de TVA",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s3",
+      "type": "skill",
+      "title": "Clôtures",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    }
+  ]
+}

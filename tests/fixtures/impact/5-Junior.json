@@ -1,0 +1,84 @@
+{
+  "label": "5-Junior",
+  "scenario": "Junior : BTS MCO avec alternance, vers chargée de clientèle bancaire",
+  "role": "Chargée de clientèle bancaire",
+  "sector": "banque",
+  "intent": {
+    "role": "Chargée de clientèle bancaire",
+    "sector": "banque",
+    "environment": "Une agence de proximité",
+    "ease": "L'accueil et le conseil",
+    "achievements": "",
+    "highlights": [
+      "polyvalence"
+    ],
+    "level": "debutant",
+    "avoid": ""
+  },
+  "profile": {
+    "title": "Étudiante en alternance",
+    "summary": "Jeune diplômée d'un BTS Management commercial opérationnel, à la recherche de son premier poste."
+  },
+  "entries": [
+    {
+      "id": "e1",
+      "type": "experience",
+      "title": "Alternante en agence",
+      "subtitle": "Magasin Exemple",
+      "start": "2023-09",
+      "end": "2025-08",
+      "current": "",
+      "description": "- Accueillir et conseiller les clients\n- Tenir la caisse et clôturer la journée\n- Participer à l'animation des promotions"
+    },
+    {
+      "id": "e2",
+      "type": "experience",
+      "title": "Employée polyvalente (été)",
+      "subtitle": "Restaurant Exemple",
+      "start": "2022-07",
+      "end": "2022-08",
+      "current": "",
+      "description": "- Prendre les commandes\n- Encaisser les clients"
+    },
+    {
+      "id": "f1",
+      "type": "education",
+      "title": "BTS Management commercial opérationnel",
+      "subtitle": "Lycée Exemple",
+      "start": "2023",
+      "end": "2025",
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s1",
+      "type": "skill",
+      "title": "Accueil client",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s2",
+      "type": "skill",
+      "title": "Encaissement",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s3",
+      "type": "skill",
+      "title": "Travail en équipe",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    }
+  ]
+}

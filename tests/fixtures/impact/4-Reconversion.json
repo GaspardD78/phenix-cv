@@ -1,0 +1,84 @@
+{
+  "label": "4-Reconversion",
+  "scenario": "Reconversion : responsable de rayon vers chargée de recrutement",
+  "role": "Chargée de recrutement",
+  "sector": "services",
+  "intent": {
+    "role": "Chargée de recrutement",
+    "sector": "services",
+    "environment": "Une équipe RH",
+    "ease": "Le contact avec les candidats, l'organisation d'entretiens",
+    "achievements": "Recrutement et intégration de 12 employés de rayon en 2023",
+    "highlights": [
+      "reconversion"
+    ],
+    "level": "confirme",
+    "avoid": "La gestion des stocks"
+  },
+  "profile": {
+    "title": "Responsable de rayon",
+    "summary": "Responsable de rayon depuis neuf ans, en reconversion vers les ressources humaines."
+  },
+  "entries": [
+    {
+      "id": "e1",
+      "type": "experience",
+      "title": "Responsable de rayon",
+      "subtitle": "Supermarché Exemple",
+      "start": "2017-04",
+      "end": null,
+      "current": true,
+      "description": "- Encadrer une équipe de 8 personnes\n- Recruter et intégrer les nouveaux employés\n- Organiser les plannings et les remplacements\n- Gérer les stocks et les commandes fournisseurs"
+    },
+    {
+      "id": "e2",
+      "type": "experience",
+      "title": "Employée de rayon",
+      "subtitle": "Supermarché Exemple",
+      "start": "2015-09",
+      "end": "2017-03",
+      "current": "",
+      "description": "- Mettre en rayon\n- Renseigner les clients"
+    },
+    {
+      "id": "f1",
+      "type": "education",
+      "title": "CAP Employé de commerce",
+      "subtitle": "Lycée Exemple",
+      "start": "2013",
+      "end": "2015",
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s1",
+      "type": "skill",
+      "title": "Encadrement d'équipe",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s2",
+      "type": "skill",
+      "title": "Organisation de plannings",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s3",
+      "type": "skill",
+      "title": "Intégration de nouveaux collaborateurs",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    }
+  ]
+}
