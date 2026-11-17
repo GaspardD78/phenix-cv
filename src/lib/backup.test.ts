@@ -573,3 +573,55 @@ describe('fichier CVmaker converti puis restauré dans un Phénix déjà rempli'
     fakeDb = {};
   });
 });
+
+// ─── Lot C : fusion sans doublon, choix du profil, remplacement ─────────────────────────────
+
+import { applyProfileChoices, dedupeEntries, restorePlan, type ExistingEntry } from './cvmaker-import/merge';
+
+describe('import CVmaker dans un Phénix déjà rempli (lot C)', () => {
+  const recentFixture = () => parseBackupText(readFileSync(join(import.meta.dir, '..', '..', 'tests', 'fixtures', 'cvmaker', 'camille-martin-recent.cvmaker'), 'utf8'));
+  /** Phénix rempli avec la même expérience que le fichier CVmaker, sous un autre identifiant. */
+  function phenixWithSameExperience() {
+    const db = realDb();
+    const run = (q: string) => db.raw.query(q).run();
+    run("INSERT INTO profiles (id, first_name, last_name, title, other_url) VALUES ('phx','Camille','Martin','Assistante ADV','https://camille-martin.example')");
+    run("INSERT INTO master_entries (id, profile_id, entry_type, title, subtitle, start_date) VALUES ('phx-adv','phx','experience','Assistante commerciale','Négoce Rhône Matériaux','2018-03')");
+    run("INSERT INTO cv_documents (id, profile_id, name, template_id) VALUES ('phx-cv','phx','Mon CV Phénix','ats-classic')");
+    run("INSERT INTO cv_blocks (id, cv_id, block_type, entry_id, sort_order) VALUES ('phx-bloc','phx-cv','entry_ref','phx-adv',0)");
+    return db;
+  }
+  const existingEntries = (db: ReturnType<typeof realDb>) => rowsOf(db, 'SELECT id, entry_type, title, subtitle, start_date FROM master_entries') as unknown as ExistingEntry[];
+
+  it('Fusionner : aucune expérience en double, le CV importé pointe vers l\'expérience déjà présente, le titre gardé', async () => {
+    const db = phenixWithSameExperience();
+    fakeDb = db;
+    currentUserId = 'phx';
+    const { backup: converted } = convertCvmakerBackup(recentFixture());
+    const { backup: deduped, duplicates } = dedupeEntries(converted, existingEntries(db));
+    expect(duplicates.map(d => d.label)).toEqual(['Assistante commerciale (Négoce Rhône Matériaux)']);
+    const finalBackup = applyProfileChoices(deduped, new Set(['title']));
+    await importBackup(finalBackup, restorePlan(finalBackup, 'merge'), { autoBackup: false });
+
+    expect(rowsOf(db, "SELECT COUNT(*) AS n FROM master_entries WHERE entry_type = 'experience' AND title = 'Assistante commerciale'")[0].n).toBe(1);
+    expect(rowsOf(db, "SELECT entry_id FROM cv_blocks WHERE id = 'b-adv'")).toEqual([{ entry_id: 'phx-adv' }]);
+    expect(rowsOf(db, "SELECT entry_id FROM cv_blocks WHERE id = 'phx-bloc'")).toEqual([{ entry_id: 'phx-adv' }]);
+    expect(rowsOf(db, 'SELECT title, city, other_url FROM profiles')).toEqual([{ title: 'Assistante ADV', city: 'Lyon', other_url: 'https://camille-martin.example' }]);
+    expect(rowsOf(db, 'SELECT id FROM cv_documents ORDER BY id').map(r => r.id)).toEqual(['cv-adv', 'phx-cv']);
+    fakeDb = {};
+    currentUserId = null;
+  });
+
+  it('Remplacer : les données Phénix sont remplacées par celles de CVmaker, le profil reste le même', async () => {
+    const db = phenixWithSameExperience();
+    fakeDb = db;
+    currentUserId = 'phx';
+    const { backup } = convertCvmakerBackup(recentFixture());
+    await importBackup(backup, restorePlan(backup, 'replace'), { autoBackup: false });
+    expect(rowsOf(db, 'SELECT id FROM profiles')).toEqual([{ id: 'phx' }]);
+    expect(rowsOf(db, 'SELECT title FROM profiles')).toEqual([{ title: 'Assistante commerciale' }]);
+    expect(rowsOf(db, 'SELECT id FROM master_entries ORDER BY id').map(r => r.id)).toEqual(['e-adv', 'e-cab', 'f-bts', 'l-en', 's-cmd', 's-xls']);
+    expect(rowsOf(db, 'SELECT id FROM cv_documents').map(r => r.id)).toEqual(['cv-adv']);
+    fakeDb = {};
+    currentUserId = null;
+  });
+});
