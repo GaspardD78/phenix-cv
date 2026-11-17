@@ -19,6 +19,7 @@ import { parseImportResponse } from '@/lib/import/extract-json';
 import { classifyDroppedPaths, SCANNED_PDF_MESSAGE } from '@/lib/import/file-kind';
 import { HelpButton } from '@/components/help/HelpButton';
 import { applyImport } from '@/lib/import/apply-import';
+import { AI_SITES } from '@/components/shared/AiSiteLinks';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Step indicators
@@ -202,11 +203,6 @@ export function StepSource({
 // Étape 2 : lecture par une IA (facultative) ou saisie de la réponse
 // ─────────────────────────────────────────────────────────────────────────────
 
-const AI_SITES = [
-  { label: 'Ouvrir ChatGPT', url: 'https://chatgpt.com/' },
-  { label: 'Ouvrir Claude', url: 'https://claude.ai/new' },
-  { label: 'Ouvrir Gemini', url: 'https://gemini.google.com/app' },
-] as const;
 
 function HowItWorks() {
   const items = [

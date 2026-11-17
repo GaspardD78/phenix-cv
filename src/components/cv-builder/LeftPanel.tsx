@@ -17,6 +17,7 @@ import { overflowStatus } from '@/lib/print-overflow';
 import { DEFAULT_DATE_STYLE, readDateSettings, type DateFormat, type DateStyle } from '@/lib/entry-dates';
 
 import { AIPromptPanel } from './AIPromptPanel';
+import type { AiStartTab } from '@/lib/new-cv';
 import type { SidebarTab } from './SidebarNav';
 import { Plus, ChevronDown, AlignLeft, Type, LayoutTemplate } from 'lucide-react';
 
@@ -30,7 +31,7 @@ export function LeftPanel({
   activeTab: SidebarTab | 'blocs';
   onRequestTabChange: (tab: SidebarTab | null) => void;
   /** Onglet d'ouverture du panneau IA (CV standard par défaut). */
-  aiStartTab?: 'intent' | 'full';
+  aiStartTab?: AiStartTab;
 }) {
   const { currentCv, currentCvBlocks, createCvBlock, updateCv } = useCvStore();
   const masterProfile = useProfileStore(s => s.profile);

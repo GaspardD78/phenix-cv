@@ -9,14 +9,14 @@ order: 15
 
 Une IA (ChatGPT, Claude, ou une autre) sait bien lire un texte et le ranger : elle peut transformer un CV en fiche structurée, ou comparer un CV à une annonce. Phénix CV l'utilise seulement quand vous le lui demandez, et vous gardez la main sur ce qui est enregistré.
 
-L'IA n'est jamais obligatoire. Toutes les fonctions fonctionnent aussi sans elle.
+Pour créer ou adapter un CV, l'IA est la voie proposée en premier : elle reformule votre parcours avec les mots de votre métier. Elle n'est jamais obligatoire : chaque fonction propose aussi une solution sans IA.
 
 ## Comment faire
 
 Le principe est toujours le même, en trois temps :
 
 1. **Copier** le texte préparé par l'application (bouton « Copier le texte »).
-2. **Coller** ce texte dans l'IA de votre choix. Les boutons **Ouvrir ChatGPT** et **Ouvrir Claude** ouvrent le site dans votre navigateur.
+2. **Coller** ce texte dans l'IA de votre choix. Les boutons **Ouvrir ChatGPT**, **Ouvrir Claude** et **Ouvrir Gemini** ouvrent le site dans votre navigateur.
 3. **Recopier** la réponse de l'IA dans l'application.
 
 L'application lit la réponse, même si l'IA l'a entourée de phrases. Vous voyez ensuite ce qui a été reconnu, et rien n'est enregistré avant votre validation.

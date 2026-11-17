@@ -19,6 +19,10 @@ Vous avez une offre d'emploi précise ? L'application vous aide à mettre en ava
 
 Vous pouvez aussi choisir **Affiner par questions** : l'IA vous pose une ou deux questions avant de proposer le CV.
 
+## Sans IA
+
+L'adaptation à une offre passe par une IA. Sans IA, cliquez sur **Composer un CV standard sans IA**, sous le bouton de copie : indiquez l'intitulé du poste de l'offre à la première question, puis cliquez sur **Composer sans IA**. L'application choisit et ordonne vos expériences à partir de votre profil.
+
 ## Répondre aux remarques de l'IA
 
 Le rapport peut contenir des questions de l'IA, des exigences que votre profil ne montre pas, ou des points à vérifier. Cliquez sur **Répondre aux remarques** :

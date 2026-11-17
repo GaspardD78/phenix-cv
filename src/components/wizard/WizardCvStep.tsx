@@ -8,11 +8,12 @@ import { Field, FIELD } from '@/components/wizard/WizardScratchForm';
 import { useProfileStore } from '@/stores/profileStore';
 import { useCvStore } from '@/stores/cvStore';
 import { useWizardStore } from '@/stores/wizardStore';
-import { newCvRecord, suggestCvName, validateCvName } from '@/lib/new-cv';
+import { newCvRecord, suggestCvName, validateCvName, wizardAiRoute } from '@/lib/new-cv';
 
 /**
  * Écran 7 : premier CV. On le nomme, il est créé comme depuis « Nouveau CV », puis le parcours
- * « CV standard » (IntentPanel) s'affiche tel quel. Appliquer la proposition valide l'étape.
+ * « CV standard » (IntentPanel) s'affiche tel quel. « Rédiger avec l'IA » ouvre l'éditeur sur le
+ * parcours IA ; appliquer la proposition sans IA valide l'étape.
  */
 export function WizardCvStep() {
   const profile = useProfileStore(s => s.profile);
@@ -78,7 +79,7 @@ export function WizardCvStep() {
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold">Créez votre premier CV</h1>
           <p className="text-muted-foreground">
-            Votre CV part de votre profil : vous indiquez le poste visé, nous proposons une sélection de vos expériences, et vous validez.
+            Votre CV part de votre profil : vous indiquez le poste visé, une IA rédige votre CV à partir de vos expériences, et vous validez. Vous pouvez aussi le composer sans IA.
           </p>
         </div>
         <section className="space-y-3 rounded-xl border border-border bg-card p-4">
@@ -104,13 +105,13 @@ export function WizardCvStep() {
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">Créez votre premier CV</h1>
         <p className="text-muted-foreground">
-          CV « {currentCv?.name} ». Répondez aux questions ci-dessous, vérifiez la proposition, puis appliquez-la à votre CV.
+          CV « {currentCv?.name} ». Répondez aux questions ci-dessous, puis faites rédiger votre CV par une IA. Vous pouvez aussi le composer sans IA.
         </p>
       </div>
       <section className="rounded-xl border border-border bg-card p-4">
         <IntentPanel
           onApplied={() => void complete()}
-          onUseAi={() => navigate(`/cv/${cvId}?mode=standard`)}
+          onUseAi={() => { if (cvId) navigate(wizardAiRoute(cvId)); }}
         />
       </section>
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">

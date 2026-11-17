@@ -85,3 +85,21 @@ describe('recherche', () => {
     if (hit) expect(hit.snippet.length).toBeGreaterThan(0);
   });
 });
+
+describe('IA en premier, sans IA toujours possible', () => {
+  const page = (id: string) => readFileSync(join(WIKI_DIR, `${id}.md`), 'utf8');
+  it('premiers pas : l\'application n\'envoie rien ; l\'IA choisie peut consulter internet si vous l\'activez', () => {
+    const text = page('premiers-pas');
+    expect(text).toContain("L'application n'envoie rien sur internet");
+    expect(text).toContain("L'IA que vous utilisez peut, elle, consulter internet si vous activez cette option");
+  });
+  it('CV standard : « Rédiger avec l\'IA » est décrit avant « Composer sans IA »', () => {
+    const text = page('creer-cv-standard');
+    expect(text.indexOf("**Rédiger avec l'IA**")).toBeGreaterThan(-1);
+    expect(text.indexOf('**Composer sans IA**')).toBeGreaterThan(text.indexOf("**Rédiger avec l'IA**"));
+    expect(text).not.toContain("Aucune IA n'est nécessaire");
+  });
+  it('offre : le recours sans IA renvoie vers le CV standard', () => {
+    expect(page('adapter-offre')).toContain('**Composer un CV standard sans IA**');
+  });
+});
