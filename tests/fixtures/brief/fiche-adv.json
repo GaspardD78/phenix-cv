@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "recherche": { "effectuee": true },
+  "intitule": {
+    "principal": { "texte": "Assistant(e) administration des ventes (ADV)", "sources": ["s1", "s2"] },
+    "variantes": [
+      { "texte": "Gestionnaire administration des ventes", "sources": ["s2"] },
+      { "texte": "Assistant(e) commercial(e) sédentaire", "sources": ["s3"] }
+    ]
+  },
+  "competences": [
+    { "libelle": "Gestion des commandes clients", "niveau": "indispensable", "type": "competence", "sources": ["s1", "s2"] },
+    { "libelle": "Facturation et suivi des encaissements", "niveau": "indispensable", "type": "competence", "sources": ["s1"] },
+    { "libelle": "ERP (SAP, Sage ou équivalent)", "niveau": "differenciant", "type": "outil", "sources": ["s2", "s3"] },
+    { "libelle": "Anglais commercial", "niveau": "differenciant", "type": "competence", "sources": ["s3"] }
+  ],
+  "vocabulaire": [
+    { "texte": "prise de commande", "sources": ["s2", "s3"] },
+    { "texte": "litige client", "sources": ["s3"] }
+  ],
+  "verbes": [{ "texte": "traiter", "sources": ["s2"] }, { "texte": "relancer", "sources": ["s3"] }],
+  "indicateurs": [{ "texte": "délai de traitement des commandes", "sources": ["s2"] }, { "texte": "taux d'erreurs de facturation", "sources": ["s3"] }],
+  "contexte": [{ "texte": "dématérialisation de la facturation entre entreprises", "sources": ["s1"] }],
+  "signauxRisque": [{ "texte": "parcours sans aucune pratique d'un outil de gestion", "sources": ["s3"] }],
+  "sources": [
+    { "id": "s1", "url": "https://www.francetravail.fr/fixture/fiche-rome-adv", "site": "France Travail", "titre": "Fiche métier (fixture)", "datePublication": "2025-09", "dateConsultation": "2026-11-17", "type": "referentiel" },
+    { "id": "s2", "url": "https://www.apec.fr/fixture/fiche-metier-adv", "site": "APEC", "titre": "Fiche métier (fixture)", "datePublication": "2026-03-10", "dateConsultation": "2026-11-17", "type": "referentiel" },
+    { "id": "s3", "url": "https://www.exemple-emploi.fr/fixture/offres-adv", "site": "Exemple Emploi", "titre": "Offres récentes (fixture)", "datePublication": "2026-10-02", "dateConsultation": "2026-11-17", "type": "offre" }
+  ]
+}

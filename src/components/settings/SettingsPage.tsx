@@ -6,6 +6,7 @@ import { CvmakerImportDialog } from './CvmakerImportDialog';
 import { EMPTY_BACKUP_MESSAGE, detectBackupOrigin } from '@/lib/cvmaker-import/detect';
 import { GoogleDriveSync } from './GoogleDriveSync';
 import { WizardSettings } from './WizardSettings';
+import { DataLocation } from './DataLocation';
 import { AdvancedOptions } from './AdvancedOptions';
 import { SETTINGS_TREE, resolveSettingsPage } from './settings-tree';
 import { CvAnglesSettings } from './CvAnglesSettings';
@@ -404,6 +405,7 @@ export function SettingsPage() {
       </SettingsPane>
 
       <SettingsPane id="sauvegarde" active={page}>
+      <DataLocation />
       {/* ── Backup section ── */}
       <section className="bg-white dark:bg-[var(--pc-card)] rounded-xl border border-gray-200 dark:border-[var(--pc-border)] shadow-sm mb-6">
         <div className="p-6 border-b dark:border-[var(--pc-border)]">

@@ -28,6 +28,9 @@ import { isPhotoShown } from '@/lib/cv-photo';
 import { CVBlock, CVDocument } from '@/types/cv';
 import { toast } from 'sonner';
 import { HelpButton } from '@/components/help/HelpButton';
+import { ImpactFlow, type ImpactState } from './impact/ImpactFlow';
+import { PositioningReport } from './impact/PositioningReport';
+import type { ImpactStage } from '@/lib/impact-flow';
 
 interface AIPromptPanelProps {
   cvId: string;
@@ -73,6 +76,13 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
   // Seconde passe : réponses aux remarques (enregistrées dans le CV, source pour le garde-fou).
   const [followUpOpen, setFollowUpOpen] = useState(false);
   const [followUpAnswers, setFollowUpAnswers] = useState<FollowUpAnswers>(() => readFollowUpAnswers(currentCv?.settings));
+  // CV à vrai impact : fiche cible et analyse validées (absentes tant que le parcours n'est pas terminé ou si on le passe).
+  const [impact, setImpact] = useState<ImpactState | null>(null);
+  const [impactStage, setImpactStage] = useState<ImpactStage>('research');
+  const [refusedTerms, setRefusedTerms] = useState<Set<string>>(new Set());
+  const answersRef = useRef(followUpAnswers);
+  answersRef.current = followUpAnswers;
+  const answerTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (!isLoaded) loadDifferentiator();
@@ -90,9 +100,10 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
     .filter(Boolean).join('\n') || undefined;
 
   // Parse + garde-fou du JSON collé (rapport affiché avant l'application).
+  const impactGuard = useMemo(() => (impact ? { brief: impact.brief, offerText: genericIntent ? '' : jobOffer } : undefined), [impact, genericIntent, jobOffer]);
   const analysis = useMemo(
-    () => (jsonInput.trim() ? analyzeAiCvJson(jsonInput, { entries, profile, pageBudget: targetPages, focus, verbTense, target, photoShown, candidateAnswers }) : null),
-    [jsonInput, entries, profile, targetPages, focus, verbTense, target, photoShown, candidateAnswers],
+    () => (jsonInput.trim() ? analyzeAiCvJson(jsonInput, { entries, profile, pageBudget: targetPages, focus, verbTense, target, photoShown, candidateAnswers, impact: impactGuard }) : null),
+    [jsonInput, entries, profile, targetPages, focus, verbTense, target, photoShown, candidateAnswers, impactGuard],
   );
   const hasBlockingIssues = analysis !== null && analysis.ok && analysis.report.errors.length > 0;
   const followUpCount = useMemo(() => (analysis && analysis.ok ? collectFollowUps(analysis.report).length : 0), [analysis]);
@@ -101,14 +112,32 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
   const analyzeSecondPass = useCallback((raw: string, answers: FollowUpAnswers) => analyzeAiCvJson(raw, {
     entries, profile, pageBudget: targetPages, focus, verbTense, target, photoShown,
     candidateAnswers: [genericIntent ? candidateAnswersText(genericIntent) : '', followUpSourceText(answers)].filter(Boolean).join('\n') || undefined,
-  }), [entries, profile, targetPages, focus, verbTense, target, photoShown, genericIntent]);
+    impact: impactGuard,
+  }), [entries, profile, targetPages, focus, verbTense, target, photoShown, genericIntent, impactGuard]);
 
   /** Réponses enregistrées avec ce CV (une seule écriture, réglages les plus récents). */
-  const saveFollowUpAnswers = useCallback((answers: FollowUpAnswers) => {
-    setFollowUpAnswers(answers);
+  const persistFollowUpAnswers = useCallback((answers: FollowUpAnswers) => {
     const cv = useCvStore.getState().currentCv;
     if (cv) void useCvStore.getState().updateCv(cv.id, { settings: withFollowUpAnswers(cv.settings, answers) });
   }, []);
+  const saveFollowUpAnswers = useCallback((answers: FollowUpAnswers) => {
+    setFollowUpAnswers(answers);
+    persistFollowUpAnswers(answers);
+  }, [persistFollowUpAnswers]);
+
+  /** Réponse aux questions d'écart : affichée tout de suite, enregistrée avec le CV peu après la dernière frappe. */
+  const onImpactAnswer = useCallback((key: string, value: string) => {
+    const next = { ...answersRef.current, [key]: value };
+    answersRef.current = next;
+    setFollowUpAnswers(next);
+    clearTimeout(answerTimer.current);
+    answerTimer.current = setTimeout(() => persistFollowUpAnswers(next), 600);
+  }, [persistFollowUpAnswers]);
+  useEffect(() => () => clearTimeout(answerTimer.current), []);
+
+  /** Mot du marché confirmé par la personne : une réponse de plus, source au même titre que le profil. */
+  const confirmKeyword = (term: string) => saveFollowUpAnswers({ ...followUpAnswers, [`confirm:${term}`]: `Oui, je maîtrise : ${term}.` });
+  const confirmedTerms = useMemo(() => new Set(Object.keys(followUpAnswers).filter(k => k.startsWith('confirm:')).map(k => k.slice('confirm:'.length))), [followUpAnswers]);
 
   // Entrées suggérées hors profil maître : revue opt-in (rien n'est écrit pour une entrée non cochée).
   const suggestions = useMemo(() => (analysis && analysis.ok ? analysis.data.suggestedEntries : []), [analysis]);
@@ -185,6 +214,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
       verbTense,
       cvLanguage: readCvLanguage(currentCv?.settings),
       target: t,
+      ...(impact ? { impact } : {}),
     });
 
   const handleCopyFullPrompt = async (t: ResolvedTarget = target) => {
@@ -195,6 +225,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
           personalRules: personalRulesProfileId === profile!.id ? personalRules : '',
           bulletFocus: focusFor(t),
           verbTense,
+          ...(impact ? { impact } : {}),
         },
       }));
       return;
@@ -232,7 +263,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
     }
     if (!currentCv) return;
 
-    const result = analyzeAiCvJson(jsonInput, { entries, profile, pageBudget: targetPages, focus, verbTense, target, photoShown, candidateAnswers });
+    const result = analyzeAiCvJson(jsonInput, { entries, profile, pageBudget: targetPages, focus, verbTense, target, photoShown, candidateAnswers, impact: impactGuard });
     if (!result.ok) {
       toast.error("Erreur de parsing JSON. Vérifiez le format.");
       return;
@@ -493,6 +524,13 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               </div>
             )}
 
+            {profile && (
+              <ImpactFlow
+                profile={profile} entries={entries} intent={genericIntent} offerText={jobOffer}
+                company={currentCv?.targetCompany} targetJob={currentCv?.targetJob}
+                answers={followUpAnswers} onAnswer={onImpactAnswer} onChange={setImpact} onStage={setImpactStage}
+              />
+            )}
             {error && (
               <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
                 {error}
@@ -521,6 +559,12 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
               {fullPromptCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {fullPromptCopied ? 'Prompt copié !' : genericIntent ? '1. Copier le texte pour l\'IA' : '1. Copier le texte d\'analyse'}
             </button>
+
+            {impact === null && impactStage !== 'skipped' && (
+              <p className="text-xs text-amber-800 -mt-2" data-testid="impact-pending-hint">
+                Terminez d'abord l'étude du marché ci-dessus, ou cliquez sur « Passer la recherche » : sinon ce texte ne contient pas la fiche du marché.
+              </p>
+            )}
 
             <AiSiteLinks />
 
@@ -559,6 +603,12 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
                   setJsonInput('');
                   void handleCopyFullPrompt(next);
                 }}
+              />
+            )}
+            {analysis && analysis.ok && impact && (analysis.data.rapport || analysis.data.suggestions) && (
+              <PositioningReport
+                data={analysis.data} confirmed={confirmedTerms} refused={refusedTerms}
+                onConfirm={confirmKeyword} onRefuse={term => setRefusedTerms(prev => new Set(prev).add(term))}
               />
             )}
             {analysis && analysis.ok && <AiCvGuardReport report={analysis.report} onHidePhoto={() => { void useCvStore.getState().setShowPhoto(false); toast.success('La photo est masquée sur ce CV. Elle reste dans « Mon profil ».'); }} />}

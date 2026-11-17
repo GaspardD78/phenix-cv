@@ -73,6 +73,23 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
+      # Version portable (sans installation, pour clé USB) : assemblage, puis essai réel depuis un autre dossier.
+      - name: Assembler la version portable
+        shell: pwsh
+        run: ./scripts/make-portable.ps1
+
+      - name: Version portable — essai (données dans « data », rien hors du dossier)
+        shell: pwsh
+        run: ./scripts/selftest-portable.ps1
+
+      - name: Conserver la version portable (3 jours)
+        uses: actions/upload-artifact@v4
+        with:
+          name: phenix-cv-windows-portable
+          path: portable-out/Phenix-CV-portable.zip
+          if-no-files-found: error
+          retention-days: 3
+
       # Installateur de test, téléchargeable depuis l'onglet « Actions » (aucune Release publiée).
       - name: Conserver l'installateur (3 jours)
         uses: actions/upload-artifact@v4

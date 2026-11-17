@@ -1,0 +1,85 @@
+{
+  "label": "3-Dev",
+  "scenario": "Entreprise seule : développeuse web, 4 ans (l'entreprise visée est à choisir par vous)",
+  "role": "Développeuse web",
+  "sector": "édition de logiciels",
+  "company": "(à choisir : une entreprise réelle de votre choix)",
+  "intent": {
+    "role": "Développeuse web",
+    "sector": "édition de logiciels",
+    "environment": "Une équipe produit",
+    "ease": "Le développement d'interfaces",
+    "achievements": "",
+    "highlights": [
+      "expertise"
+    ],
+    "level": "confirme",
+    "avoid": ""
+  },
+  "profile": {
+    "title": "Développeuse web",
+    "summary": "Développeuse web depuis quatre ans."
+  },
+  "entries": [
+    {
+      "id": "e1",
+      "type": "experience",
+      "title": "Développeuse web",
+      "subtitle": "Agence Exemple",
+      "start": "2022-09",
+      "end": null,
+      "current": true,
+      "description": "- Développer des interfaces pour des sites de clients\n- Corriger les anomalies remontées par les utilisateurs\n- Participer aux revues de code"
+    },
+    {
+      "id": "e2",
+      "type": "experience",
+      "title": "Développeuse web (alternance)",
+      "subtitle": "Studio Exemple",
+      "start": "2020-09",
+      "end": "2022-08",
+      "current": "",
+      "description": "- Intégrer des maquettes\n- Écrire des tests simples"
+    },
+    {
+      "id": "f1",
+      "type": "education",
+      "title": "Licence professionnelle métiers du numérique",
+      "subtitle": "Université Exemple",
+      "start": "2019",
+      "end": "2022",
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s1",
+      "type": "skill",
+      "title": "TypeScript",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s2",
+      "type": "skill",
+      "title": "React",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s3",
+      "type": "skill",
+      "title": "Intégration de maquettes",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    }
+  ]
+}

@@ -6,7 +6,8 @@
  */
 
 import { save, open } from '@tauri-apps/plugin-dialog';
-import { writeTextFile, readTextFile, mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
+import { invoke } from '@tauri-apps/api/core';
 import { getDb } from '@/lib/db';
 import { filterAllowedColumns } from './validation';
 import { PROFILE_SETTING_NAMES } from './profile-settings';
@@ -443,7 +444,10 @@ export function selectBackupProfile(backup: BackupData, sourceId: string, target
 
 // ─── Sauvegarde automatique avant restauration ────────────────────────────────
 
-/** Dossier des sauvegardes automatiques, dans le dossier de données de l'application. */
+/**
+ * Dossier des sauvegardes automatiques : dans le dossier de données de l'application, ou dans `data`
+ * à côté de l'application en mode portable (la commande `write_auto_backup` choisit, côté Rust).
+ */
 export const AUTO_BACKUP_DIR = 'sauvegardes-automatiques';
 
 /** Nom de fichier daté : `avant-restauration_2026-11-17_10-42-05.cvmaker` (heure locale). */
@@ -455,15 +459,12 @@ export function autoBackupFileName(now: Date = new Date()): string {
 }
 
 /**
- * Copie complète des données actuelles (sans secrets) dans le dossier de données de l'application.
- * Renvoie le chemin relatif du fichier écrit.
+ * Copie complète des données actuelles (sans secrets) dans le dossier de données de l'application
+ * (mode portable : dans `data`, à côté de l'application). Renvoie le chemin complet du fichier écrit.
  */
 export async function createAutoBackup(now: Date = new Date()): Promise<string> {
   const backup = await buildBackupData(MODULES.map(m => m.id));
-  await mkdir(AUTO_BACKUP_DIR, { baseDir: BaseDirectory.AppData, recursive: true });
-  const path = `${AUTO_BACKUP_DIR}/${autoBackupFileName(now)}`;
-  await writeTextFile(path, JSON.stringify(backup, null, 2), { baseDir: BaseDirectory.AppData });
-  return path;
+  return invoke<string>('write_auto_backup', { fileName: autoBackupFileName(now), content: JSON.stringify(backup, null, 2) });
 }
 
 export const AUTO_BACKUP_FAILED_MESSAGE =

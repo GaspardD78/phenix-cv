@@ -1,0 +1,19 @@
+Phénix CV, version portable
+===========================
+
+Pour l'utiliser :
+1. Copiez tout ce dossier où vous voulez (clé USB, disque, bureau). Aucune installation.
+2. Double-cliquez sur « Phenix-CV.exe ».
+
+Vos données sont dans le dossier « data », à côté de l'application. Pour les emporter,
+copiez le dossier en entier. Fermez Phénix CV avant de retirer la clé.
+
+Le fichier « .portable » active ce mode : ne le supprimez pas. Il est possible que votre
+explorateur de fichiers le cache ; il est bien présent.
+
+Si Windows indique qu'un composant manque :
+- « WebView2 » : installez « Microsoft Edge WebView2 Runtime » (gratuit, fourni par Microsoft).
+  Il est déjà présent sur Windows 11 et sur la plupart des Windows 10 à jour.
+- « VCRUNTIME140.dll » : installez « Microsoft Visual C++ Redistributable » (gratuit, fourni par Microsoft).
+
+Phénix CV est un logiciel libre (licence GNU GPL version 3), distribué sans aucune garantie.

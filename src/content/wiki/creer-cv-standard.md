@@ -21,6 +21,8 @@ Le CV standard est le choix conseillé pour un premier CV ou pour une candidatur
 
 L'IA joue le rôle d'un coach de carrière : elle part de ce que vous recherchez et reformule votre profil pour mieux vous présenter, sans rien inventer. Ce que vous écrivez dans vos réponses compte comme une source : un chiffre que vous donnez peut être repris tel quel. Vous n'avez pas encore d'IA ? Les boutons **Ouvrir ChatGPT**, **Ouvrir Claude** et **Ouvrir Gemini** ouvrent le site dans votre navigateur.
 
+En cliquant sur **Rédiger avec l'IA**, vous arrivez d'abord sur **Ce que le marché attend** : votre IA cherche les mots de votre métier, vous relisez la fiche, puis le CV est rédigé avec eux. C'est facultatif et recommandé : voir [Ce que le marché attend](/aide/ce-que-le-marche-attend).
+
 Le **niveau d'affirmation** règle le ton :
 
 - **Sobre** : vos faits présentés simplement.

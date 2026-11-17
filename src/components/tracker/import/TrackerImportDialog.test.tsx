@@ -8,8 +8,9 @@ describe('import du suivi : première étape', () => {
   it('collage ou fichier .csv, puis « Importer avec l\'IA » en action principale, avec l\'accès aux IA', () => {
     const html = decode(renderToStaticMarkup(<TrackerImportDialog onClose={() => {}} />));
     expect(html).toContain('Importer mon suivi');
+    expect(html).toContain('aria-label="Aide : Importer mon suivi"');
     expect(html).toContain('1. Collez votre tableau');
-    expect(html).toContain('ou choisissez un fichier .csv');
+    expect(html).toContain('ou choisissez un fichier Excel (.xlsx) ou .csv');
     const ai = html.indexOf('data-testid="import-with-ai"');
     expect(ai).toBeGreaterThan(-1);
     expect(html.slice(html.lastIndexOf('<button', ai), html.indexOf('>', ai))).toContain('pc-btn-primary');

@@ -29,6 +29,7 @@ import { checkTarget, type TargetTextField } from './cv-target-guard';
 import { resolveMergedGroup, type ResolvedMerge } from './merged-entries';
 import type { ResolvedTarget } from './cv-targets';
 import type { AngleSpec, TitleRule } from './cv-angles';
+import { guardImpact, type ImpactGuardContext } from './ai-cv-impact-guard';
 
 export type GuardCode =
   | 'unknown-id' | 'invented-number' | 'unsourced-term' | 'unsupported-title' | 'suggestion-rejected'
@@ -39,7 +40,8 @@ export type GuardCode =
   | 'target-forbidden-term' | 'target-equivalence-applied' | 'target-photo' | 'target-reader-mentioned'
   | 'summary-starts-with-title' | 'cv-skill-no-source' | 'cv-skill-unsourced' | 'cv-skills-too-few' | 'cv-skills-too-many'
   | 'cv-skill-too-long' | 'cv-skill-duplicate'
-  | 'merge-ignored' | 'merge-dates-ignored';
+  | 'merge-ignored' | 'merge-dates-ignored'
+  | 'web-keyword-unproven' | 'copied-phrase' | 'keyword-stuffing' | 'hollow-phrase' | 'bullet-unlinked' | 'decision-unsourced';
 
 export interface GuardIssue {
   code: GuardCode;
@@ -140,6 +142,12 @@ export interface GuardContext {
    * « Afficher la photo ») ? Absent : la photo du profil suffit (comportement historique).
    */
   photoShown?: boolean;
+  /**
+   * CV « à vrai impact » : fiche cible validée (et texte de l'offre). Ajoute les contrôles des termes du
+   * marché non prouvés, des phrases recopiées, des mots-clés empilés, des formules creuses, des
+   * expériences non reliées et des décisions sans appui (lib/ai-cv-impact-guard.ts). Absent : rien.
+   */
+  impact?: ImpactGuardContext;
 }
 
 /** Lignes par page A4 à 11 px (titres de section et espacements compris), approximation prudente. */
@@ -1051,8 +1059,17 @@ export function guardAiCv(input: AiCvResponse, ctx: GuardContext): { data: AiCvR
     missing,
   };
 
+  // ── CV à vrai impact : termes du marché, phrases recopiées, décisions ──
+  let finalData = data;
+  if (ctx.impact) {
+    const impact = guardImpact(data, ctx.impact, source.text, ctx.entries);
+    finalData = impact.data;
+    errors.push(...impact.errors);
+    warnings.push(...impact.warnings);
+  }
+
   return {
-    data,
+    data: finalData,
     report: {
       ...(angle ? { angle } : {}),
       ...(ctx.focus ? { focus: ctx.focus } : {}),

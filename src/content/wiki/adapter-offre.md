@@ -17,6 +17,8 @@ Vous avez une offre d'emploi précise ? L'application vous aide à mettre en ava
 4. Copiez la réponse de l'IA et collez-la dans la case **2. Coller la réponse de l'IA ici**.
 5. Lisez le rapport de contrôle : points à corriger, mots importants absents, conseils. Puis cliquez sur **3. Appliquer au CV**.
 
+Avant la copie, un encadré vous propose d'**étudier ce que le marché attend** pour ce poste : votre IA cherche les mots du métier, et votre CV est rédigé avec eux. C'est facultatif : voir [Ce que le marché attend](/aide/ce-que-le-marche-attend).
+
 Vous pouvez aussi choisir **Affiner par questions** : l'IA vous pose une ou deux questions avant de proposer le CV.
 
 ## Sans IA

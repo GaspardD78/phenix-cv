@@ -41,7 +41,7 @@ export const FOLLOW_UP_KIND_LABELS: Readonly<Record<FollowUpKind, string>> = {
 
 /** Avertissements du contrôle qui portent sur un fait : le candidat peut le confirmer ou l'infirmer. */
 const VERIFY_CODES: ReadonlySet<GuardCode> = new Set<GuardCode>([
-  'unsourced-term', 'unsupported-title', 'cv-skill-unsourced', 'skill-item-invented', 'header-extra-invented',
+  'web-keyword-unproven', 'unsourced-term', 'unsupported-title', 'cv-skill-unsourced', 'skill-item-invented', 'header-extra-invented',
 ]);
 
 export function followUpKey(kind: FollowUpKind, text: string): string {

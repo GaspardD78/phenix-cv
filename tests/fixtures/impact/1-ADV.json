@@ -1,0 +1,74 @@
+{
+  "label": "1-ADV",
+  "scenario": "Avec offre : assistante commerciale vers assistante ADV dans l'industrie",
+  "role": "Assistante ADV",
+  "sector": "industrie",
+  "company": "Fonderie Exemple (fictive)",
+  "offerText": "Assistante ADV H/F - CDI\nFonderie Exemple recrute son assistante administration des ventes. Vous traitez les commandes clients, assurez la facturation et le suivi des encaissements, gérez les litiges de livraison avec le service logistique. Vous utilisez un ERP. Anglais professionnel apprécié.",
+  "profile": {
+    "title": "Assistante commerciale",
+    "summary": "Assistante commerciale depuis huit ans dans le négoce de matériaux."
+  },
+  "entries": [
+    {
+      "id": "e1",
+      "type": "experience",
+      "title": "Assistante commerciale",
+      "subtitle": "Négoce Rhône Matériaux",
+      "start": "2018-03",
+      "end": null,
+      "current": true,
+      "description": "- Suivre les commandes de 45 clients\n- Rédiger les devis avec les commerciaux\n- Traiter les litiges de livraison\n- Relancer les factures impayées"
+    },
+    {
+      "id": "e2",
+      "type": "experience",
+      "title": "Assistante administrative",
+      "subtitle": "Cabinet Durand",
+      "start": "2015-09",
+      "end": "2018-02",
+      "current": "",
+      "description": "- Accueillir et orienter les clients\n- Saisir les factures fournisseurs"
+    },
+    {
+      "id": "f1",
+      "type": "education",
+      "title": "BTS Support à l'action managériale",
+      "subtitle": "Lycée Exemple",
+      "start": "2013",
+      "end": "2015",
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s1",
+      "type": "skill",
+      "title": "Relation client",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s2",
+      "type": "skill",
+      "title": "Suivi de facturation",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    },
+    {
+      "id": "s3",
+      "type": "skill",
+      "title": "Anglais courant",
+      "subtitle": null,
+      "start": null,
+      "end": null,
+      "current": false,
+      "description": null
+    }
+  ]
+}
