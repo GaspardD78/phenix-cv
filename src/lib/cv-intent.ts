@@ -278,7 +278,7 @@ export interface CvProposal {
   notes: string[];
 }
 
-const SECTION_BY_TYPE: Readonly<Record<EntryType, string>> = {
+export const SECTION_BY_TYPE: Readonly<Record<EntryType, string>> = {
   experience: 'Expériences Professionnelles',
   education: 'Formations',
   skill: 'Compétences',

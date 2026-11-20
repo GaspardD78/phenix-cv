@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 import { applyAiCvToBlocks } from './apply-ai-cv';
 import type { AiCvResponse } from './ai-cv-response';
-import { makeBlocks, makeEntries, makeFakeStore } from './test-helpers/cv-fixtures';
+import { makeBlocks, makeEntries, makeEntry, makeFakeStore } from './test-helpers/cv-fixtures';
 
 const entries = makeEntries();
 
@@ -205,5 +205,36 @@ describe('applyAiCvToBlocks - catégories de compétences (lib/skill-lines.ts)',
     const s1 = sorted.findIndex(b => b.entryId === 's1');
     expect(firstSub).toBeGreaterThan(-1); // les autres groupes sont appliqués
     expect(s1).toBeLessThan(firstSub); // s1 reste parmi les compétences sans sous-en-tête
+  });
+});
+
+describe('applyAiCvToBlocks : entrées du profil absentes du CV', () => {
+  it('crée le bloc d\'une entrée ajoutée au profil après le CV, après la dernière entrée du même type', async () => {
+    const withNew = [...entries, makeEntry('x3', 'experience', 'Vendeuse', { subtitle: 'Boutique' })];
+    const store = makeFakeStore(makeBlocks(entries));
+    const report = await applyAiCvToBlocks('cv1', response({
+      entries: [{ id: 'x3', visible: true, description: '- Conseiller les clients' }, { id: 'x1', visible: true }],
+    }), { store: () => store, entries: withNew });
+    expect(report.entriesAdded).toBe(1);
+    expect(report.entriesApplied).toBe(2);
+    const ids = store.sorted().map(b => b.entryId ?? b.sectionName);
+    expect(ids.slice(0, 4)).toEqual(['Expériences Professionnelles', 'x1', 'x2', 'x3']);
+    expect(store.currentCvBlocks.find(b => b.entryId === 'x3')?.overrideData.description).toBe('- Conseiller les clients');
+  });
+
+  it('crée la section quand le CV n\'en a aucune pour ce type', async () => {
+    const withNew = [...entries, makeEntry('v1', 'volunteer', 'Bénévole', { subtitle: 'Association' })];
+    const store = makeFakeStore(makeBlocks(entries));
+    await applyAiCvToBlocks('cv1', response({ entries: [{ id: 'v1', visible: true }] }), { store: () => store, entries: withNew });
+    const last = store.sorted().slice(-2);
+    expect(last.map(b => b.entryId ?? b.sectionName)).toEqual(['Bénévolat', 'v1']);
+  });
+
+  it('ne crée rien pour une entrée masquée par l\'IA', async () => {
+    const withNew = [...entries, makeEntry('x3', 'experience', 'Vendeuse')];
+    const store = makeFakeStore(makeBlocks(entries));
+    const report = await applyAiCvToBlocks('cv1', response({ entries: [{ id: 'x3', visible: false }] }), { store: () => store, entries: withNew });
+    expect(report.entriesAdded).toBe(0);
+    expect(store.currentCvBlocks.some(b => b.entryId === 'x3')).toBe(false);
   });
 });
