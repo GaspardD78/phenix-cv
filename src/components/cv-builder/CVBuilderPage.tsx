@@ -12,13 +12,11 @@ import { ArrowLeft, Code2, Download, FileText, Loader2, Check, RefreshCw } from 
 import { exportToDocx } from '@/lib/export-docx';
 import { exportNativePdf } from '@/lib/export-pdf';
 import { cvExportFilename } from '@/lib/export-filename';
-import type { PrintOverflow } from '@/lib/print-overflow';
 import { getTemplate } from '@/templates';
 import { toast } from 'sonner';
 import { useSaveIndicator } from '@/hooks/useSaveIndicator';
 import { TemplatePickerPopover } from './TemplatePickerPopover';
 import { ReconciliationReviewModal } from './ReconciliationReviewModal';
-import { OverflowConfirmDialog } from './OverflowConfirmDialog';
 import { HelpButton } from '@/components/help/HelpButton';
 
 const PANEL_WIDTH_KEY = 'phenixcv_panel_width';
@@ -35,9 +33,6 @@ export function CVBuilderPage() {
   const { status: saveStatus, notifySave } = useSaveIndicator();
   const [mobileExportOpen, setMobileExportOpen] = useState(false);
   const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
-  // Confirmation d'export quand le CV dépasse la page (le surplus serait coupé).
-  const [overflowPrompt, setOverflowPrompt] = useState<PrintOverflow | null>(null);
-  const overflowResolveRef = useRef<((confirmed: boolean) => void) | null>(null);
 
   // Onglet actif sur mobile : 'edit' | 'preview'
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -161,10 +156,6 @@ export function CVBuilderPage() {
     try {
       const success = await exportNativePdf('printable-cv', {
         defaultFileName: currentCv && profile ? cvExportFilename(currentCv, profile, 'pdf') : undefined,
-        confirmOverflow: (overflow) => new Promise<boolean>((resolve) => {
-          overflowResolveRef.current = resolve;
-          setOverflowPrompt(overflow);
-        }),
       });
       if (success) {
         toast.success("Le CV a été exporté en PDF avec succès !");
@@ -174,12 +165,6 @@ export function CVBuilderPage() {
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const answerOverflowPrompt = (confirmed: boolean) => {
-    overflowResolveRef.current?.(confirmed);
-    overflowResolveRef.current = null;
-    setOverflowPrompt(null);
   };
 
   const handleTemplateChange = async (newTemplateId: string) => {
@@ -412,12 +397,6 @@ export function CVBuilderPage() {
           </div>
         </>
       )}
-
-      <OverflowConfirmDialog
-        overflow={overflowPrompt}
-        onConfirm={() => answerOverflowPrompt(true)}
-        onCancel={() => answerOverflowPrompt(false)}
-      />
 
       {isReconciliationOpen && (
         <ReconciliationReviewModal

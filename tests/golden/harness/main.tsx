@@ -225,6 +225,13 @@ async function failure(p: Promise<unknown>): Promise<string | null> {
  * Une mesure annulée, en échec ou incomplète ne doit jamais être mémorisée,
  * donc jamais réutilisée par l'export.
  */
+/** Insère `fragment` au début de #printable-cv : hors du CV, l'impression le masque (display: none) et ne le charge pas. */
+function insideCv(html: string, fragment: string): string {
+  const out = html.replace(/(<div[^>]*\bid="printable-cv"[^>]*>)/, `$1${fragment}`);
+  if (out === html) throw new Error('auto-test : #printable-cv introuvable dans le HTML');
+  return out;
+}
+
 async function selfChecks(html: string, reference: PrintOverflow): Promise<string[]> {
   const fails: string[] = [];
 
@@ -238,14 +245,14 @@ async function selfChecks(html: string, reference: PrintOverflow): Promise<strin
   if (cachedPrintOverflow(html)) fails.push('mesure annulée mémorisée');
 
   // 2. Image impossible à décoder : mesure incomplète.
-  const brokenImage = html.replace('</body>', '<img src="data:image/png;base64,AAAA" alt=""></body>');
+  const brokenImage = insideCv(html, '<img src="data:image/png;base64,AAAA" alt="">');
   await measurePrintOverflow(brokenImage);
   if (cachedPrintOverflow(brokenImage)) fails.push('mesure avec image non décodée mémorisée');
 
   // 3. Police en erreur : mesure incomplète.
-  const brokenFont = html.replace('</body>',
+  const brokenFont = insideCv(html,
     '<style>@font-face{font-family:GoldenBroken;src:url(data:font/woff2;base64,AAAA)}</style>' +
-    '<span style="font-family:GoldenBroken">x</span></body>');
+    '<span style="font-family:GoldenBroken">x</span>');
   await measurePrintOverflow(brokenFont);
   if (cachedPrintOverflow(brokenFont)) fails.push('mesure avec police en erreur mémorisée');
 
@@ -259,20 +266,9 @@ async function selfChecks(html: string, reference: PrintOverflow): Promise<strin
   if (!same(complete, reference)) fails.push('deux mesures complètes du même HTML diffèrent');
   if (!same(cachedPrintOverflow(html), complete)) fails.push('mesure complète non mémorisée');
 
-  // 6. L'export réutilise ce résultat : même objet que l'aperçu obtiendrait.
-  let confirmed: PrintOverflow | null = null;
-  const exported = await exportNativePdf('printable-cv', {
-    confirmOverflow: async (o) => { confirmed = o; return false; },
-  });
-  const status = overflowStatus(reference);
-  if (status === 'tient') {
-    if (confirmed) fails.push('confirmation demandée alors que le CV tient');
-    if (!exported) fails.push("export annulé alors que le CV tient");
-  } else {
-    if (!confirmed) fails.push(`pas de confirmation pour le statut « ${status} »`);
-    else if (!same(confirmed, reference)) fails.push("la confirmation d'export n'a pas reçu la mesure de l'aperçu");
-    if (exported) fails.push('export non annulé malgré le refus de confirmation');
-  }
+  // 6. L'export n'est jamais bloqué par la longueur du CV (export multipage).
+  const exported = await exportNativePdf('printable-cv');
+  if (!exported) fails.push(`export annulé (statut « ${overflowStatus(reference)} »)`);
 
   // 7. Ancrage : les lignes clés se retrouvent dans le DOM de l'aperçu.
   const preview = document.getElementById('printable-cv')!;

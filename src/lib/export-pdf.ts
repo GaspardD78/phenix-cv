@@ -3,7 +3,7 @@ import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 import { toast } from 'sonner';
 import { isTauri } from './platform';
-import { measurePrintOverflow, overflowStatus, type PrintOverflow } from './print-overflow';
+import { measurePrintOverflow } from './print-overflow';
 import { PDF_METHOD_SETTING_KEY, fallsBackToSystemPrint, parsePdfMethod, type PdfExportMethod } from './pdf-export-method';
 
 /**
@@ -12,6 +12,9 @@ import { PDF_METHOD_SETTING_KEY, fallsBackToSystemPrint, parsePdfMethod, type Pd
  * | Plateforme | Stratégie |
  * |---|---|
  * | Desktop Tauri | `generate_pdf` (Rust) : WebView2 → Edge → Chrome (vectoriel), puis impression système |
+ *
+ * Le CV est imprimé dans le flux du document : il occupe autant de pages A4 que
+ * nécessaire, chaque page reprenant ses marges (voir `@media print`, App.css).
  * | Navigateur web | `window.print()` système |
  */
 
@@ -133,6 +136,39 @@ export async function buildDesktopExportHtml(cvNode: HTMLElement): Promise<strin
   return htmlContent;
 }
 
+/**
+ * CV de plusieurs pages : chaque page reprend les marges intérieures du CV
+ * (haut et bas). Ajouté seulement quand la mesure annonce un dépassement : la
+ * reprise réserve aussi la marge du bas sur la première page, ce qui ferait
+ * passer sur deux pages un CV qui tient de justesse.
+ */
+export const MULTIPAGE_PRINT_CSS =
+  '@media print { #printable-cv, #printable-cv .cv-sidebar, #printable-cv .cv-main-col, #printable-cv .cv-panel ' +
+  '{ -webkit-box-decoration-break: clone; box-decoration-break: clone; } }';
+
+/**
+ * CV dont tout le texte tient sur la première page : le CV est borné à une page.
+ * Sans cela, une marge intérieure ou un espacement sous le dernier texte qui
+ * dépasse de quelques dixièmes de millimètre ouvrirait une deuxième page, ou
+ * ferait passer tout un bloc de colonnes sur la suivante. Seul de l'espace vide
+ * est concerné : la mesure garantit que le texte s'arrête avant 297 mm.
+ */
+export const SINGLE_PAGE_PRINT_CSS = '@media print { #printable-cv { max-height: 297mm; overflow: hidden; } }';
+
+/** Ajuste le HTML d'export à la longueur mesurée du CV (voir MULTIPAGE_PRINT_CSS et SINGLE_PAGE_PRINT_CSS). */
+export async function withPagination(html: string): Promise<string> {
+  let css: string;
+  try {
+    const overflow = await measurePrintOverflow(html);
+    css = overflow.overflows ? MULTIPAGE_PRINT_CSS : SINGLE_PAGE_PRINT_CSS;
+  } catch (error) {
+    // Sans mesure, l'export continue : le CV est imprimé en entier, sans reprise des marges.
+    console.error('Mesure de la longueur du CV impossible :', error);
+    return html;
+  }
+  return html.replace('</head>', `<style>${css}</style>\n</head>`);
+}
+
 async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptions): Promise<boolean> {
   const cvNode = document.getElementById(sourceElementId);
   if (!cvNode) {
@@ -140,22 +176,7 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
     return false;
   }
 
-  const htmlContent = await buildDesktopExportHtml(cvNode);
-
-  // L'export desktop n'imprime qu'une page : prévenir avant de couper du contenu,
-  // y compris quand le CV tient de justesse (marge de sécurité de la mesure).
-  if (options.confirmOverflow) {
-    let overflow: PrintOverflow | null = null;
-    try {
-      overflow = await measurePrintOverflow(htmlContent);
-    } catch (error) {
-      console.error('Mesure du dépassement de page impossible :', error);
-      toast.warning("Impossible de vérifier si le CV tient sur une page. L'export continue.");
-    }
-    if (overflow && overflowStatus(overflow) !== 'tient' && !(await options.confirmOverflow(overflow))) {
-      return false;
-    }
-  }
+  const htmlContent = await withPagination(await buildDesktopExportHtml(cvNode));
 
   const method = options.method ?? (await readConfiguredMethod());
 
@@ -214,13 +235,6 @@ async function logSystemPrint(reason: string): Promise<void> {
 // ── Point d'entrée public ─────────────────────────────────────────────────────
 
 export interface ExportPdfOptions {
-  /**
-   * Appelé sur desktop quand le CV dépasse la page A4 imprimée (le surplus
-   * serait coupé) ou la remplit à moins de OVERFLOW_SAFETY_MARGIN_MM près
-   * (`overflow.tight`). Résoudre `false` annule l'export. Sans callback, aucune
-   * vérification n'est faite.
-   */
-  confirmOverflow?: (overflow: PrintOverflow) => Promise<boolean>;
   /** Méthode imposée ; sinon le réglage « Options avancées » (automatique par défaut). */
   method?: PdfExportMethod;
   /** Appelé avec le chemin du fichier une fois le PDF écrit (ex. pour « Ouvrir le dossier »). */

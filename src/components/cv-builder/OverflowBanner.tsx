@@ -14,7 +14,8 @@ const mm = (value: number) => value.toLocaleString('fr-FR');
  * tout le CSS de l'app, et de nouvelles classes changeraient le HTML exporté.
  */
 const TONE: Record<string, React.CSSProperties> = {
-  'dépasse': { borderColor: '#fca5a5', backgroundColor: '#fef2f2', color: '#991b1b' },
+  // Plus d'une page : information (l'export PDF continue sur les pages suivantes), pas une erreur.
+  'dépasse': { borderColor: '#93c5fd', backgroundColor: '#eff6ff', color: '#1e3a8a' },
   'de justesse': { borderColor: '#fcd34d', backgroundColor: '#fffbeb', color: '#92400e' },
   'tient': { borderColor: '#6ee7b7', backgroundColor: '#ecfdf5', color: '#065f46' },
   neutral: { borderColor: '#d1d5db', backgroundColor: '#f9fafb', color: '#4b5563' },
@@ -22,7 +23,7 @@ const TONE: Record<string, React.CSSProperties> = {
 
 /**
  * Bandeau d'état de l'aperçu (hors de #printable-cv, jamais exporté) :
- * même mesure et mêmes statuts que la confirmation d'export.
+ * le CV tient-il sur une page ? Au-delà, l'export PDF continue sur les pages suivantes.
  * - première mesure : « Vérification… » ;
  * - mesure suivante : statut précédent grisé, avec « mise à jour… ».
  */
@@ -38,18 +39,17 @@ export function OverflowBanner({ state }: { state: PreviewOverflowState }) {
     tone = status;
     const last = result.lastVisibleLine;
     if (status === 'dépasse') {
-      const n = result.hiddenLines;
       message = (
         <>
-          <strong>Dépasse la page de {mm(result.overflowMm)} mm</strong> ({n} ligne{n > 1 ? 's' : ''} coupée{n > 1 ? 's' : ''} à l'export PDF)
-          {last ? <> : le contenu après « {excerpt(last.text)} » ne sera pas imprimé.</> : '.'}
+          <strong>Votre CV fait plus d'une page</strong> : l'export PDF le répartit sur plusieurs pages, sans rien couper.
+          {' '}Pour tout garder sur une page, utilisez « Ajuster à 1 page ».
         </>
       );
     } else if (status === 'de justesse') {
       message = (
         <>
-          <strong>Tient de justesse</strong> : marge restante {mm(result.remainingMm)} mm
-          {last ? <>, la ligne « {excerpt(last.text)} » risque d'être coupée à l'export PDF.</> : '.'}
+          <strong>Tient de justesse sur une page</strong> : marge restante {mm(result.remainingMm)} mm
+          {last ? <>, la ligne « {excerpt(last.text)} » pourrait passer sur une deuxième page.</> : '.'}
         </>
       );
     } else {
@@ -81,10 +81,12 @@ interface OverflowCutLineProps {
 }
 
 /**
- * Trait de coupure sur l'aperçu. L'aperçu n'a pas la mise en page d'impression
- * (marges d'écran) : le trait n'est pas placé à 297 mm mais au-dessus de la
- * première ligne coupée, retrouvée dans l'aperçu par son ancrage. Affiché
- * seulement si le CV dépasse et que la mesure est à jour.
+ * Repère de fin de la première page sur l'aperçu. L'aperçu n'a pas la mise en
+ * page d'impression (marges d'écran) : le trait n'est pas placé à 297 mm mais
+ * au-dessus de la première ligne qui dépasse, retrouvée dans l'aperçu par son
+ * ancrage. Repère approximatif : à l'export, un bloc (expérience, titre de
+ * section) peut passer entier sur la page suivante. Affiché seulement si le CV
+ * dépasse et que la mesure est à jour.
  */
 export function OverflowCutLine({ state, cvElement, container }: OverflowCutLineProps) {
   const [top, setTop] = useState<number | null>(null);
@@ -116,10 +118,10 @@ export function OverflowCutLine({ state, cvElement, container }: OverflowCutLine
   return (
     <div
       className="absolute left-0 w-full print:hidden z-50 pointer-events-none"
-      style={{ top: Math.max(0, top - 3), borderTop: '2px solid #ef4444' }}
+      style={{ top: Math.max(0, top - 3), borderTop: '2px dashed #3b82f6' }}
     >
-      <span className="absolute right-2 -top-5 text-xs text-red-600 font-semibold bg-white dark:bg-[var(--pc-card)] px-1">
-        Coupure à l'export PDF
+      <span className="absolute right-2 -top-5 text-xs text-blue-700 font-semibold bg-white dark:bg-[var(--pc-card)] px-1">
+        Fin de la page 1 (environ)
       </span>
     </div>
   );

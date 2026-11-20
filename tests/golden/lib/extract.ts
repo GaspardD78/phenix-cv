@@ -71,7 +71,13 @@ export async function extractPdfText(pdfBytes: Uint8Array): Promise<{ pages: num
  * bout est identique. Retourne les lignes en écart, avec la ligne du PDF la
  * plus proche. Partagée par le banc (run.ts) et la validation croisée.
  */
-export function checkLineBreaks(lines: Pick<PrintLine, 'text' | 'topMm' | 'bottomMm'>[], frags: PdfFragment[]): string[] {
+/**
+ * `multipage` : le PDF a plusieurs pages. Un bloc qui ne tient pas en bas de la
+ * première page passe entier sur la suivante (entrées et titres insécables) :
+ * dans chaque colonne, les lignes à partir de la première ligne mesurée absente
+ * du texte de la première page sont ignorées.
+ */
+export function checkLineBreaks(lines: (Pick<PrintLine, 'text' | 'topMm' | 'bottomMm'> & { column?: PrintLine['column'] })[], frags: PdfFragment[], multipage = false): string[] {
   const rows: PdfFragment[][] = [];
   for (const f of [...frags].filter((f) => f.str.trim()).sort((a, b) => a.baselineMm - b.baselineMm)) {
     const row = rows.find((r) => Math.abs(r[0].baselineMm - f.baselineMm) <= 0.9);
@@ -81,10 +87,21 @@ export function checkLineBreaks(lines: Pick<PrintLine, 'text' | 'topMm' | 'botto
   // Centre vertical approché d'un groupe de fragments (ligne de base moins 0,35 corps).
   const center = (fs: PdfFragment[]) => fs[0].baselineMm - 0.35 * Math.max(...fs.map((f) => f.sizeMm));
   const out: string[] = [];
+  const firstPageText = rows.map((r) => r.map((f) => norm(f.str)).join('')).join('');
+  // Début, par colonne, du contenu passé sur la page suivante.
+  const nextPageFrom = new Map<string | undefined, number>();
+  if (multipage) {
+    for (const l of lines) {
+      const m = norm(l.text);
+      if (!m || l.bottomMm > PAGE_HEIGHT_MM || firstPageText.includes(m)) continue;
+      nextPageFrom.set(l.column, Math.min(nextPageFrom.get(l.column) ?? Infinity, l.topMm));
+    }
+  }
   for (const l of lines) {
     if (l.bottomMm > PAGE_HEIGHT_MM) continue;
     const m = norm(l.text);
     if (!m) continue;
+    if (l.topMm >= (nextPageFrom.get(l.column) ?? Infinity)) continue;
     const mid = (l.topMm + l.bottomMm) / 2;
     const exact = rows.some((r) => r.some((_, i) => {
       let acc = '';

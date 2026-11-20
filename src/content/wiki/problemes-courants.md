@@ -21,7 +21,7 @@ WebView2 est un composant de Windows utilisé pour l'affichage et l'export PDF. 
 
 ## Mon CV dépasse une page
 
-L'éditeur vous le signale et propose les expériences à retirer en priorité. Vous pouvez aussi choisir une forme de date plus courte, ou raccourcir des puces. Voir [Mise en page et formats de dates](/aide/mise-en-page-dates).
+L'éditeur vous le signale. Rien n'est perdu : le PDF continue simplement sur une deuxième page, avec les mêmes marges et, pour les modèles à bande latérale, la bande sur toute la hauteur. Si vous préférez une seule page, cliquez sur « Ajuster à 1 page » ou retirez les expériences proposées en priorité. Vous pouvez aussi choisir une forme de date plus courte, ou raccourcir des puces. Voir [Mise en page et formats de dates](/aide/mise-en-page-dates).
 
 ## Je ne retrouve pas mes données
 

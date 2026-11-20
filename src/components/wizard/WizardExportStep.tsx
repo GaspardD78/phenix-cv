@@ -5,7 +5,6 @@ import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import { ArrowLeft, ArrowRight, CheckCircle2, FileDown, FolderOpen, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PrintableCV } from '@/components/export/PrintableCV';
-import { OverflowConfirmDialog } from '@/components/cv-builder/OverflowConfirmDialog';
 import { TemplatePickerPopover } from '@/components/cv-builder/TemplatePickerPopover';
 import { useProfileStore } from '@/stores/profileStore';
 import { useCvStore } from '@/stores/cvStore';
@@ -14,7 +13,6 @@ import { getTemplate } from '@/templates';
 import { exportNativePdf } from '@/lib/export-pdf';
 import { exportToDocx } from '@/lib/export-docx';
 import { cvExportFilename } from '@/lib/export-filename';
-import type { PrintOverflow } from '@/lib/print-overflow';
 import { NEXT_STEPS, nextStepRoute, savedMessage, type ExportFormat } from '@/lib/wizard/export-step';
 
 function EndScreen({ cvId }: { cvId: string | null }) {
@@ -65,8 +63,6 @@ export function WizardExportStep() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState<ExportFormat | null>(null);
   const [saved, setSaved] = useState<{ format: ExportFormat; path: string } | null>(null);
-  const [overflow, setOverflow] = useState<PrintOverflow | null>(null);
-  const [overflowAnswer, setOverflowAnswer] = useState<((ok: boolean) => void) | null>(null);
 
   useEffect(() => {
     void fetchProfile();
@@ -86,7 +82,6 @@ export function WizardExportStep() {
         await exportNativePdf('printable-cv', {
           onSaved,
           defaultFileName: cvExportFilename(currentCv, profile, 'pdf'),
-          confirmOverflow: o => new Promise<boolean>(resolve => { setOverflow(o); setOverflowAnswer(() => resolve); }),
         });
       } else {
         await exportToDocx(currentCv, profile, blocks, entries, getTemplate(currentCv.templateId), { onSaved });
@@ -96,12 +91,6 @@ export function WizardExportStep() {
     } finally {
       setBusy(null);
     }
-  };
-
-  const answerOverflow = (ok: boolean) => {
-    overflowAnswer?.(ok);
-    setOverflowAnswer(null);
-    setOverflow(null);
   };
 
   const openFolder = async () => {
@@ -181,7 +170,6 @@ export function WizardExportStep() {
       </div>
 
       {footer}
-      <OverflowConfirmDialog overflow={overflow} onConfirm={() => answerOverflow(true)} onCancel={() => answerOverflow(false)} />
     </>
   );
 }

@@ -1,16 +1,17 @@
 /**
- * Mesure du dépassement de page à l'export PDF desktop.
+ * Mesure du dépassement de la première page à l'export PDF desktop.
  *
- * L'export desktop imprime une seule page A4 : tout contenu au-delà de 297 mm
- * est coupé (voir NOTES.md §6). Cette mesure reproduit les conditions de
- * l'impression pour prévenir l'utilisateur avant l'export :
+ * L'export imprime le CV sur autant de pages A4 que nécessaire. Cette mesure
+ * dit si le CV tient sur une page (bandeau de l'aperçu, « Ajuster à 1 page ») ;
+ * le contenu au-delà de 297 mm passe sur les pages suivantes. Elle reproduit
+ * les conditions de l'impression :
  * - elle travaille sur le HTML exact envoyé à `generate_pdf`
  *   (`buildDesktopExportHtml`), donc mêmes styles et même enveloppe ;
  * - le document est chargé dans une iframe hors écran de la taille de la page
  *   (210 × 297 mm, marges 0 comme `@page` et `print_to_pdf`) ;
  * - les règles `@media print` sont activées et les règles `@media screen`
  *   désactivées via le CSSOM, y compris dans les règles imbriquées (@layer…) ;
- * - chaque ligne de texte dont le bas dépasse 297 mm est considérée comme coupée.
+ * - chaque ligne de texte dont le bas dépasse 297 mm est hors de la première page.
  *
  * Le dernier résultat complet est gardé en mémoire, associé au HTML mesuré :
  * l'aperçu et la confirmation d'export obtiennent ainsi le même résultat pour
@@ -26,18 +27,13 @@ export const PAGE_HEIGHT_MM = 297;
 
 /**
  * Largeur (px CSS) de #printable-cv dans le PDF, imposée au CV dans l'iframe
- * de mesure. À l'impression, `@media print` (App.css) place #printable-cv en
- * `position: fixed` ; sa largeur de 100 % suit alors la zone de la page A4
- * (210 mm = 793,70 px), que Chrome tronque à l'entier : 793 px. L'iframe de
- * 210 mm, elle, arrondit sa fenêtre à 794 px : 1 px de plus faisait passer
- * certains mots à la ligne plus tard qu'à l'impression.
- * Mesures (golden tests, Chromium 141) : repère aligné à droite dans un élément
- * fixed imprimé à 793,00 px (794,00 px dans le flux normal) ; avec 793 px,
- * la mesure retrouve les coupures du PDF sur les 10 lignes en écart (4 cas).
- * Vérifiée à chaque cas par le banc (impression de contrôle, voir
- * tests/golden/README.md).
+ * de mesure. À l'impression, #printable-cv est dans le flux normal (export
+ * multipage) : sa largeur de 100 % suit la page A4 (210 mm = 793,70 px), que
+ * Chrome arrondit à 794 px. Avant l'export multipage, `position: fixed` la
+ * tronquait à 793 px. La largeur imprimée est contrôlée à chaque cas par le
+ * banc (impression de contrôle, voir tests/golden/README.md).
  */
-export const PRINT_CV_WIDTH_PX = Math.floor(PAGE_WIDTH_MM * PX_PER_MM);
+export const PRINT_CV_WIDTH_PX = Math.round(PAGE_WIDTH_MM * PX_PER_MM);
 
 /**
  * Marge de sécurité (mm) sous laquelle un CV qui tient est signalé « de justesse ».
@@ -96,7 +92,7 @@ export interface PrintOverflow {
   overflows: boolean;
   /**
    * Le CV tient, mais avec moins de OVERFLOW_SAFETY_MARGIN_MM de marge :
-   * la dernière ligne risque d'être coupée à l'impression.
+   * la dernière ligne risque de passer sur une deuxième page.
    */
   tight: boolean;
   /** Bas du dernier texte, en mm depuis le haut de la page. */
@@ -105,11 +101,11 @@ export interface PrintOverflow {
   overflowMm: number;
   /** Marge restante sous le dernier texte (0 si le CV dépasse). */
   remainingMm: number;
-  /** Nombre de lignes de texte coupées, entièrement ou en partie. */
+  /** Nombre de lignes de texte hors de la première page, entièrement ou en partie. */
   hiddenLines: number;
   /** Dernière ligne entièrement visible (la coupure intervient après elle). */
   lastVisibleLine: PrintLine | null;
-  /** Première ligne coupée (entièrement ou en partie). */
+  /** Première ligne hors de la première page (entièrement ou en partie). */
   firstCutLine: PrintLine | null;
   /** Toutes les lignes, triées de haut en bas (diagnostic et tests). */
   lines: PrintLine[];

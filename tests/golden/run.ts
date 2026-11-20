@@ -123,10 +123,10 @@ function toOverflowRef(o: PrintOverflow): OverflowRef {
 }
 
 /**
- * Cohérence de la mesure avec le PDF réellement imprimé, par colonne :
- * - dépassement : la dernière ligne entièrement visible est dans le PDF, la
- *   première ligne entièrement sous la page n'y est pas ;
- * - pas de dépassement : la dernière ligne de chaque colonne est dans le PDF.
+ * Cohérence de la mesure avec le PDF réellement imprimé :
+ * - le CV tient : une seule page, et la dernière ligne de chaque colonne est dans le PDF ;
+ * - le CV dépasse : le PDF a plusieurs pages et aucune ligne n'est perdue, y
+ *   compris celles qui dépassent la première page (export multipage).
  * Retourne aussi, pour information, les lignes mesurées introuvables dans le
  * PDF (retour à la ligne différent à l'impression, voir README).
  */
@@ -135,22 +135,16 @@ function checkOverflowCoherence(o: PrintOverflow, pdfText: string, pages: number
   const pdf = norm(pdfText.replace(/^=== page \d+ ===$/gm, ''));
   const probe = (l: PrintLine) => norm(l.text).length >= MIN_PROBE_CHARS;
   const inPdf = (l: PrintLine) => pdf.includes(norm(l.text));
-  if (pages !== 1) problems.push(`le PDF fait ${pages} pages : la mesure suppose une page unique`);
   if (o.overflows) {
-    const visible = o.lines.filter((l) => l.bottomMm <= PAGE_HEIGHT_MM && probe(l)).sort((a, b) => b.bottomMm - a.bottomMm);
-    // Une ligne coupée dont le texte existe aussi plus haut (même établissement deux fois…)
-    // serait trouvée dans le PDF par sa copie visible : on teste une ligne au texte unique.
-    const count = (l: PrintLine) => o.lines.filter((x) => norm(x.text) === norm(l.text)).length;
-    const hidden = o.lines.filter((l) => l.topMm >= PAGE_HEIGHT_MM && probe(l) && count(l) === 1);
-    if (!visible[0]) problems.push('aucune ligne visible testable');
-    else if (!inPdf(visible[0])) problems.push(`dernière ligne visible absente du PDF : « ${visible[0].text} »`);
-    if (!hidden[0]) problems.push('aucune ligne entièrement coupée testable');
-    else if (inPdf(hidden[0])) problems.push(`ligne annoncée coupée présente dans le PDF : « ${hidden[0].text} »`);
+    if (pages < 2) problems.push(`dépassement annoncé mais le PDF fait ${pages} page`);
+    const lost = o.lines.filter((l) => l.topMm >= PAGE_HEIGHT_MM && probe(l) && !inPdf(l));
+    if (lost.length) problems.push(`lignes au-delà de la première page absentes du PDF : ${lost.map((l) => `« ${l.text} »`).join(', ')}`);
   } else {
-    for (const column of ['page', 'main', 'sidebar'] as const) {
-      const last = o.lines.filter((l) => l.column === column && probe(l)).sort((a, b) => b.bottomMm - a.bottomMm)[0];
-      if (last && !inPdf(last)) problems.push(`pas de dépassement annoncé mais dernière ligne (${column}) absente du PDF : « ${last.text} »`);
-    }
+    if (pages !== 1) problems.push(`le CV tient sur une page mais le PDF fait ${pages} pages`);
+  }
+  for (const column of ['page', 'main', 'sidebar'] as const) {
+    const last = o.lines.filter((l) => l.column === column && probe(l)).sort((a, b) => b.bottomMm - a.bottomMm)[0];
+    if (last && !inPdf(last)) problems.push(`dernière ligne (${column}) absente du PDF : « ${last.text} »`);
   }
   const unmatched = o.lines.filter((l) => l.bottomMm <= PAGE_HEIGHT_MM && probe(l) && !inPdf(l)).map((l) => l.text);
   return { problems, unmatched };
@@ -433,7 +427,7 @@ async function main() {
         result.ok = false;
         result.problems.push(`date d'entrée repliée sur plusieurs lignes (${rawFp.wrappedDateViolations.length}) :\n      ${rawFp.wrappedDateViolations.slice(0, 12).join('\n      ')}${rawFp.wrappedDateViolations.length > 12 ? '\n      …' : ''}`);
       }
-      const lineBreaks = checkLineBreaks(overflow.lines, firstPage);
+      const lineBreaks = checkLineBreaks(overflow.lines, firstPage, pages > 1);
       if (lineBreaks.length) {
         result.ok = false;
         result.problems.push(`retours à la ligne différents de la mesure (${lineBreaks.length} ligne(s)) :\n      ${lineBreaks.slice(0, 12).join('\n      ')}${lineBreaks.length > 12 ? '\n      …' : ''}`);
