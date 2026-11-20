@@ -281,7 +281,7 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
 
       // Apply entry-level changes (all types), skill grouping and re-ordering on
       // the CV's blocks — non destructively. The master profile is untouched.
-      await applyAiCvToBlocks(currentCv.id, data, { target, sheetOverrides });
+      const applied = await applyAiCvToBlocks(currentCv.id, data, { target, sheetOverrides });
 
       // Suggestions acceptées : écrites dans le profil maître (opt-in explicite) puis ajoutées à ce CV.
       const accepted = data.suggestedEntries.filter((_, i) => acceptedSug.has(i));
@@ -289,7 +289,20 @@ export function AIPromptPanel({ onClose, initialTab = 'intent' }: AIPromptPanelP
         await appendEntriesToCv(currentCv.id, await promoteSuggestedEntries(profile.id, accepted));
       }
 
-      toast.success("CV sur-mesure appliqué avec succès !");
+      // Aucune entrée reconnue : ne jamais laisser croire que le CV a été adapté.
+      if (data.entries.length > 0 && applied.entriesApplied === 0) {
+        toast.error("Aucune expérience du CV n'a été modifiée.", {
+          description: "Les identifiants (ID) de la réponse ne correspondent à aucune entrée de « Mon profil » : seuls l'intitulé et l'accroche ont changé. Recopiez le texte pour l'IA, puis demandez-lui de garder les ID exactement tels quels.",
+          duration: 12000,
+        });
+        return;
+      }
+      const added = applied.entriesAdded > 0
+        ? ` ${applied.entriesAdded} entrée${applied.entriesAdded > 1 ? 's' : ''} de « Mon profil » ajoutée${applied.entriesAdded > 1 ? 's' : ''} au CV.`
+        : '';
+      toast.success('Votre CV est adapté.', {
+        description: `${applied.entriesApplied} entrée${applied.entriesApplied > 1 ? 's' : ''} mise${applied.entriesApplied > 1 ? 's' : ''} à jour.${added}`,
+      });
       setJsonInput('');
       onClose();
     } catch {

@@ -1,5 +1,6 @@
 import { guardAiCv, type GuardContext, type GuardReport } from './ai-cv-guard';
 import { parseAiCvResponse, type AiCvResponse } from './ai-cv-response';
+import { repairAiIds } from './ai-id-repair';
 
 export type AiCvAnalysis =
   | { ok: true; /** Réponse nettoyée (à appliquer). */ data: AiCvResponse; report: GuardReport }
@@ -18,6 +19,8 @@ export function analyzeAiCvJson(raw: string, ctx: GuardContext): AiCvAnalysis {
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'JSON invalide' };
   }
+  // Identifiants recopiés de travers (casse, guillemets, troncature) : rattachés aux entrées du profil.
+  parsed = repairAiIds(parsed, ctx.entries.map(e => e.id)).data;
   const { data, report } = guardAiCv(parsed, ctx);
   return { ok: true, data, report };
 }

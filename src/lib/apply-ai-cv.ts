@@ -17,6 +17,7 @@ import type { MasterEntry, Profile } from '@/types/profile';
 import { headerSettingsPatch } from './header-extras';
 import { buildTargetSnapshot, reconcileAiTarget, type TargetAxis, type TargetContradiction } from './cv-target-snapshot';
 import type { ResolvedTarget, SheetOverrides } from './cv-targets';
+import { SECTION_BY_TYPE } from './cv-intent';
 
 /** Sous-ensemble du store CV utilisé ici (injectable pour les tests, sans base de données). */
 export interface CvBlockPort {
@@ -80,6 +81,13 @@ export interface ApplyReport {
   languagesShown: boolean | null;
   /** Nombre de fusions d'expériences appliquées (`mergedEntries`). */
   merges: number;
+  /** Entrées de la réponse appliquées à un bloc du CV (visibilité et textes). */
+  entriesApplied: number;
+  /**
+   * Entrées du profil absentes de ce CV (ajoutées au profil après sa création) que l'IA affiche :
+   * un bloc est créé dans leur section.
+   */
+  entriesAdded: number;
   warnings: string[];
   /**
    * Proposition de ciblage de l'IA (absente sans `target`). Jamais appliquée à ce CV : l'écran la
@@ -133,10 +141,14 @@ export async function applyAiCvToBlocks(
   await store().fetchCvBlocks(cvId);
   await undoMerges(store);
 
-  // 1. Entry overrides + visibility.
+  // 1. Entry overrides + visibility. Une entrée du profil absente du CV (ajoutée au profil après la
+  //    création du CV) et affichée par l'IA reçoit d'abord son bloc, dans la section de son type.
+  const entriesAdded = await addMissingEntryBlocks(cvId, data, store, entryById);
+  let entriesApplied = 0;
   for (const aiEntry of data.entries) {
     const block = store().currentCvBlocks.find(b => b.entryId === aiEntry.id);
     if (!block) continue;
+    entriesApplied++;
     if (!aiEntry.visible) {
       await store().updateCvBlock(block.id, { isVisible: false });
     } else {
@@ -231,7 +243,8 @@ export async function applyAiCvToBlocks(
   const needsReorder =
     (entryOrder?.length ?? 0) > 0 || (data.sectionOrder?.length ?? 0) > 0 || groupPlans.length > 0 || skillPlan.ids.length > 0;
   if (needsReorder) {
-    const order = planCvBlockOrder(store().currentCvBlocks, {
+    // Blocs triés : l'ordre du tableau peut différer de `sortOrder` après une création (bloc ajouté en fin).
+    const order = planCvBlockOrder([...store().currentCvBlocks].sort((a, b) => a.sortOrder - b.sortOrder), {
       entryOrder,
       sectionOrder: data.sectionOrder,
       sectionLabels: data.sectionLabels,
@@ -270,7 +283,64 @@ export async function applyAiCvToBlocks(
     await store().updateCvSettings(cvId, { cvLanguage: explicitLanguage });
   }
 
-  return { cvLanguage, skillGrouping, cvSkills: skillPlan.status, languagesShown, merges: mergeResult.merges.length, warnings, ...(targetReport ? { target: targetReport } : {}) };
+  return {
+    cvLanguage, skillGrouping, cvSkills: skillPlan.status, languagesShown, merges: mergeResult.merges.length,
+    entriesApplied, entriesAdded, warnings, ...(targetReport ? { target: targetReport } : {}),
+  };
+}
+
+/**
+ * Crée le bloc des entrées affichées par l'IA mais absentes du CV : juste après la dernière entrée du même
+ * type, sinon en fin de la section de ce type, sinon dans une nouvelle section en fin de CV. Renvoie le
+ * nombre de blocs créés.
+ */
+async function addMissingEntryBlocks(
+  cvId: string,
+  data: AiCvResponse,
+  store: () => CvBlockPort,
+  entryById: Map<string, MasterEntry>,
+): Promise<number> {
+  let added = 0;
+  for (const aiEntry of data.entries) {
+    const entry = entryById.get(aiEntry.id);
+    if (!aiEntry.visible || !entry || store().currentCvBlocks.some(b => b.entryId === entry.id)) continue;
+    const sorted = () => [...store().currentCvBlocks].sort((a, b) => a.sortOrder - b.sortOrder);
+    const typeOf = (b: CVBlock) => (b.entryId ? entryById.get(b.entryId)?.entryType : undefined);
+    const nextOrder = () => Math.max(-1, ...store().currentCvBlocks.map(b => b.sortOrder)) + 1;
+    const createAndFind = async (block: Omit<CVBlock, 'id' | 'createdAt'>): Promise<string | undefined> => {
+      const before = new Set(store().currentCvBlocks.map(b => b.id));
+      await store().createCvBlock(block);
+      return store().currentCvBlocks.find(b => !before.has(b.id))?.id;
+    };
+
+    let anchorId = sorted().filter(b => typeOf(b) === entry.entryType).pop()?.id;
+    if (!anchorId) {
+      const label = SECTION_BY_TYPE[entry.entryType];
+      const blocks = sorted();
+      const h = blocks.findIndex(b => isSectionHeader(b) && normalizeLabel(b.sectionName ?? '') === normalizeLabel(label));
+      if (h >= 0) {
+        let end = h;
+        while (end + 1 < blocks.length && !isSectionHeader(blocks[end + 1])) end++;
+        anchorId = blocks[end].id;
+      } else {
+        anchorId = await createAndFind({
+          cvId, entryId: null, blockType: 'section_header', sectionName: label, customContent: null,
+          sortOrder: nextOrder(), isVisible: true, overrideData: {},
+        });
+      }
+    }
+    const newId = await createAndFind({
+      cvId, entryId: entry.id, blockType: 'entry_ref', sectionName: null, customContent: null,
+      sortOrder: nextOrder(), isVisible: true, overrideData: {},
+    });
+    if (!newId) continue;
+    added++;
+    const order = sorted().map(b => b.id).filter(id => id !== newId);
+    const at = anchorId ? order.indexOf(anchorId) : -1;
+    order.splice(at >= 0 ? at + 1 : order.length, 0, newId);
+    await store().reorderCvBlocks(cvId, order);
+  }
+  return added;
 }
 
 /**
