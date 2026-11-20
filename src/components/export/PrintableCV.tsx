@@ -341,6 +341,9 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       isBanner ? `#printable-cv .cv-header-block .cv-badge { background-color: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.4) !important; color: white !important; }` : '',
       // ── Bande latérale (templates graphiques) ──────────────────────────────
       isSidebar ? `#printable-cv { display: flex; align-items: stretch; padding: 0 !important; min-height: 297mm; }` : '',
+      // CV de plusieurs pages : la bande est aussi peinte par un calque fixe, que l'impression répète sur
+      // chaque page ; elle descend ainsi jusqu'en bas de la dernière page, même quand le texte s'arrête avant.
+      isSidebar ? `@media print { #printable-cv { background: transparent !important; } #printable-cv::before { content: ""; position: fixed; top: 0; bottom: 0; ${sidebarOnRight ? 'right' : 'left'}: 0; width: ${sidebarWidth}; background: ${sidebarBg}; z-index: -1; } }` : '',
       isSidebar ? `#printable-cv .cv-sidebar { flex: 0 0 ${sidebarWidth}; width: ${sidebarWidth}; background: ${sidebarBg}; color: ${sidebarText}; padding: 30px 24px; box-sizing: border-box; ${sidebarOnRight ? 'order: 2;' : ''} }` : '',
       isSidebar ? `#printable-cv .cv-main-col { flex: 1 1 auto; min-width: 0; padding: ${mainPad}; box-sizing: border-box; ${sidebarOnRight ? 'order: 1;' : ''} }` : '',
       isSidebar ? `#printable-cv .cv-sidebar a { color: inherit; text-decoration: none; }` : '',
@@ -364,7 +367,7 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       isSplitHeader ? `#printable-cv .cv-header-rule { border: 0; border-top: 3px solid ${accentColor}; margin: 0 0 16px; }` : '',
       // ── Titres en marge (structure.section = margin) ────────────────────────
       isMarginSections ? '#printable-cv .cv-margin-section { display: grid; grid-template-columns: 26% minmax(0, 1fr); column-gap: 16px; margin-top: 16px; }' : '',
-      isMarginSections ? '#printable-cv .cv-margin-section > h3 { margin: 0; padding-top: 2px; text-align: right; }' : '',
+      isMarginSections ? '#printable-cv .cv-margin-section > h3 { margin: 0; padding-top: 2px; text-align: right; break-after: auto; }' : '',
       isMarginSections ? `#printable-cv .cv-margin-body { min-width: 0; border-left: 1px solid ${accentTint(40)}; padding-left: 14px; }` : '',
       isMarginSections ? '#printable-cv .cv-margin-body > :last-child { margin-bottom: 0; }' : '',
       isMarginSections ? `#printable-cv .cv-margin-offset { margin-left: calc(26% + 16px); padding-left: 15px; }` : '',

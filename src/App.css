@@ -297,17 +297,47 @@ body {
 @page { size: A4; margin: 0; }
 
 @media print {
-  body * { visibility: hidden; }
-  #printable-cv, #printable-cv * { visibility: visible; }
+  /* Seul le CV est imprimé : le reste de l'interface disparaît… */
+  body *:not(#printable-cv):not(#printable-cv *):not(:has(#printable-cv)) { display: none !important; }
+  /* …et ses conteneurs ne limitent plus la hauteur : le CV s'étend sur autant de pages A4 que nécessaire. */
+  html, body, body *:has(#printable-cv) {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
   #printable-cv {
-    position: fixed;
-    top: 0; left: 0;
+    /* Dans le flux (pas de position fixe) : le navigateur répartit le CV sur plusieurs pages.
+       Relatif : reste le bloc conteneur de ses éléments positionnés, sans créer de contexte d'empilement. */
+    position: relative;
     width: 210mm !important;
     max-width: none !important;
     height: auto;
     zoom: var(--pdf-zoom, 1);
     transform-origin: top left;
   }
+  /* Filet sur le bord du CV (ex. bord gauche coloré) : répété jusqu'en bas de chaque page. */
+  #printable-cv::after {
+    content: "";
+    position: fixed;
+    top: 0; bottom: 0; left: 0; right: 0;
+    border-left: inherit;
+    border-right: inherit;
+    pointer-events: none;
+  }
+  /* Pas de ligne isolée en haut ou en bas de page. */
+  #printable-cv p, #printable-cv li { orphans: 2; widows: 2; }
+  #printable-cv li, #printable-cv .cv-sidebar-section > ul > li { break-inside: avoid; }
+  #printable-cv h1, #printable-cv h2, #printable-cv h3, #printable-cv h4 { break-after: avoid; break-inside: avoid; }
   body {
     background-color: white !important;
     -webkit-print-color-adjust: exact;

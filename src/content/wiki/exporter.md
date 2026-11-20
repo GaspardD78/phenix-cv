@@ -11,7 +11,7 @@ Une fois votre CV prêt, vous l'enregistrez sur votre ordinateur : en **PDF** po
 
 ## Comment faire
 
-1. Dans l'éditeur de CV, vérifiez que votre CV tient sur la page prévue. Un message vous prévient s'il dépasse.
+1. Dans l'éditeur de CV, vérifiez que votre CV a la longueur prévue. Un message vous prévient s'il dépasse une page : le PDF le répartit alors sur plusieurs pages, sans rien couper.
 2. Cliquez sur **Exporter PDF** ou **Exporter DOCX**.
 3. Choisissez le dossier et le nom du fichier.
 
@@ -28,6 +28,6 @@ Un fichier qui s'ouvre sans problème, dont la mise en page ne bouge pas, et don
 
 ## Erreurs à éviter
 
-- Envoyer un CV qui dépasse une page sans l'avoir vérifié.
+- Envoyer un CV de deux pages sans l'avoir voulu : relisez le PDF avant de l'envoyer.
 - Oublier la version Word si une candidature en demande une.
 - Modifier le PDF ailleurs : il ne se met plus à jour avec votre profil.
