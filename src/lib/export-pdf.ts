@@ -4,6 +4,7 @@ import { writeFile } from '@tauri-apps/plugin-fs';
 import { toast } from 'sonner';
 import { isTauri } from './platform';
 import { measurePrintOverflow } from './print-overflow';
+import { SINGLE_PAGE_PRINT_CSS, multipagePrintCss, readPageDecor, type PageDecor } from './print-pages';
 import { PDF_METHOD_SETTING_KEY, fallsBackToSystemPrint, parsePdfMethod, type PdfExportMethod } from './pdf-export-method';
 
 /**
@@ -137,32 +138,17 @@ export async function buildDesktopExportHtml(cvNode: HTMLElement): Promise<strin
 }
 
 /**
- * CV de plusieurs pages : chaque page reprend les marges intérieures du CV
- * (haut et bas). Ajouté seulement quand la mesure annonce un dépassement : la
- * reprise réserve aussi la marge du bas sur la première page, ce qui ferait
- * passer sur deux pages un CV qui tient de justesse.
+ * Ajuste le HTML d'export à la longueur mesurée du CV : mise en page multipage
+ * (marges de page, numéros « n / total », décors prolongés) si le texte dépasse
+ * la première page, sinon CV borné à une page (voir lib/print-pages.ts).
  */
-export const MULTIPAGE_PRINT_CSS =
-  '@media print { #printable-cv, #printable-cv .cv-sidebar, #printable-cv .cv-main-col, #printable-cv .cv-panel ' +
-  '{ -webkit-box-decoration-break: clone; box-decoration-break: clone; } }';
-
-/**
- * CV dont tout le texte tient sur la première page : le CV est borné à une page.
- * Sans cela, une marge intérieure ou un espacement sous le dernier texte qui
- * dépasse de quelques dixièmes de millimètre ouvrirait une deuxième page, ou
- * ferait passer tout un bloc de colonnes sur la suivante. Seul de l'espace vide
- * est concerné : la mesure garantit que le texte s'arrête avant 297 mm.
- */
-export const SINGLE_PAGE_PRINT_CSS = '@media print { #printable-cv { max-height: 297mm; overflow: hidden; } }';
-
-/** Ajuste le HTML d'export à la longueur mesurée du CV (voir MULTIPAGE_PRINT_CSS et SINGLE_PAGE_PRINT_CSS). */
-export async function withPagination(html: string): Promise<string> {
+export async function withPagination(html: string, decor: PageDecor): Promise<string> {
   let css: string;
   try {
     const overflow = await measurePrintOverflow(html);
-    css = overflow.overflows ? MULTIPAGE_PRINT_CSS : SINGLE_PAGE_PRINT_CSS;
+    css = overflow.overflows ? multipagePrintCss(decor) : SINGLE_PAGE_PRINT_CSS;
   } catch (error) {
-    // Sans mesure, l'export continue : le CV est imprimé en entier, sans reprise des marges.
+    // Sans mesure, l'export continue : le CV est imprimé en entier, sans mise en page multipage.
     console.error('Mesure de la longueur du CV impossible :', error);
     return html;
   }
@@ -176,7 +162,7 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
     return false;
   }
 
-  const htmlContent = await withPagination(await buildDesktopExportHtml(cvNode));
+  const htmlContent = await withPagination(await buildDesktopExportHtml(cvNode), readPageDecor(cvNode));
 
   const method = options.method ?? (await readConfiguredMethod());
 
