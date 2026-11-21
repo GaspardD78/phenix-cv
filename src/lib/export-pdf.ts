@@ -142,18 +142,41 @@ export async function buildDesktopExportHtml(cvNode: HTMLElement): Promise<strin
  * (marges de page, numéros « n / total », décors prolongés) si le texte dépasse
  * la première page, sinon CV borné à une page (voir lib/print-pages.ts).
  */
-export async function withPagination(html: string, decor: PageDecor): Promise<string> {
+export async function withPagination(html: string, decor: PageDecor, previewHeightPx?: number): Promise<string> {
   let css: string;
   try {
     const overflow = await measurePrintOverflow(html);
     css = overflow.overflows ? multipagePrintCss(decor) : SINGLE_PAGE_PRINT_CSS;
   } catch (error) {
-    // Sans mesure, l'export continue : le CV est imprimé en entier, sans mise en page multipage.
+    // Sans mesure, la hauteur du CV dans l'aperçu (mêmes marges que le PDF) décide : au-delà d'une page
+    // A4, mise en page multipage ; sinon le CV est imprimé tel quel, en entier.
     console.error('Mesure de la longueur du CV impossible :', error);
-    return html;
+    if (!(previewHeightPx !== undefined && previewHeightPx > A4_HEIGHT_PX)) return html;
+    css = multipagePrintCss(decor);
   }
   return html.replace('</head>', `<style>${css}</style>\n</head>`);
 }
+
+/**
+ * HTML final imprimé en PDF : partagé par l'export et l'aperçu des pages
+ * (lib/pdf-preview.ts), pour que l'aperçu montre exactement le PDF exporté.
+ */
+export async function buildPrintHtml(cvNode: HTMLElement): Promise<string> {
+  return withPagination(await buildDesktopExportHtml(cvNode), readPageDecor(cvNode), cvNode.offsetHeight);
+}
+
+/** Méthode d'export PDF réglée dans les options avancées (automatique par défaut). */
+export async function readConfiguredMethod(): Promise<PdfExportMethod> {
+  try {
+    const { getSetting } = await import('./db');
+    return parsePdfMethod(await getSetting(PDF_METHOD_SETTING_KEY));
+  } catch {
+    return 'auto';
+  }
+}
+
+/** Hauteur d'une page A4 en px CSS (297 mm). */
+const A4_HEIGHT_PX = (297 * 96) / 25.4;
 
 async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptions): Promise<boolean> {
   const cvNode = document.getElementById(sourceElementId);
@@ -162,7 +185,7 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
     return false;
   }
 
-  const htmlContent = await withPagination(await buildDesktopExportHtml(cvNode), readPageDecor(cvNode));
+  const htmlContent = await buildPrintHtml(cvNode);
 
   const method = options.method ?? (await readConfiguredMethod());
 
@@ -200,14 +223,6 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
   }
 }
 
-async function readConfiguredMethod(): Promise<PdfExportMethod> {
-  try {
-    const { getSetting } = await import('./db');
-    return parsePdfMethod(await getSetting(PDF_METHOD_SETTING_KEY));
-  } catch {
-    return 'auto';
-  }
-}
 
 /** Ajoute l'impression système au journal du dernier export (sans jamais faire échouer l'export). */
 async function logSystemPrint(reason: string): Promise<void> {

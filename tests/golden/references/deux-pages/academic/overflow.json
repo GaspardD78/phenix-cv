@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 91.9,
+  "overflowMm": 100.4,
   "remainingMm": 0,
-  "hiddenLines": 12,
-  "lastVisibleLine": "Certifications",
-  "firstCutLine": "TOSA Excel - niveau avancé - Isograd Sauveteur secouriste du travail - INRS"
+  "hiddenLines": 13,
+  "lastVisibleLine": "Lycée Exemple · Lyon",
+  "firstCutLine": "Certifications"
 }

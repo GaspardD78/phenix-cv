@@ -21,6 +21,7 @@ import { measurePrintOverflow, overflowStatus, type PrintOverflow } from '@/lib/
 import type { CVBlock, CVDocument } from '@/types/cv';
 import type { MasterEntry, Profile } from '@/types/profile';
 import type { CVTemplate } from '@/types/template';
+import { templatePagePadding } from '@/lib/page-margin';
 
 // ── Bornes de lisibilité ─────────────────────────────────────────────────────
 // Choisies sur rendu comparé (lot C2) : espacements et interligne plus aérés,
@@ -122,12 +123,12 @@ export function buildFitLadder(input: FitInput, eff: EffectiveValues): FitStep[]
   below(SECTION_GAP_GRID, eff.sectionGapPx, FIT_MIN_SECTION_GAP_PX, 'sectionHeaderGap', 'px');
   below(TITLE_GAP_GRID, eff.titleGapPx, FIT_MIN_TITLE_GAP_PX, 'entryTitleGap', 'px');
 
-  // Marges : à l'impression, un template une colonne sans pageMargin utilise
-  // 8px 10px ; définir pageMargin les augmenterait. On ne réduit donc que les
-  // marges déjà définies, ou celles de la colonne principale des sidebars.
+  // Marges : réglage du CV, sinon marges par défaut du modèle (identiques à l'écran et au PDF),
+  // ou celles de la colonne principale des sidebars.
   const isSidebar = input.template.layout === 'sidebar-left' || input.template.layout === 'sidebar-right';
   const setMargin = typeof input.cv.settings?.pageMargin === 'string' ? parseMargin(input.cv.settings.pageMargin as string) : null;
-  const currentMargin = setMargin ?? (isSidebar ? SIDEBAR_DEFAULT_MARGIN : null);
+  const pad = templatePagePadding(input.template);
+  const currentMargin = setMargin ?? (isSidebar ? SIDEBAR_DEFAULT_MARGIN : [pad.v, pad.h] as [number, number]);
   const minMargin = parseMargin(FIT_MIN_PAGE_MARGIN)!;
   if (currentMargin) {
     for (const [v, h] of PAGE_MARGIN_GRID) {

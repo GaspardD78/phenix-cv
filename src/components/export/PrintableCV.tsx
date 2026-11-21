@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { templatePagePadding } from '@/lib/page-margin';
 import { CVDocument, CVBlock } from '../../types/cv';
 import { MasterEntry, Profile } from '../../types/profile';
 import { CVTemplate } from '../../types/template';
@@ -195,9 +196,8 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
     /** Marges intérieures de la page (écran) : réglage du CV, sinon classes px-/py- du modèle. */
     const screenPad = (() => {
       if (pageMargin) { const p = pageMargin.trim().split(/\s+/); return { v: p[0], h: p[1] || p[0] }; }
-      const px = template.preview.containerClass.match(/\bpx-(\d+)\b/);
-      const py = template.preview.containerClass.match(/\bpy-(\d+)\b/);
-      return { v: `${py ? parseInt(py[1]) * 4 : 40}px`, h: `${px ? parseInt(px[1]) * 4 : 48}px` };
+      const d = templatePagePadding(template);
+      return { v: `${d.v}px`, h: `${d.h}px` };
     })();
     const heroPhotoSize = settings.photoSize || '96px';
     // Interrupteur « Afficher la photo » du CV (lib/cv-photo.ts) : même règle partout.
@@ -306,14 +306,9 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       summaryTextAlign   ? `#printable-cv .cv-summary { text-align: ${summaryTextAlign} !important; }` : '',
       summaryLineHeight  ? `#printable-cv .cv-summary { line-height: ${summaryLineHeight} !important; }` : '',
       (!isSidebar && pageMargin) ? `#printable-cv { padding: ${pageMargin} !important; }` : '',
+      // Marges imprimées = marges de l'aperçu (réglage « Marges » du CV, sinon celles du modèle).
       isSidebar ? '' : (() => {
-        let pv: string, ph: string;
-        if (pageMargin) {
-          const parts = pageMargin.trim().split(/\s+/);
-          pv = parts[0]; ph = parts[1] || parts[0];
-        } else {
-          pv = '8px'; ph = '10px';
-        }
+        const pv = screenPad.v, ph = screenPad.h;
         const rules = [`@media print { #printable-cv { padding: ${pv} ${ph} !important; } }`];
         if (isBanner) {
           rules.push(
@@ -386,7 +381,7 @@ export const PrintableCV = forwardRef<HTMLDivElement, PrintableCVProps>(
       structure.header === 'monogram' ? '#printable-cv .cv-monogram::before { content: attr(data-initials); }' : '',
       // ── Grand en-tête : bloc clair pleine largeur, photo ronde à cheval sur son bord ──
       isHero ? `#printable-cv .cv-header-hero { margin: -${screenPad.v} -${screenPad.h} ${hasPhoto ? `calc(${heroPhotoSize} / 2 + 24px)` : '24px'} !important; padding: 30px ${screenPad.h} ${hasPhoto ? '0' : '26px'} !important; background-color: ${accentTint(11)}; }` : '',
-      isHero ? `@media print { #printable-cv .cv-header-hero { margin-top: -${(pageMargin ? screenPad.v : '8px')} !important; margin-left: -${(pageMargin ? screenPad.h : '10px')} !important; margin-right: -${(pageMargin ? screenPad.h : '10px')} !important; padding-left: 24px !important; padding-right: 24px !important; } }` : '',
+      isHero ? `@media print { #printable-cv .cv-header-hero { margin-top: -${screenPad.v} !important; margin-left: -${screenPad.h} !important; margin-right: -${screenPad.h} !important; padding-left: 24px !important; padding-right: 24px !important; } }` : '',
       isHero ? '#printable-cv .cv-hero-photo { margin-top: 18px; transform: translateY(50%); border: 4px solid #ffffff; box-sizing: border-box; }' : '',
       isHero ? '#printable-cv .cv-header-hero .cv-contact-info > div { justify-content: center; }' : '',
       // ── Titres surlignés : aplat clair sous la moitié basse du texte (titres et nom) ──
