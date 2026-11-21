@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 193.6,
+  "overflowMm": 254.1,
   "remainingMm": 0,
-  "hiddenLines": 21,
-  "lastVisibleLine": "%",
-  "firstCutLine": "Formation"
+  "hiddenLines": 33,
+  "lastVisibleLine": "Suivre les commandes de bout en bout, de la saisie à la",
+  "firstCutLine": "livraison"
 }

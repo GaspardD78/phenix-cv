@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 198.9,
+  "overflowMm": 209.5,
   "remainingMm": 0,
-  "hiddenLines": 18,
-  "lastVisibleLine": "Relancer les clients en retard de paiement et réduire les impayés de 15 %",
-  "firstCutLine": "Formation"
+  "hiddenLines": 19,
+  "lastVisibleLine": "Suivre les commandes de bout en bout, de la saisie à la livraison",
+  "firstCutLine": "Relancer les clients en retard de paiement et réduire les impayés de 15 %"
 }

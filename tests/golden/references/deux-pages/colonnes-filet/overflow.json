@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 38.9,
+  "overflowMm": 47.3,
   "remainingMm": 0,
-  "hiddenLines": 6,
-  "lastVisibleLine": "Baccalauréat professionnel Gestion-administration 2011 – 2014",
-  "firstCutLine": "Lycée Exemple · Lyon"
+  "hiddenLines": 7,
+  "lastVisibleLine": "Lycée Exemple · Lyon",
+  "firstCutLine": "Baccalauréat professionnel Gestion-administration 2011 – 2014"
 }

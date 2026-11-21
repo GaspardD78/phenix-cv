@@ -27,6 +27,7 @@
 0ec47fb37236	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-blue-800: oklch(42.4% .199 265.638); --color-blue-900: oklch(37.9% .146 265.522); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-800: oklch(27.8% .033 256.848); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-medium: 500; --font-weight-bold: 700; --default-font-family: var(--font-sans); }
 0ed8bb69693f	@layer utilities	.bg-purple-50 { background-color: var(--color-purple-50); }
 0fa2d8e01618	@layer utilities	.before\:content-\[\"▹\"\]::before { --tw-content: "▹"; content: var(--tw-content); }
+110b2ccdf25c	@media print	#printable-cv .cv-header-hero { margin-top: -40px !important; margin-left: -48px !important; margin-right: -48px !important; padding-left: 24px !important; padding-right: 24px !important; }
 11667f828f55	(racine)	@page { margin: 14mm 0px; @top-left { content: ""; width: 34%; background: rgb(30, 41, 59); } @bottom-left { content: ""; width: 34%; background: rgb(30, 41, 59); } @bottom-center { content: counter(page) " / " counter(pages); font-family: Calibri, Arial, sans-serif; font-size: 8pt; color: rgb(107, 114, 128); } }
 116bb1a65f89	@layer utilities	.text-black { color: var(--color-black); }
 12a9844ad287	(racine)	#printable-cv .cv-entry { margin-bottom: 8px !important; }
@@ -67,6 +68,7 @@
 291d677d9f5e	@layer utilities	.flex-wrap { flex-wrap: wrap; }
 296749d62ed5	@layer utilities	.text-orange-800 { color: var(--color-orange-800); }
 2aad63e6b241	@layer base	::-webkit-datetime-edit { padding-block-start: 0px; padding-block-end: 0px; }
+2ac6262cce80	@media print	#printable-cv { padding-top: 56px !important; padding-right: 56px !important; padding-bottom: 56px !important; padding-left: 56px !important; }
 2adc7f7106f7	(racine)	#printable-cv .cv-columns { display: flex; align-items: flex-start; column-gap: 28px; }
 2ade76569189	(racine)	#printable-cv .cv-alt-node::after { content: ""; position: absolute; top: 2px; left: 9px; width: 12px; height: 12px; box-sizing: border-box; border-top-left-radius: 9999px; border-top-right-radius: 9999px; border-bottom-right-radius: 9999px; border-bottom-left-radius: 9999px; background-image: initial; background-position-x: initial; background-position-y: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; background-color: rgb(255, 255, 255); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-top-style: solid; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-top-color: rgb(79, 70, 229); border-right-color: rgb(79, 70, 229); border-bottom-color: rgb(79, 70, 229); border-left-color: rgb(79, 70, 229); border-image-source: none; border-image-slice: 100%; border-image-width: 1; border-image-outset: 0; border-image-repeat: stretch; }
 2aefd2c4f6d8	(racine)	#printable-cv .cv-entry-alt { display: grid; grid-template-columns: minmax(0px, 1fr) 30px minmax(0px, 1fr); margin-bottom: 0px !important; }
@@ -74,6 +76,7 @@
 2bdaf5b7f2c9	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-purple-700: oklch(49.6% .265 301.924); --color-purple-900: oklch(38.1% .176 304.987); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-700: oklch(37.3% .034 259.733); --color-gray-800: oklch(27.8% .033 256.848); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-medium: 500; --font-weight-semibold: 600; --font-weight-bold: 700; --leading-relaxed: 1.625; --default-font-family: var(--font-sans); }
 2c0cbae87dc2	@layer utilities	.max-w-\[210mm\] { max-width: 210mm; }
 2c428c135d86	(racine)	#printable-cv .cv-sidebar-photo-ring { border-top-width: 3px; border-right-width: 3px; border-bottom-width: 3px; border-left-width: 3px; border-top-style: solid; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-top-color: rgba(0, 0, 0, 0.18); border-right-color: rgba(0, 0, 0, 0.18); border-bottom-color: rgba(0, 0, 0, 0.18); border-left-color: rgba(0, 0, 0, 0.18); border-image-source: none; border-image-slice: 100%; border-image-width: 1; border-image-outset: 0; border-image-repeat: stretch; }
+2c5c33b32b3c	@media print	#printable-cv { padding-top: 48px !important; padding-right: 56px !important; padding-bottom: 48px !important; padding-left: 56px !important; }
 2c9dc325503d	@layer utilities › @media print	.print\:shadow-none { --tw-shadow: 0 0 #0000; box-shadow: var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow); }
 2d37888957d3	@layer utilities	.uppercase { text-transform: uppercase; }
 2e17f8fdb7eb	@layer utilities	.font-semibold { font-weight: var(--font-weight-semibold); }
@@ -109,6 +112,7 @@
 3b9d1240988c	@layer base	::-webkit-datetime-edit-year-field { padding-block-start: 0px; padding-block-end: 0px; }
 3bca0ca798b4	@layer utilities	.font-normal { font-weight: var(--font-weight-normal); }
 3c2f3eca8dd0	@layer utilities	.mr-1 { margin-right: calc(var(--spacing) * 1); }
+3d725dc4c7cd	@media print	#printable-cv { padding-top: 40px !important; padding-right: 44px !important; padding-bottom: 40px !important; padding-left: 44px !important; }
 3f7880d68b4e	(racine)	#printable-cv .cv-panel .cv-panel-lead { margin-bottom: 14px; }
 3fecb575f80f	(racine)	#printable-cv .cv-margin-body > :last-child { margin-bottom: 0px; }
 4004cf9735f1	@layer utilities	.gap-y-1 { row-gap: calc(var(--spacing) * 1); }
@@ -145,6 +149,7 @@
 4f49191034cd	@layer base	img, video { max-width: 100%; height: auto; }
 4f5b23f54921	@layer utilities	.items-start { align-items: flex-start; }
 50289dc24a63	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-purple-700: oklch(49.6% .265 301.924); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-700: oklch(37.3% .034 259.733); --color-gray-800: oklch(27.8% .033 256.848); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-semibold: 600; --font-weight-bold: 700; --leading-tight: 1.25; --leading-relaxed: 1.625; --default-font-family: var(--font-sans); }
+506668b1b46d	@media print	#printable-cv { padding-top: 44px !important; padding-right: 48px !important; padding-bottom: 44px !important; padding-left: 48px !important; }
 506698254888	@layer utilities	.border-purple-300 { border-top-color: ; border-right-color: ; border-bottom-color: ; border-left-color: ; }
 507cf51d29a5	(racine)	#printable-cv .cv-title-row > :first-child { flex-grow: 1; flex-shrink: 1; flex-basis: 0px; min-width: 0px; }
 5230c57fae8f	@layer base	hr { height: 0px; color: inherit; border-top-width: 1px; }
@@ -152,7 +157,6 @@
 53956e0c6ec5	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-orange-800: oklch(47% .157 37.304); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-700: oklch(37.3% .034 259.733); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-semibold: 600; --font-weight-bold: 700; --leading-tight: 1.25; --default-font-family: var(--font-sans); }
 53a0c0b77bd2	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --color-purple-700: oklch(49.6% .265 301.924); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-700: oklch(37.3% .034 259.733); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-semibold: 600; --font-weight-bold: 700; --leading-tight: 1.25; --default-font-family: var(--font-sans); }
 53d0ed7bfa1e	@layer utilities	.tracking-\[0\.28em\] { letter-spacing: 0.28em; }
-5430d222342b	@media print	#printable-cv .cv-header-hero { margin-top: -8px !important; margin-left: -10px !important; margin-right: -10px !important; padding-left: 24px !important; padding-right: 24px !important; }
 544ea1d5a49d	@layer utilities	.tracking-\[0\.12em\] { letter-spacing: 0.12em; }
 546910fec9ef	(racine)	#printable-cv .cv-columns > div > h3:first-child { margin-top: 0px; }
 557751adf5e3	@layer utilities	.text-\[10\.5px\] { font-size: 10.5px; }
@@ -312,7 +316,6 @@ a0c211520877	@layer utilities	.text-\[13px\] { font-size: 13px; }
 a17c0a15fe3e	@layer utilities › @supports (color:color-mix(in lab,red,red))	.border-blue-900\/30 { border-top-color: ; border-right-color: ; border-bottom-color: ; border-left-color: ; }
 a24133c4b56a	(racine)	@page { margin: 14mm 0px; @bottom-center { content: counter(page) " / " counter(pages); font-family: Calibri, Arial, sans-serif; font-size: 8pt; color: rgb(107, 114, 128); } }
 a2a399f076ed	@layer theme	:root, :host { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; --color-indigo-500: oklch(58.5% .233 277.117); --color-indigo-700: oklch(45.7% .24 277.023); --color-gray-600: oklch(44.6% .03 256.802); --color-gray-700: oklch(37.3% .034 259.733); --color-gray-800: oklch(27.8% .033 256.848); --color-gray-900: oklch(21% .034 264.665); --color-black: #000; --color-white: #fff; --spacing: .25rem; --font-weight-medium: 500; --font-weight-semibold: 600; --font-weight-bold: 700; --tracking-tight: -.025em; --leading-relaxed: 1.625; --default-font-family: var(--font-sans); }
-a332ffe7cbd2	@media print	#printable-cv { padding-top: 8px !important; padding-right: 10px !important; padding-bottom: 8px !important; padding-left: 10px !important; }
 a3f518046a3d	@layer utilities	.px-14 { padding-inline-start: ; padding-inline-end: ; }
 a490f5ff28b9	(racine)	@page :first { margin-top: 0px; }
 a70c84790993	@layer utilities	.text-\[17px\] { font-size: 17px; }
@@ -453,6 +456,7 @@ f10749f01a12	(racine)	#printable-cv .cv-sidebar { flex-grow: 0; flex-shrink: 0; 
 f1dcc71cdc87	@layer utilities	.after\:absolute::after { content: var(--tw-content); position: absolute; }
 f1de494b8c97	@layer utilities	.items-end { align-items: flex-end; }
 f21e66396968	@layer utilities › @media (hover: hover)	.hover\:underline:hover { text-decoration-line: underline; }
+f282f487dce4	@media print	#printable-cv { padding-top: 40px !important; padding-right: 48px !important; padding-bottom: 40px !important; padding-left: 48px !important; }
 f2a71f0f5727	(racine)	#printable-cv { display: flex; align-items: stretch; min-height: 297mm; padding-top: 0px !important; padding-right: 0px !important; padding-bottom: 0px !important; padding-left: 0px !important; }
 f2cf7b942858	@layer base	::-webkit-datetime-edit-second-field { padding-block-start: 0px; padding-block-end: 0px; }
 f3dc0278aae4	@layer utilities	.text-emerald-900 { color: var(--color-emerald-900); }

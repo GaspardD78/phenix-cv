@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 139.1,
+  "overflowMm": 147.6,
   "remainingMm": 0,
-  "hiddenLines": 17,
-  "lastVisibleLine": "Lycée Exemple · Lyon ·",
-  "firstCutLine": "Baccalauréat professionnel Gestion-administration"
+  "hiddenLines": 20,
+  "lastVisibleLine": "Formation",
+  "firstCutLine": "BTS Support à l'action managériale"
 }

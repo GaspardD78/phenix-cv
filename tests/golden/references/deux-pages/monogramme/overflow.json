@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 192.1,
+  "overflowMm": 200.6,
   "remainingMm": 0,
-  "hiddenLines": 21,
-  "lastVisibleLine": "Relancer les clients en retard de paiement et réduire les impayés de 15 %",
-  "firstCutLine": "Formation"
+  "hiddenLines": 23,
+  "lastVisibleLine": "Restaurant La Table · Lyon",
+  "firstCutLine": "Suivre les commandes de bout en bout, de la saisie à la livraison"
 }

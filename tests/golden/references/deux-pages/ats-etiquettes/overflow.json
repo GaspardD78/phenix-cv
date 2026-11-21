@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 65.6,
+  "overflowMm": 74,
   "remainingMm": 0,
-  "hiddenLines": 8,
-  "lastVisibleLine": "Excel Salesforce Négociation Relation client Facturation",
-  "firstCutLine": "Langues"
+  "hiddenLines": 9,
+  "lastVisibleLine": "Compétences",
+  "firstCutLine": "Excel Salesforce Négociation Relation client Facturation"
 }

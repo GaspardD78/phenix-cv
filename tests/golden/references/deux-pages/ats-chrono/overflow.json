@@ -1,9 +1,9 @@
 {
   "overflows": true,
   "tight": false,
-  "overflowMm": 148.6,
+  "overflowMm": 157,
   "remainingMm": 0,
-  "hiddenLines": 18,
-  "lastVisibleLine": "BTS Support à l'action managériale",
-  "firstCutLine": "Lycée Exemple · Lyon"
+  "hiddenLines": 20,
+  "lastVisibleLine": "Formation",
+  "firstCutLine": "2014 – 2016"
 }

@@ -1,9 +1,9 @@
 {
-  "overflows": false,
+  "overflows": true,
   "tight": false,
-  "overflowMm": 0,
-  "remainingMm": 6.3,
-  "hiddenLines": 0,
-  "lastVisibleLine": "Accueillir les familles et suivre les dossiers",
-  "firstCutLine": null
+  "overflowMm": 56.6,
+  "remainingMm": 0,
+  "hiddenLines": 9,
+  "lastVisibleLine": "Employée polyvalente juin 2011 – août 2012",
+  "firstCutLine": "Restaurant La Table · Lyon"
 }
