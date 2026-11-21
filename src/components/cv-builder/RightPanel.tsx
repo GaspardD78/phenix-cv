@@ -1,12 +1,51 @@
 import { useCvStore } from '@/stores/cvStore';
 import { useProfileStore } from '@/stores/profileStore';
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { getTemplate } from '@/templates';
 import { PrintableCV } from '../export/PrintableCV';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { isTauri } from '@/lib/platform';
 import { usePrintOverflow } from '@/hooks/usePrintOverflow';
 import { OverflowBanner, OverflowCutLine } from './OverflowBanner';
+import { PdfPagesPreview } from './PdfPagesPreview';
+
+type PreviewMode = 'edit' | 'pages';
+const PREVIEW_MODE_KEY = 'phenixcv.previewMode';
+
+function readPreviewMode(): PreviewMode {
+  try { return localStorage.getItem(PREVIEW_MODE_KEY) === 'pages' ? 'pages' : 'edit'; } catch { return 'edit'; }
+}
+
+/**
+ * Bascule entre l'aperçu modifiable (une longue page) et l'aperçu des pages
+ * (le PDF exporté, page par page). Styles en ligne : l'export PDF intègre le CSS
+ * de l'application, de nouvelles classes changeraient le HTML exporté.
+ */
+function PreviewModeSwitch({ mode, onChange }: { mode: PreviewMode; onChange: (m: PreviewMode) => void }) {
+  const item = (m: PreviewMode, label: string, title: string) => (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={mode === m}
+      title={title}
+      onClick={() => onChange(m)}
+      style={{
+        padding: '6px 14px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', borderRadius: 6,
+        background: mode === m ? 'var(--pc-accent, #1f2937)' : 'transparent',
+        color: mode === m ? 'var(--pc-on-accent, #ffffff)' : 'inherit',
+      }}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div role="tablist" aria-label="Type d'aperçu" className="print:hidden"
+      style={{ display: 'flex', gap: 4, padding: 3, margin: '0 auto 12px', width: 'fit-content', borderRadius: 8, border: '1px solid var(--pc-border, #d1d5db)', background: 'var(--pc-card, #ffffff)' }}>
+      {item('edit', 'Édition', 'Aperçu modifiable, sur une seule longue page')}
+      {item('pages', 'Pages du PDF', 'Le PDF exporté, page par page : sauts de page, marges et numéros')}
+    </div>
+  );
+}
 
 /**
  * Indicateur « tient sur une page » mesuré : application de bureau (Tauri), où
@@ -26,6 +65,13 @@ export function RightPanel() {
     setCvElement(el);
   }, []);
   const overflow = usePrintOverflow(cvElement, MEASURE_OVERFLOW);
+  const [mode, setModeState] = useState<PreviewMode>(readPreviewMode);
+  // Clé de l'aperçu des pages : change seulement quand le CV, ses blocs ou le profil changent.
+  const pagesKey = useMemo(() => [currentCv, currentCvBlocks, profile, entries], [currentCv, currentCvBlocks, profile, entries]);
+  const setMode = (m: PreviewMode) => {
+    setModeState(m);
+    try { localStorage.setItem(PREVIEW_MODE_KEY, m); } catch { /* préférence facultative */ }
+  };
 
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches
@@ -97,8 +143,22 @@ export function RightPanel() {
 
   if (!MEASURE_OVERFLOW) return content;
 
+  if (mode === 'pages') {
+    return (
+      <div className="flex flex-col">
+        <PreviewModeSwitch mode={mode} onChange={setMode} />
+        <PdfPagesPreview cvElement={cvElement} changeKey={pagesKey} />
+        {/* Le CV reste monté hors écran : il est la source du PDF de l'aperçu. */}
+        <div aria-hidden="true" style={{ position: 'fixed', left: -100000, top: 0, visibility: 'hidden', pointerEvents: 'none' }}>
+          {content}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col">
+      <PreviewModeSwitch mode={mode} onChange={setMode} />
       <OverflowBanner state={overflow} />
       {content}
     </div>

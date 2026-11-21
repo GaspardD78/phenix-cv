@@ -157,6 +157,24 @@ export async function withPagination(html: string, decor: PageDecor, previewHeig
   return html.replace('</head>', `<style>${css}</style>\n</head>`);
 }
 
+/**
+ * HTML final imprimé en PDF : partagé par l'export et l'aperçu des pages
+ * (lib/pdf-preview.ts), pour que l'aperçu montre exactement le PDF exporté.
+ */
+export async function buildPrintHtml(cvNode: HTMLElement): Promise<string> {
+  return withPagination(await buildDesktopExportHtml(cvNode), readPageDecor(cvNode), cvNode.offsetHeight);
+}
+
+/** Méthode d'export PDF réglée dans les options avancées (automatique par défaut). */
+export async function readConfiguredMethod(): Promise<PdfExportMethod> {
+  try {
+    const { getSetting } = await import('./db');
+    return parsePdfMethod(await getSetting(PDF_METHOD_SETTING_KEY));
+  } catch {
+    return 'auto';
+  }
+}
+
 /** Hauteur d'une page A4 en px CSS (297 mm). */
 const A4_HEIGHT_PX = (297 * 96) / 25.4;
 
@@ -167,7 +185,7 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
     return false;
   }
 
-  const htmlContent = await withPagination(await buildDesktopExportHtml(cvNode), readPageDecor(cvNode), cvNode.offsetHeight);
+  const htmlContent = await buildPrintHtml(cvNode);
 
   const method = options.method ?? (await readConfiguredMethod());
 
@@ -205,14 +223,6 @@ async function exportPdfDesktop(sourceElementId: string, options: ExportPdfOptio
   }
 }
 
-async function readConfiguredMethod(): Promise<PdfExportMethod> {
-  try {
-    const { getSetting } = await import('./db');
-    return parsePdfMethod(await getSetting(PDF_METHOD_SETTING_KEY));
-  } catch {
-    return 'auto';
-  }
-}
 
 /** Ajoute l'impression système au journal du dernier export (sans jamais faire échouer l'export). */
 async function logSystemPrint(reason: string): Promise<void> {

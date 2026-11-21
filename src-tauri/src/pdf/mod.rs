@@ -128,7 +128,13 @@ async fn attempt(app: &AppHandle, method: Method, html: &str) -> Result<Vec<u8>,
 }
 
 /// Exécute l'échelle de repli ; chaque échec est consigné et on passe au suivant.
-pub async fn run(app: &AppHandle, html: &str, requested_text: &str) -> Outcome {
+/// `keep_log` : faux pour l'aperçu des pages, qui ne remplace pas le journal du dernier export.
+pub async fn run(app: &AppHandle, html: &str, requested_text: &str, keep_log: bool) -> Outcome {
+    let save_log = |app: &AppHandle, log: &ExportLog| {
+        if keep_log {
+            write_log(app, log);
+        }
+    };
     // La variable d'environnement l'emporte sur le réglage : le journal indique la méthode réellement demandée.
     let effective = std::env::var(METHOD_ENV)
         .ok()
@@ -148,7 +154,7 @@ pub async fn run(app: &AppHandle, html: &str, requested_text: &str) -> Outcome {
     let requested = match requested {
         Ok(r) => r,
         Err(e) => {
-            write_log(app, &log);
+            save_log(app, &log);
             return Outcome { result: Err(e), log };
         }
     };
@@ -162,7 +168,7 @@ pub async fn run(app: &AppHandle, html: &str, requested_text: &str) -> Outcome {
                 log.attempts.push(Attempt { method, ok: true, duration_ms, error: None });
                 log.final_method = Some(method.as_str().to_string());
                 log.bytes = bytes.len();
-                write_log(app, &log);
+                save_log(app, &log);
                 return Outcome { result: Ok((bytes, method)), log };
             }
             Err(e) => {
@@ -171,7 +177,7 @@ pub async fn run(app: &AppHandle, html: &str, requested_text: &str) -> Outcome {
             }
         }
     }
-    write_log(app, &log);
+    save_log(app, &log);
     Outcome { result: Err(last_error), log }
 }
 
@@ -182,8 +188,9 @@ pub struct PdfOutput {
 }
 
 #[tauri::command]
-pub async fn generate_pdf(app: AppHandle, html: String, method: Option<String>) -> Result<PdfOutput, String> {
-    let outcome = run(&app, &html, method.as_deref().unwrap_or("auto")).await;
+pub async fn generate_pdf(app: AppHandle, html: String, method: Option<String>, preview: Option<bool>) -> Result<PdfOutput, String> {
+    // Aperçu des pages : même rendu que l'export, sans toucher au journal du dernier export.
+    let outcome = run(&app, &html, method.as_deref().unwrap_or("auto"), !preview.unwrap_or(false)).await;
     outcome.result.map(|(bytes, m)| PdfOutput { bytes, method: m.as_str() })
 }
 
@@ -227,7 +234,7 @@ pub fn spawn_selftest_if_requested(app: &AppHandle) {
         let code = match std::fs::read_to_string(&html_path) {
             Err(_) => 1,
             Ok(html) => {
-                let outcome = run(&app, &html, "auto").await;
+                let outcome = run(&app, &html, "auto", true).await;
                 let _ = std::fs::write(
                     format!("{pdf_path}.json"),
                     serde_json::to_string_pretty(&outcome.log).unwrap_or_default(),
